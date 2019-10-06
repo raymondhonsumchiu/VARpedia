@@ -1,4 +1,4 @@
-package main.java.progressindicator;/*
+package main.java.skins.progressindicator;/*
  * Copyright (c) 2014, Andrea Vacondio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,7 +39,7 @@ abstract class ProgressCircleIndicator extends Control {
     private ReadOnlyBooleanWrapper indeterminate = new ReadOnlyBooleanWrapper(false);
 
     public ProgressCircleIndicator() {
-        this.getStylesheets().add(ProgressCircleIndicator.class.getResource("/main/java/progressindicator/circleprogress.css").toExternalForm());
+        this.getStylesheets().add(ProgressCircleIndicator.class.getResource("/main/java/skins/progressindicator/circleprogress.css").toExternalForm());
     }
 
     public int getProgress() {

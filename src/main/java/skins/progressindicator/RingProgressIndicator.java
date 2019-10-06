@@ -1,4 +1,4 @@
-package main.java.progressindicator;/*
+package main.java.skins.progressindicator;/*
  * Copyright (c) 2014, Andrea Vacondio
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class RingProgressIndicator extends ProgressCircleIndicator {
     public RingProgressIndicator() {
-        this.getStylesheets().add(RingProgressIndicator.class.getResource("/main/java/progressindicator/ringprogress.css").toExternalForm());
+        this.getStylesheets().add(RingProgressIndicator.class.getResource("/main/java/skins/progressindicator/ringprogress.css").toExternalForm());
         this.getStyleClass().add("ringindicator");
     }
 
