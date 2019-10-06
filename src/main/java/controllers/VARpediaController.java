@@ -1,5 +1,6 @@
 package main.java.controllers;
 
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -9,17 +10,33 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import main.java.VARpedia;
+import main.java.skins.progressindicator.RingProgressIndicator;
+import main.java.tasks.WikitTask;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.ResourceBundle;
 
-public class varpediaController implements Initializable {
+import static main.java.VARpedia.*;
+
+public class VARpediaController implements Initializable {
     private double xOffset = 0;
     private double yOffset = 0;
 
     @FXML
     private TabPane tabMain;
+
+    @FXML
+    private Tab tabSearch;
+
+    @FXML
+    private Label lblNumberCreations;
 
     @FXML
     private ListView<String> listCreations;
@@ -84,8 +101,53 @@ public class varpediaController implements Initializable {
     @FXML
     private TextArea txaResults;
 
+    @FXML
+    private RingProgressIndicator ringSearch;
+
+    @FXML
+    private RingProgressIndicator ringCombine;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Clean up
+        deleteDirectory(CHUNKS);
+        deleteDirectory(TEMP);
+
+        // Initialise "Creations" tab
+        if (CREATIONS.exists()) {
+            // Find and list all creations using bash
+            ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "ls *.mp4");
+            b.directory(CREATIONS);
+            Process p = null;
+            try {
+                p = b.start();
+                InputStream out = p.getInputStream();
+                BufferedReader stdout = new BufferedReader(new InputStreamReader(out));
+
+                List<String> list = new ArrayList<>();
+                String line;
+                while ((line = stdout.readLine()) != null) {
+                    list.add(line.substring(0, line.length() - 4));
+                }
+
+                lblNumberCreations.setText("" + list.size());
+                Collections.sort(list);
+                listCreations.setItems(FXCollections.observableArrayList(list));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Initialise "Search" tab
+        txaResults.setEditable(false);
+        ringSearch.setVisible(false);
+
+        // Initialise "Combine" tab
+        ringCombine.setVisible(false);
+
+        // Initialise "Quiz" tab
+
+        // Initialise "Options" tab
         if (VARpedia.isDark) {
             btnLightTheme.setSelected(false);
             btnDarkTheme.setSelected(true);
@@ -93,7 +155,6 @@ public class varpediaController implements Initializable {
             btnLightTheme.setSelected(true);
             btnDarkTheme.setSelected(false);
         }
-        txaResults.setEditable(false);
     }
 
     @FXML
@@ -127,6 +188,10 @@ public class varpediaController implements Initializable {
 
     @FXML
     void btnCloseClicked(ActionEvent event) {
+        // Clean up on exit
+        bg.shutdownNow();
+        deleteDirectory(TEMP);
+        deleteDirectory(CHUNKS);
         VARpedia.primaryStage.close();
     }
 
@@ -210,7 +275,43 @@ public class varpediaController implements Initializable {
 
     @FXML
     void btnSearchClicked(ActionEvent event) {
+        String query = txtSearch.getText().trim().toLowerCase();
+        if (!query.isEmpty()) {
+            WikitTask bgWikit = new WikitTask(query);
+            bg.submit(bgWikit);
+            txaResults.clear();
+            txaResults.setEditable(false);
+            btnSearch.setDisable(true);
+            ringSearch.setVisible(true);
 
+            bgWikit.setOnSucceeded(e -> {
+                btnSearch.setDisable(false);
+                ringSearch.setVisible(false);
+                txaResults.setStyle("-fx-text-fill: font-color;");
+
+                List<String> list = bgWikit.getValue();
+                if (list == null || list.get(0).contains("not found :^(")) {
+                    txaResults.setText("No results found for \"" + query + "\".");
+                    txaResults.setStyle("-fx-text-fill: close-color;");
+                    // Reset search field
+                    txtSearch.selectAll();
+                    txtSearch.requestFocus();
+                } else if (list.get(0).contains("Ambiguous results, ") || list.get(0).contains("may also refer to:") || (list.size() > 1 && list.get(1).contains("may also refer to:"))) {
+                    txaResults.setText("Ambiguous results found for \"" + query + "\".");
+                    txaResults.setStyle("-fx-text-fill: close-color;");
+                    // Reset search field
+                    txtSearch.selectAll();
+                    txtSearch.requestFocus();
+                } else {
+                    txaResults.setEditable(true);
+                    for (String s : list) {
+                        txaResults.appendText(s);
+                    }
+                    txaResults.requestFocus();
+                    txaResults.positionCaret(0);
+                }
+            });
+        }
     }
 
     @FXML
@@ -256,4 +357,25 @@ public class varpediaController implements Initializable {
         xOffset = event.getSceneX();
         yOffset = event.getSceneY();
     }
+
+    @FXML
+    void tabMainMouseReleased(MouseEvent event) {
+        txtSearch.requestFocus();
+    }
+
+    @FXML
+    void txtChunkEnter(ActionEvent event) {
+        btnCreateChunkClicked(event);
+    }
+
+    @FXML
+    void txtCreationEnter(ActionEvent event) {
+        btnCreateCreationClicked(event);
+    }
+
+    @FXML
+    void txtSearchEnter(ActionEvent event) {
+        btnSearchClicked(event);
+    }
+
 }

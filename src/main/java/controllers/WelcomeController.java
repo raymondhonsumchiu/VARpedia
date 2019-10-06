@@ -9,7 +9,7 @@ import main.java.VARpedia;
 
 import java.io.IOException;
 
-public class welcomeController {
+public class WelcomeController {
     private double xOffset = 0;
     private double yOffset = 0;
 

@@ -4,14 +4,26 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+
+import java.io.File;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class VARpedia extends Application {
     private double xOffset = 0;
     private double yOffset = 0;
     public static Stage primaryStage;
     public static boolean isDark = false;
+    public static final File CREATIONS = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "Creations");
+    public static final File TEMP = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "temp");
+    public static final File CHUNKS = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "chunks");
+    public static ExecutorService bg = Executors.newSingleThreadExecutor();
+    private ButtonType btnYes = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
+    private ButtonType btnNo = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -34,8 +46,25 @@ public class VARpedia extends Application {
         scene.getStylesheets().add(getClass().getResource("../resources/css/light.css").toExternalForm());
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        // Clean up on exit
+        primaryStage.setOnCloseRequest(e -> {
+            bg.shutdownNow();
+            deleteDirectory(TEMP);
+            deleteDirectory(CHUNKS);
+        });
     }
 
+    // Deletes a file or directory and all its contents recursively
+    public static boolean deleteDirectory(File dir) {
+        File[] contents = dir.listFiles();
+        if (contents != null) {
+            for (File f : contents) {
+                deleteDirectory(f);
+            }
+        }
+        return dir.delete();
+    }
 
     public static void main(String[] args) {
         launch(args);

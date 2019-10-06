@@ -7,15 +7,33 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <?import main.java.skins.progressindicator.RingProgressIndicator?>
-<AnchorPane prefHeight="810.0" prefWidth="1440.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.controllers.varpediaController">
+<AnchorPane prefHeight="810.0" prefWidth="1440.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.controllers.VARpediaController">
    <children>
-      <TabPane fx:id="tabMain" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseDragged="#tabMainMouseDragged" onMousePressed="#tabMainMousePressed" prefHeight="810.0" prefWidth="1440.0" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="30.0" tabMaxWidth="160.0" tabMinHeight="30.0" tabMinWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <TabPane fx:id="tabMain" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseDragged="#tabMainMouseDragged" onMousePressed="#tabMainMousePressed" onMouseReleased="#tabMainMouseReleased" prefHeight="810.0" prefWidth="1440.0" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="30.0" tabMaxWidth="160.0" tabMinHeight="30.0" tabMinWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <tabs>
           <Tab closable="false" text="Creations">
                <content>
                   <BorderPane>
                      <center>
-                        <ListView fx:id="listCreations" onMouseClicked="#listCreationsClicked" BorderPane.alignment="CENTER" />
+                        <VBox alignment="CENTER" BorderPane.alignment="CENTER">
+                           <children>
+                              <HBox alignment="CENTER_LEFT" prefWidth="200.0" spacing="5.0">
+                                 <children>
+                                    <Label text="Number of creations:">
+                                       <HBox.margin>
+                                          <Insets bottom="5.0" left="5.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                    <Label fx:id="lblNumberCreations" text="0">
+                                       <HBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                              <ListView fx:id="listCreations" onMouseClicked="#listCreationsClicked" VBox.vgrow="ALWAYS" />
+                           </children>
+                        </VBox>
                      </center>
                      <padding>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -46,7 +64,7 @@
                   </BorderPane>
                </content>
           </Tab>
-          <Tab closable="false" text="Search">
+          <Tab fx:id="tabSearch" closable="false" text="Search">
                <content>
                   <BorderPane>
                      <top>
@@ -60,7 +78,7 @@
                                     <Image url="@../images/search.png" />
                                  </image>
                               </ImageView>
-                              <TextField fx:id="txtSearch" prefHeight="50.0" promptText="Search Wikipedia!" HBox.hgrow="ALWAYS">
+                              <TextField fx:id="txtSearch" onAction="#txtSearchEnter" prefHeight="50.0" promptText="Search Wikipedia!" HBox.hgrow="ALWAYS">
                                  <HBox.margin>
                                     <Insets />
                                  </HBox.margin>
@@ -119,7 +137,7 @@
                      <bottom>
                         <HBox alignment="CENTER" spacing="5.0" BorderPane.alignment="CENTER">
                            <children>
-                              <RingProgressIndicator maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" prefHeight="50.0" prefWidth="50.0" progress="-1">
+                              <RingProgressIndicator fx:id="ringSearch" maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" prefHeight="50.0" prefWidth="50.0" progress="-1">
                                  <HBox.margin>
                                     <Insets left="5.0" right="5.0" />
                                  </HBox.margin></RingProgressIndicator>
@@ -128,7 +146,7 @@
                                     <Insets />
                                  </HBox.margin>
                               </Label>
-                              <TextField fx:id="txtChunkName" prefHeight="50.0" prefWidth="320.0" promptText="Name" HBox.hgrow="ALWAYS">
+                              <TextField fx:id="txtChunkName" onAction="#txtChunkEnter" prefHeight="50.0" prefWidth="320.0" promptText="Name" HBox.hgrow="ALWAYS">
                                  <padding>
                                     <Insets left="30.0" />
                                  </padding>
@@ -369,7 +387,7 @@
                      <bottom>
                         <HBox alignment="CENTER" spacing="5.0" BorderPane.alignment="CENTER">
                            <children>
-                              <RingProgressIndicator maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" prefHeight="50.0" prefWidth="50.0" progress="-1">
+                              <RingProgressIndicator fx:id="ringCombine" maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" prefHeight="50.0" prefWidth="50.0" progress="-1">
                                  <HBox.margin>
                                     <Insets left="5.0" right="5.0" />
                                  </HBox.margin></RingProgressIndicator>
@@ -378,7 +396,7 @@
                                     <Insets />
                                  </HBox.margin>
                               </Label>
-                              <TextField fx:id="txtCreationName" maxWidth="1.7976931348623157E308" prefHeight="50.0" promptText="Name" HBox.hgrow="ALWAYS">
+                              <TextField fx:id="txtCreationName" maxWidth="1.7976931348623157E308" onAction="#txtCreationEnter" prefHeight="50.0" promptText="Name" HBox.hgrow="ALWAYS">
                                  <padding>
                                     <Insets left="30.0" />
                                  </padding>

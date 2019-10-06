@@ -1,23 +1,25 @@
 @import url('https://fonts.googleapis.com/css?family=Questrial&display=swap');
-
-* {-fx-text-fill: #dedede;}
+* {
+    font-color: #dedede;
+    -fx-text-fill: font-color;
+    }
 .root {
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
     -fx-font-family: 'Questrial', sans-serif;
     -fx-font-size: 22px;
 
-    -fx-base: #1c1c1c;
+    -fx-base: #363636;
     -fx-body-color: -fx-base;
     -fx-hover-base: derive(-fx-base, 10%);
     -fx-pressed-base: derive(-fx-base, 20%);
-    -fx-background: #0f0f0f;
+    -fx-background: #242424;
     -fx-accent: #ff7e14;
-    -fx-control-inner: #1c1c1c;
+    -fx-control-inner: #363636;
 
-     border-color: transparent;
-     close-color: #fa4147;
-     list-hover-color: derive(-fx-base, 80%)
+    border-color: transparent;
+    close-color: #fa4147;
+    list-hover-color: derive(-fx-base, 80%)
 }
 
 /**

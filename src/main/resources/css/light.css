@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css?family=Questrial&display=swap');
-
-* {-fx-text-fill: #323232;}
+* {
+    font-color: #323232;
+    -fx-text-fill: font-color;
+    }
 .root {
     -fx-focus-color: transparent;
     -fx-faint-focus-color: transparent;
@@ -15,9 +17,9 @@
     -fx-accent: #a7c2ef;
     -fx-control-inner: white;
 
-     border-color: #ccc;
-     close-color: #fa4147;
-     list-hover-color: derive(-fx-base, 80%)
+    border-color: #ccc;
+    close-color: #fa4147;
+    list-hover-color: derive(-fx-base, 80%)
 }
 
 /**
