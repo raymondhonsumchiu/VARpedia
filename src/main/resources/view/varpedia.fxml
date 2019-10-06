@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import main.java.progressindicator.RingProgressIndicator?>
+<AnchorPane prefHeight="810.0" prefWidth="1440.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.controllers.varpediaController">
+   <children>
+      <TabPane fx:id="tabMain" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseDragged="#tabMainMouseDragged" onMousePressed="#tabMainMousePressed" prefHeight="810.0" prefWidth="1440.0" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="30.0" tabMaxWidth="160.0" tabMinHeight="30.0" tabMinWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <tabs>
+          <Tab closable="false" text="Creations">
+               <content>
+                  <BorderPane>
+                     <center>
+                        <ListView fx:id="listCreations" onMouseClicked="#listCreationsClicked" BorderPane.alignment="CENTER" />
+                     </center>
+                     <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </padding>
+                     <bottom>
+                        <HBox alignment="CENTER" prefHeight="55.0" spacing="5.0" BorderPane.alignment="CENTER">
+                           <children>
+                              <Region prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+                            <Button mnemonicParsing="false" onAction="#btnDeleteCreationClicked" prefHeight="50.0" prefWidth="160.0" text="Delete">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </Button>
+                              <Button defaultButton="true" mnemonicParsing="false" onAction="#btnPlayCreationClicked" prefHeight="50.0" prefWidth="160.0" text="Play">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </Button>
+                           </children>
+                           <BorderPane.margin>
+                              <Insets />
+                           </BorderPane.margin>
+                           <padding>
+                              <Insets top="5.0" />
+                           </padding>
+                        </HBox>
+                     </bottom>
+                  </BorderPane>
+               </content>
+          </Tab>
+          <Tab closable="false" text="Search">
+               <content>
+                  <BorderPane>
+                     <top>
+                        <HBox prefHeight="50.0" prefWidth="600.0" spacing="5.0" BorderPane.alignment="CENTER">
+                           <children>
+                              <ImageView fitHeight="30.0" fitWidth="30.0" opacity="0.7" pickOnBounds="true" preserveRatio="true">
+                                 <HBox.margin>
+                                    <Insets left="7.0" right="5.0" top="10.0" />
+                                 </HBox.margin>
+                                 <image>
+                                    <Image url="@../images/search.png" />
+                                 </image>
+                              </ImageView>
+                              <TextField fx:id="txtSearch" prefHeight="50.0" promptText="Search Wikipedia!" HBox.hgrow="ALWAYS">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                                 <padding>
+                                    <Insets left="30.0" />
+                                 </padding>
+                              </TextField>
+                              <Button fx:id="btnSearch" defaultButton="true" mnemonicParsing="false" onAction="#btnSearchClicked" prefHeight="50.0" prefWidth="160.0" text="Search">
+                                 <HBox.margin>
+                                    <Insets left="5.0" right="5.0" />
+                                 </HBox.margin>
+                              </Button>
+                           </children>
+                           <BorderPane.margin>
+                              <Insets top="5.0" />
+                           </BorderPane.margin>
+                        </HBox>
+                     </top>
+                     <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </padding>
+                     <center>
+                        <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+                           <children>
+                              <Label text="Results">
+                                 <VBox.margin>
+                                    <Insets bottom="5.0" left="5.0" top="5.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <TextArea fx:id="txaResults" VBox.vgrow="ALWAYS" />
+                           </children>
+                           <BorderPane.margin>
+                              <Insets right="2.0" />
+                           </BorderPane.margin>
+                        </VBox>
+                     </center>
+                     <right>
+                        <VBox prefHeight="968.0" prefWidth="490.0" BorderPane.alignment="CENTER">
+                           <children>
+                              <Label text="Chunks">
+                                 <VBox.margin>
+                                    <Insets bottom="5.0" left="5.0" top="5.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <ListView fx:id="listChunksSearch" onMouseClicked="#listChunksSearchClicked" prefHeight="226.0" prefWidth="500.0" VBox.vgrow="ALWAYS" />
+                              <TextArea fx:id="txaPreviewChunk1" editable="false" prefHeight="200.0" prefWidth="200.0" promptText="Preview chunk text">
+                                 <VBox.margin>
+                                    <Insets top="2.0" />
+                                 </VBox.margin></TextArea>
+                           </children>
+                           <BorderPane.margin>
+                              <Insets />
+                           </BorderPane.margin>
+                        </VBox>
+                     </right>
+                     <bottom>
+                        <HBox alignment="CENTER" spacing="5.0" BorderPane.alignment="CENTER">
+                           <children>
+                              <RingProgressIndicator maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" prefHeight="50.0" prefWidth="50.0" progress="-1">
+                                 <HBox.margin>
+                                    <Insets left="5.0" right="5.0" />
+                                 </HBox.margin></RingProgressIndicator>
+                              <Label text="Chunk name:">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </Label>
+                              <TextField fx:id="txtChunkName" prefHeight="50.0" prefWidth="320.0" promptText="Name" HBox.hgrow="ALWAYS">
+                                 <padding>
+                                    <Insets left="30.0" />
+                                 </padding>
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </TextField>
+                              <ComboBox prefHeight="50.0" prefWidth="320.0" promptText="Select a voice" styleClass="combo-long" visibleRowCount="5">
+                                 <padding>
+                                    <Insets left="5.0" />
+                                 </padding>
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </ComboBox>
+                              <Button fx:id="btnSearchPreviewChunk" mnemonicParsing="false" onAction="#btnPreviewChunkClicked" prefHeight="50.0" prefWidth="160.0" text="Preview" />
+                              <Button fx:id="btnCreateChunk" mnemonicParsing="false" onAction="#btnCreateChunkClicked" prefHeight="50.0" prefWidth="160.0" text="Create" />
+                              <Button fx:id="btnCombine" mnemonicParsing="false" onAction="#btnCombineClicked" prefHeight="50.0" prefWidth="160.0" text="Combine" />
+                           </children>
+                           <BorderPane.margin>
+                              <Insets />
+                           </BorderPane.margin>
+                           <padding>
+                              <Insets top="5.0" />
+                           </padding>
+                        </HBox>
+                     </bottom>
+                  </BorderPane>
+               </content>
+          </Tab>
+            <Tab text="Combine">
+               <content>
+                  <BorderPane prefHeight="200.0" prefWidth="200.0">
+                     <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </padding>
+                     <center>
+                        <HBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
+                           <children>
+                              <VBox spacing="2.0">
+                                 <children>
+                                    <Label text="Created chunks">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="5.0" top="5.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <ListView fx:id="listAllChunks" onMouseClicked="#listAllChunksClicked" prefWidth="370.0" VBox.vgrow="ALWAYS" />
+                                    <TextArea fx:id="txaPreviewChunk2" editable="false" prefHeight="200.0" prefWidth="200.0" promptText="Preview chunk text" />
+                                    <HBox alignment="CENTER" spacing="1.0">
+                                       <VBox.margin>
+                                          <Insets />
+                                       </VBox.margin>
+                                       <children>
+                                          <Button fx:id="btnPreviewChunkCombine" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnPreviewChunkClicked" text="Preview" HBox.hgrow="ALWAYS" />
+                                          <Button fx:id="btnDeleteChunk" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnDeleteChunkClicked" text="Delete chunk" HBox.hgrow="ALWAYS" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+                              <VBox alignment="CENTER" prefHeight="200.0" prefWidth="66.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Button mnemonicParsing="false">
+                                       <graphic>
+                                          <ImageView fitHeight="32.0" fitWidth="66.0" pickOnBounds="true" preserveRatio="true" rotate="180.0">
+                                             <image>
+                                                <Image url="@../images/leftarrow.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </Button>
+                                    <Region prefHeight="50.0" prefWidth="100.0" />
+                                    <Button mnemonicParsing="false">
+                                       <graphic>
+                                          <ImageView fitHeight="32.0" fitWidth="66.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../images/leftarrow.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </Button>
+                                 </children>
+                              </VBox>
+                              <VBox spacing="2.0">
+                                 <children>
+                                    <Label text="Selected chunks">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="5.0" top="5.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <ListView fx:id="listSelectedChunks" onMouseClicked="#listSelectedChunksClicked" prefWidth="370.0" VBox.vgrow="ALWAYS" />
+                                    <Button fx:id="btnClearChunks" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnClearChunksClicked" text="Clear selected chunks">
+                                       <VBox.margin>
+                                          <Insets />
+                                       </VBox.margin>
+                                    </Button>
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </center>
+                     <right>
+                        <VBox maxWidth="600.0" minWidth="600.0" BorderPane.alignment="CENTER">
+                           <children>
+                              <Label text="Images">
+                                 <VBox.margin>
+                                    <Insets bottom="5.0" left="5.0" top="5.0" />
+                                 </VBox.margin>
+                              </Label>
+                              <GridPane alignment="CENTER" prefWidth="770.0" VBox.vgrow="ALWAYS">
+                                <columnConstraints>
+                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                </rowConstraints>
+                                 <children>
+                                    <ToggleButton mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                                       <graphic>
+                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../images/varpedialogo.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </ToggleButton>
+                                    <ToggleButton mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                                       <graphic>
+                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../images/help.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </ToggleButton>
+                                    <ToggleButton mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                                       <graphic>
+                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../images/help.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </ToggleButton>
+                                    <ToggleButton mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                                       <graphic>
+                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../images/help.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </ToggleButton>
+                                    <ToggleButton mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                                       <graphic>
+                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../images/help.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </ToggleButton>
+                                    <ToggleButton mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                                       <graphic>
+                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../images/help.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </ToggleButton>
+                                    <ToggleButton layoutX="10.0" layoutY="19.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
+                                       <graphic>
+                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../images/help.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </ToggleButton>
+                                    <ToggleButton layoutX="268.0" layoutY="19.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
+                                       <graphic>
+                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../images/help.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </ToggleButton>
+                                    <ToggleButton layoutX="525.0" layoutY="19.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
+                                       <graphic>
+                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../images/help.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </ToggleButton>
+                                    <ToggleButton layoutX="10.0" layoutY="239.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
+                                       <graphic>
+                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../images/help.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </ToggleButton>
+                                    <ToggleButton layoutX="268.0" layoutY="239.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
+                                       <graphic>
+                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../images/help.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </ToggleButton>
+                                    <ToggleButton layoutX="525.0" layoutY="239.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
+                                       <graphic>
+                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../images/varpedialogo.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </ToggleButton>
+                                 </children>
+                              </GridPane>
+                           </children>
+                           <BorderPane.margin>
+                              <Insets left="5.0" />
+                           </BorderPane.margin>
+                        </VBox>
+                     </right>
+                     <bottom>
+                        <HBox alignment="CENTER" spacing="5.0" BorderPane.alignment="CENTER">
+                           <children>
+                              <RingProgressIndicator maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" prefHeight="50.0" prefWidth="50.0" progress="-1">
+                                 <HBox.margin>
+                                    <Insets left="5.0" right="5.0" />
+                                 </HBox.margin></RingProgressIndicator>
+                              <Label text="Creation name:">
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </Label>
+                              <TextField fx:id="txtCreationName" maxWidth="1.7976931348623157E308" prefHeight="50.0" promptText="Name" HBox.hgrow="ALWAYS">
+                                 <padding>
+                                    <Insets left="30.0" />
+                                 </padding>
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
+                              </TextField>
+                              <Button fx:id="btnPreviewCreation" mnemonicParsing="false" onAction="#btnPreviewCreationClicked" styleClass="button-long" text="Preview Creation" />
+                              <Button fx:id="btnCreateCreation" defaultButton="true" mnemonicParsing="false" onAction="#btnCreateCreationClicked" text="Create!" />
+                           </children>
+                           <BorderPane.margin>
+                              <Insets />
+                           </BorderPane.margin>
+                           <padding>
+                              <Insets top="5.0" />
+                           </padding>
+                        </HBox>
+                     </bottom>
+                  </BorderPane>
+               </content>
+            </Tab>
+            <Tab text="Quiz">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+               </content>
+            </Tab>
+            <Tab text="Options">
+               <content>
+                  <BorderPane prefHeight="200.0" prefWidth="200.0">
+                     <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </padding>
+                     <center>
+                        <HBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
+                           <children>
+                              <Label text="Theme:" />
+                              <ToggleButton fx:id="btnLightTheme" mnemonicParsing="false" onAction="#btnLightThemeClicked" text="Light" />
+                              <ToggleButton fx:id="btnDarkTheme" mnemonicParsing="false" onAction="#btnDarkThemeClicked" text="Dark" />
+                           </children>
+                        </HBox>
+                     </center>
+                  </BorderPane>
+               </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+      <HBox layoutX="1398.0" layoutY="12.0" spacing="10.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="12.0">
+         <children>
+            <Button alignment="CENTER" contentDisplay="CENTER" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnMinimiseClicked" prefHeight="30.0" prefWidth="30.0" styleClass="button-window" text="-">
+               <font>
+                  <Font size="6.0" />
+               </font>
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+            </Button>
+            <Button id="button-help" alignment="CENTER" contentDisplay="CENTER" layoutX="40.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnHelpClicked" prefHeight="30.0" prefWidth="30.0" styleClass="button-window" text="?">
+               <font>
+                  <Font size="6.0" />
+               </font>
+            </Button>
+            <Button id="button-close" alignment="CENTER" contentDisplay="CENTER" layoutX="70.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnCloseClicked" prefHeight="30.0" prefWidth="30.0" styleClass="button-window" text="X">
+               <font>
+                  <Font size="6.0" />
+               </font>
+            </Button>
+         </children>
+      </HBox>
+      <Button id="button-logo" layoutX="4.0" layoutY="15.0" mnemonicParsing="false" onAction="#btnBackClicked" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0">
+         <graphic>
+            <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/varpedialogo.png" />
+               </image>
+            </ImageView>
+         </graphic>
+         <padding>
+            <Insets right="5.0" />
+         </padding>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor>
+      </Button>
+   </children>
+</AnchorPane>
