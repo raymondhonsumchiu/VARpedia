@@ -21,9 +21,9 @@ public class VARpedia extends Application {
     public static final File CREATIONS = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "Creations");
     public static final File TEMP = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "temp");
     public static final File CHUNKS = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "chunks");
-    public static ExecutorService bg = Executors.newSingleThreadExecutor();
-    private ButtonType btnYes = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
-    private ButtonType btnNo = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
+    public static final ExecutorService bg = Executors.newFixedThreadPool(3);
+    public static ButtonType btnYes = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
+    public static ButtonType btnNo = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
 
     @Override
     public void start(Stage primaryStage) throws Exception{

@@ -19,6 +19,7 @@
 
     border-color: #ccc;
     close-color: #fa4147;
+    background-accent: derive(-fx-background, -5%);
     list-hover-color: derive(-fx-base, 80%)
 }
 
@@ -125,6 +126,25 @@ COMBO BOX
 }
 .combo-long {
     -fx-pref-width: 320px;
+}
+
+/**
+DIALOGUE PANE (ALERT)
+**/
+.dialog-pane {
+    -fx-border-color: border-color;
+    -fx-pref-width: 375px;
+    -fx-pref-height: 240px;
+}
+.dialog-pane > .content.label {
+    -fx-padding: 20 5 5 20;
+    -fx-background-color: -fx-background;
+}
+.dialog-pane:header .header-panel {
+    -fx-background-color: background-accent;
+}
+.dialog-pane > .button-bar > .container {
+    -fx-padding: 0 20 20 0;
 }
 
 /**
@@ -244,7 +264,7 @@ TAB-PANE, TAB
 }
 .tab-pane > .tab-header-area > .tab-header-background {
     -fx-background-insets: 0 0 1 0;
-    -fx-background-color: derive(-fx-background, -5%);
+    -fx-background-color: background-accent;
 }
 
 /**

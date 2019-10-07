@@ -14,12 +14,12 @@ package main.java.skins.progressindicator;/*
  * limitations under the License.
  */
 
-import com.sun.javafx.css.converters.SizeConverter;
 import javafx.beans.property.*;
 import javafx.css.CssMetaData;
 import javafx.css.Styleable;
 import javafx.css.StyleableDoubleProperty;
 import javafx.css.StyleableProperty;
+import javafx.css.converter.SizeConverter;
 import javafx.scene.control.Control;
 
 import java.util.ArrayList;

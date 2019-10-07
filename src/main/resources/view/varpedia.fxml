@@ -268,108 +268,108 @@
                                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                 </rowConstraints>
                                  <children>
-                                    <ToggleButton mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                                    <ToggleButton fx:id="toggleGrid1" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
                                        <graphic>
-                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fx:id="imgGrid1" fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../images/varpedialogo.png" />
                                              </image>
                                           </ImageView>
                                        </graphic>
                                     </ToggleButton>
-                                    <ToggleButton mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                                    <ToggleButton fx:id="toggleGrid2" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
                                        <graphic>
-                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fx:id="imgGrid2" fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../images/help.png" />
                                              </image>
                                           </ImageView>
                                        </graphic>
                                     </ToggleButton>
-                                    <ToggleButton mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                                    <ToggleButton fx:id="toggleGrid3" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
                                        <graphic>
-                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fx:id="imgGrid3" fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../images/help.png" />
                                              </image>
                                           </ImageView>
                                        </graphic>
                                     </ToggleButton>
-                                    <ToggleButton mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                                    <ToggleButton fx:id="toggleGrid4" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
                                        <graphic>
-                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fx:id="imgGrid4" fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../images/help.png" />
                                              </image>
                                           </ImageView>
                                        </graphic>
                                     </ToggleButton>
-                                    <ToggleButton mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                                    <ToggleButton fx:id="toggleGrid5" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
                                        <graphic>
-                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fx:id="imgGrid5" fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../images/help.png" />
                                              </image>
                                           </ImageView>
                                        </graphic>
                                     </ToggleButton>
-                                    <ToggleButton mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                                    <ToggleButton fx:id="toggleGrid6" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
                                        <graphic>
-                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fx:id="imgGrid6" fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../images/help.png" />
                                              </image>
                                           </ImageView>
                                        </graphic>
                                     </ToggleButton>
-                                    <ToggleButton layoutX="10.0" layoutY="19.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
+                                    <ToggleButton fx:id="toggleGrid7" layoutX="10.0" layoutY="19.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
                                        <graphic>
-                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fx:id="imgGrid7" fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../images/help.png" />
                                              </image>
                                           </ImageView>
                                        </graphic>
                                     </ToggleButton>
-                                    <ToggleButton layoutX="268.0" layoutY="19.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
+                                    <ToggleButton fx:id="toggleGrid8" layoutX="268.0" layoutY="19.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
                                        <graphic>
-                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fx:id="imgGrid8" fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../images/help.png" />
                                              </image>
                                           </ImageView>
                                        </graphic>
                                     </ToggleButton>
-                                    <ToggleButton layoutX="525.0" layoutY="19.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
+                                    <ToggleButton fx:id="toggleGrid9" layoutX="525.0" layoutY="19.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
                                        <graphic>
-                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fx:id="imgGrid9" fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../images/help.png" />
                                              </image>
                                           </ImageView>
                                        </graphic>
                                     </ToggleButton>
-                                    <ToggleButton layoutX="10.0" layoutY="239.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
+                                    <ToggleButton fx:id="toggleGrid10" layoutX="10.0" layoutY="239.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
                                        <graphic>
-                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fx:id="imgGrid10" fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../images/help.png" />
                                              </image>
                                           </ImageView>
                                        </graphic>
                                     </ToggleButton>
-                                    <ToggleButton layoutX="268.0" layoutY="239.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
+                                    <ToggleButton fx:id="toggleGrid11" layoutX="268.0" layoutY="239.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
                                        <graphic>
-                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fx:id="imgGrid11" fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../images/help.png" />
                                              </image>
                                           </ImageView>
                                        </graphic>
                                     </ToggleButton>
-                                    <ToggleButton layoutX="525.0" layoutY="239.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
+                                    <ToggleButton fx:id="toggleGrid12" layoutX="525.0" layoutY="239.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
                                        <graphic>
-                                          <ImageView fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
+                                          <ImageView fx:id="imgGrid12" fitHeight="145.0" fitWidth="166.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
                                                 <Image url="@../images/varpedialogo.png" />
                                              </image>

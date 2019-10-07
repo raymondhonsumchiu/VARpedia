@@ -8,15 +8,15 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.StageStyle;
 import main.java.VARpedia;
 import main.java.skins.progressindicator.RingProgressIndicator;
+import main.java.tasks.FlickrTask;
 import main.java.tasks.WikitTask;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +28,9 @@ import static main.java.VARpedia.*;
 public class VARpediaController implements Initializable {
     private double xOffset = 0;
     private double yOffset = 0;
+    private String css;
+    private List<ImageView> gridImages;
+    private List<ToggleButton> gridToggles;
 
     @FXML
     private TabPane tabMain;
@@ -70,6 +73,78 @@ public class VARpediaController implements Initializable {
 
     @FXML
     private Button btnClearChunks;
+
+    @FXML
+    private ToggleButton toggleGrid1;
+
+    @FXML
+    private ImageView imgGrid1;
+
+    @FXML
+    private ToggleButton toggleGrid2;
+
+    @FXML
+    private ImageView imgGrid2;
+
+    @FXML
+    private ToggleButton toggleGrid3;
+
+    @FXML
+    private ImageView imgGrid3;
+
+    @FXML
+    private ToggleButton toggleGrid4;
+
+    @FXML
+    private ImageView imgGrid4;
+
+    @FXML
+    private ToggleButton toggleGrid5;
+
+    @FXML
+    private ImageView imgGrid5;
+
+    @FXML
+    private ToggleButton toggleGrid6;
+
+    @FXML
+    private ImageView imgGrid6;
+
+    @FXML
+    private ToggleButton toggleGrid7;
+
+    @FXML
+    private ImageView imgGrid7;
+
+    @FXML
+    private ToggleButton toggleGrid8;
+
+    @FXML
+    private ImageView imgGrid8;
+
+    @FXML
+    private ToggleButton toggleGrid9;
+
+    @FXML
+    private ImageView imgGrid9;
+
+    @FXML
+    private ToggleButton toggleGrid10;
+
+    @FXML
+    private ImageView imgGrid10;
+
+    @FXML
+    private ToggleButton toggleGrid11;
+
+    @FXML
+    private ImageView imgGrid11;
+
+    @FXML
+    private ToggleButton toggleGrid12;
+
+    @FXML
+    private ImageView imgGrid12;
 
     @FXML
     private Button btnPreviewCreation;
@@ -144,6 +219,10 @@ public class VARpediaController implements Initializable {
 
         // Initialise "Combine" tab
         ringCombine.setVisible(false);
+        gridImages = new ArrayList<>();
+        gridToggles = new ArrayList<>();
+        Collections.addAll(gridImages,imgGrid1,imgGrid2,imgGrid3,imgGrid4,imgGrid5,imgGrid6,imgGrid7,imgGrid8,imgGrid9,imgGrid10,imgGrid11,imgGrid12);
+        Collections.addAll(gridToggles,toggleGrid1,toggleGrid2,toggleGrid3,toggleGrid4,toggleGrid5,toggleGrid5,toggleGrid6,toggleGrid7,toggleGrid8,toggleGrid8,toggleGrid9,toggleGrid10,toggleGrid11,toggleGrid12);
 
         // Initialise "Quiz" tab
 
@@ -151,9 +230,11 @@ public class VARpediaController implements Initializable {
         if (VARpedia.isDark) {
             btnLightTheme.setSelected(false);
             btnDarkTheme.setSelected(true);
+            css = getClass().getResource("../../resources/css/dark.css").toExternalForm();
         } else {
             btnLightTheme.setSelected(true);
             btnDarkTheme.setSelected(false);
+            css = getClass().getResource("../../resources/css/light.css").toExternalForm();
         }
     }
 
@@ -172,11 +253,7 @@ public class VARpediaController implements Initializable {
         });
 
         Scene scene = new Scene(root, 1440, 810);
-        if (VARpedia.isDark) {
-            scene.getStylesheets().add(getClass().getResource("../../resources/css/dark.css").toExternalForm());
-        } else {
-            scene.getStylesheets().add(getClass().getResource("../../resources/css/light.css").toExternalForm());
-        }
+        scene.getStylesheets().add(css);
         VARpedia.primaryStage.setScene(scene);
         VARpedia.primaryStage.show();
     }
@@ -220,7 +297,8 @@ public class VARpediaController implements Initializable {
             btnDarkTheme.setSelected(false);
             VARpedia.primaryStage.getScene().getStylesheets().clear();
             VARpedia.primaryStage.getScene().setUserAgentStylesheet(null);
-            VARpedia.primaryStage.getScene().getStylesheets().add(getClass().getResource("../../resources/css/light.css").toExternalForm());
+            css = getClass().getResource("../../resources/css/light.css").toExternalForm();
+            VARpedia.primaryStage.getScene().getStylesheets().add(css);
         }
     }
 
@@ -234,7 +312,8 @@ public class VARpediaController implements Initializable {
             btnLightTheme.setSelected(false);
             VARpedia.primaryStage.getScene().getStylesheets().clear();
             VARpedia.primaryStage.getScene().setUserAgentStylesheet(null);
-            VARpedia.primaryStage.getScene().getStylesheets().add(getClass().getResource("../../resources/css/dark.css").toExternalForm());
+            css = getClass().getResource("../../resources/css/dark.css").toExternalForm();
+            VARpedia.primaryStage.getScene().getStylesheets().add(css);
         }
     }
 
@@ -245,7 +324,20 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnDeleteCreationClicked(ActionEvent event) {
-
+        if (listCreations.getSelectionModel().getSelectedItem() != null) {
+            // Confirm if user wants to delete Creation
+            String vid = listCreations.getSelectionModel().getSelectedItem();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete \"" + vid + "\"?", btnYes, btnNo);
+            alert.setTitle("Delete Creation");
+            alert.getDialogPane().getStylesheets().add(css);
+            alert.setHeaderText("Delete Creation");
+            alert.setGraphic(null);
+            alert.initStyle(StageStyle.UNDECORATED);
+            alert.setResizable(false);
+            if (alert.showAndWait().get() == btnYes) {
+                new File(CREATIONS.toString() + System.getProperty("file.separator") + vid + ".mp4").delete();
+            }
+        }
     }
 
     @FXML
@@ -275,6 +367,10 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnSearchClicked(ActionEvent event) {
+        // Clean up for new search
+        deleteDirectory(TEMP);
+        deleteDirectory(CHUNKS);
+
         String query = txtSearch.getText().trim().toLowerCase();
         if (!query.isEmpty()) {
             WikitTask bgWikit = new WikitTask(query);
@@ -283,6 +379,11 @@ public class VARpediaController implements Initializable {
             txaResults.setEditable(false);
             btnSearch.setDisable(true);
             ringSearch.setVisible(true);
+
+            FlickrTask bgFlickr = new FlickrTask(query);
+            bg.submit(bgFlickr);
+            btnCreateCreation.setDisable(true);
+            ringCombine.setVisible(true);
 
             bgWikit.setOnSucceeded(e -> {
                 btnSearch.setDisable(false);
@@ -310,6 +411,13 @@ public class VARpediaController implements Initializable {
                     txaResults.requestFocus();
                     txaResults.positionCaret(0);
                 }
+            });
+
+            bgFlickr.setOnSucceeded(e -> {
+                btnCreateCreation.setDisable(false);
+                ringCombine.setVisible(false);
+
+                //imgGrid1 = new ImageView(getClass().getResource(TEMP.toString() + "/" + query + "-1.jpg").toExternalForm());
             });
         }
     }
@@ -365,17 +473,17 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void txtChunkEnter(ActionEvent event) {
-        btnCreateChunkClicked(event);
+        btnCreateChunk.fire();
     }
 
     @FXML
     void txtCreationEnter(ActionEvent event) {
-        btnCreateCreationClicked(event);
+        btnCreateCreation.fire();
     }
 
     @FXML
     void txtSearchEnter(ActionEvent event) {
-        btnSearchClicked(event);
+        btnSearch.fire();
     }
 
 }
