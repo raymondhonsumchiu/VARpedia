@@ -8,6 +8,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.StageStyle;
@@ -416,6 +417,14 @@ public class VARpediaController implements Initializable {
             bgFlickr.setOnSucceeded(e -> {
                 btnCreateCreation.setDisable(false);
                 ringCombine.setVisible(false);
+
+                int imgCount = 1;
+                for (ImageView imgView: gridImages){
+                    File file = new File(TEMP.toString() + "/" + query + "-" + imgCount + ".jpg");
+                    Image image = new Image(file.toURI().toString());
+                    imgView.setImage(image);
+                    imgCount++;
+                }
 
                 //imgGrid1 = new ImageView(getClass().getResource(TEMP.toString() + "/" + query + "-1.jpg").toExternalForm());
             });
