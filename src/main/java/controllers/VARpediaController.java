@@ -255,7 +255,10 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnAddChunkClicked(ActionEvent event) {
-
+        String chunkToAdd = listAllChunks.getSelectionModel().getSelectedItem();
+        if(chunkToAdd != null){
+            listSelectedChunks.getItems().add(chunkToAdd);
+        }
     }
 
     @FXML
@@ -280,7 +283,8 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnClearChunksClicked(ActionEvent event) {
-
+        //clear all selected items
+        listSelectedChunks.getItems().clear();
     }
 
     @FXML
@@ -344,7 +348,10 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnDeleteChunkClicked(ActionEvent event) {
-
+        if(listAllChunks.getSelectionModel().getSelectedItem() != null){
+            int index = listAllChunks.getSelectionModel().getSelectedIndex();
+            listAllChunks.getItems().remove(index);
+        }
     }
 
     @FXML
@@ -392,7 +399,11 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnRemoveChunkClicked(ActionEvent event) {
-
+        //if an item is selected, it will be removed
+        if(listSelectedChunks.getSelectionModel().getSelectedItem() != null){
+            int index = listSelectedChunks.getSelectionModel().getSelectedIndex();
+            listSelectedChunks.getItems().remove(index);
+        }
     }
 
     @FXML
