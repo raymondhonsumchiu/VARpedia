@@ -54,10 +54,14 @@ BUTTON, TOGGLE BUTTON, COMBO BOX
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-pref-width: 67px;
-    -fx-pref-height: 50px;
 }
 .button-long {
     -fx-pref-width: 320px;
+}
+.button-media {
+    -fx-pref-width: 60px;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
 }
 .button-window {
     -fx-font-size: 12px;

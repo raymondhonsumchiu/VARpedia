@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.media.MediaView;
 import javafx.stage.StageStyle;
 import main.java.VARpedia;
 import main.java.skins.progressindicator.RingProgressIndicator;
@@ -177,6 +178,9 @@ public class VARpediaController implements Initializable {
     private TextArea txaResults;
 
     @FXML
+    private MediaView medPlayCreation;
+
+    @FXML
     private RingProgressIndicator ringSearch;
 
     @FXML
@@ -236,6 +240,11 @@ public class VARpediaController implements Initializable {
             btnDarkTheme.setSelected(false);
             css = getClass().getResource("../../resources/css/light.css").toExternalForm();
         }
+    }
+
+    @FXML
+    void btnAddChunkClicked(ActionEvent event) {
+
     }
 
     @FXML
@@ -362,6 +371,11 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnPreviewCreationClicked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnRemoveChunkClicked(ActionEvent event) {
 
     }
 
