@@ -1,6 +1,7 @@
 package main.java.controllers;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -32,6 +33,8 @@ public class VARpediaController implements Initializable {
     private String css;
     private List<ImageView> gridImages;
     private List<ToggleButton> gridToggles;
+    private ObservableList<String> chunksList = FXCollections.observableArrayList();
+    private ObservableList<String> actualChunksList = FXCollections.observableArrayList();
 
     @FXML
     private TabPane tabMain;
@@ -214,18 +217,25 @@ public class VARpediaController implements Initializable {
             }
         }
 
-        // Initialise "Search" tab
+        // Initialise "Search" tab------
         txaResults.setEditable(false);
         ringSearch.setVisible(false);
 
-        // Initialise "Combine" tab
+        //set listview of chunks to observe the arraylist of chunks
+        listChunksSearch.setItems(chunksList);
+
+        // Initialise "Combine" tab------
         ringCombine.setVisible(false);
         gridImages = new ArrayList<>();
         gridToggles = new ArrayList<>();
         Collections.addAll(gridImages,imgGrid1,imgGrid2,imgGrid3,imgGrid4,imgGrid5,imgGrid6,imgGrid7,imgGrid8,imgGrid9,imgGrid10,imgGrid11,imgGrid12);
         Collections.addAll(gridToggles,toggleGrid1,toggleGrid2,toggleGrid3,toggleGrid4,toggleGrid5,toggleGrid5,toggleGrid6,toggleGrid7,toggleGrid8,toggleGrid8,toggleGrid9,toggleGrid10,toggleGrid11,toggleGrid12);
 
-        // Initialise "Quiz" tab
+        //set listview of all available chunks to same arraylist of chunks as prior chunk listview
+        listAllChunks.setItems(chunksList);
+        listSelectedChunks.setItems(actualChunksList);
+
+        // Initialise "Quiz" tab-------
 
         // Initialise "Options" tab
         if (VARpedia.isDark) {
@@ -281,6 +291,11 @@ public class VARpediaController implements Initializable {
     @FXML
     void btnCreateChunkClicked(ActionEvent event) {
 
+        //PLace holder for chunk creation
+        //this list will house the names of all the chunks that will be displayed by the chunk listviews
+        //ideally these following lines will be kept, just swapping the name of the chunk
+        chunksList.add("Hello!");
+        Collections.sort(chunksList);
     }
 
     @FXML
@@ -418,6 +433,7 @@ public class VARpediaController implements Initializable {
                 btnCreateCreation.setDisable(false);
                 ringCombine.setVisible(false);
 
+                //once all images are downloaded, we place each into the image grid
                 int imgCount = 1;
                 for (ImageView imgView: gridImages){
                     File file = new File(TEMP.toString() + "/" + query + "-" + imgCount + ".jpg");
