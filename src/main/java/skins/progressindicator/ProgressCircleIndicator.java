@@ -12,6 +12,9 @@ package main.java.skins.progressindicator;/*
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * NOTICE OF MODIFICATION FOR "VARPEDIA" PROJECT:
+ * CHANGED IMPORT STATEMENT ON LINE 20 FOR JAVAFX !3
  */
 
 import javafx.beans.property.*;
@@ -27,7 +30,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Base class for the progress indicator controls represented by circualr shapes
+ * Base class for the progress indicator controls represented by circular shapes
  * 
  * @author Andrea Vacondio
  *

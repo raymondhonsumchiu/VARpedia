@@ -1,3 +1,8 @@
+/**
+NOTICE OF MODIFICATION FOR "VARPEDIA" PROJECT:
+CHANGED VALUES FOR WIDTH AND RADIUS
+**/
+
 .ringindicator{
 	-fx-ring-width: 5.0;
 	-fx-inner-radius: 20.0;
