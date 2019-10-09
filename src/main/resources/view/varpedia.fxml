@@ -108,10 +108,11 @@
                                           <Insets left="5.0" />
                                        </HBox.margin>
                                     </Label>
-                                    <ImageView id="image-view-volume" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
-                                       <HBox.margin>
-                                          <Insets left="5.0" right="5.0" />
-                                       </HBox.margin></ImageView>
+                                    <Button mnemonicParsing="false" onAction="#btnMuteClicked" styleClass="button-media">
+                                       <graphic>
+                                          <ImageView id="image-view-volume" fx:id="imgVolume" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media" />
+                                       </graphic>
+                                    </Button>
                                     <StackPane prefWidth="100.0">
                                        <children>
                                           <ProgressBar fx:id="progressVol" prefWidth="100.0" progress="0.0" styleClass="progress-slider" />

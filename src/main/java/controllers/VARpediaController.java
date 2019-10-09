@@ -166,6 +166,9 @@ public class VARpediaController implements Initializable {
     private ImageView imgPlayPause;
 
     @FXML
+    private ImageView imgVolume;
+
+    @FXML
     private Button btnPreviewCreation;
 
     @FXML
@@ -449,10 +452,16 @@ public class VARpediaController implements Initializable {
     }
 
     private String currentlyPlaying;
+    private boolean mute;
+    private double volume;
     @FXML
     void btnPlayCreationClicked(ActionEvent event) {
         if (listCreations.getSelectionModel().getSelectedItem() != null) {
             currentlyPlaying = listCreations.getSelectionModel().getSelectedItem();
+            imgVolume.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            mute = false;
+            volume = 100;
+
             Media video = new Media(CREATIONS.toURI().toString() + currentlyPlaying + ".mp4");
             mp = new MediaPlayer(video);
             mvPlayCreation.setMediaPlayer(mp);
@@ -609,6 +618,22 @@ public class VARpediaController implements Initializable {
             } else {
                 mp.seek(duration);
             }
+        }
+    }
+
+    @FXML
+    void btnMuteClicked(ActionEvent event) {
+        if (!mute) {
+            volume = sliderVol.getValue();
+            sliderVol.setValue(0);
+            imgVolume.setImage(new Image(new File(ICONS.toString() + "/mute-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            mp.setVolume(0);
+            mute = true;
+        } else {
+            sliderVol.setValue(volume);
+            imgVolume.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            mp.setVolume(volume / 100.0);
+            mute = false;
         }
     }
 
