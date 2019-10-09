@@ -43,7 +43,7 @@ public class VARpedia extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception{
         VARpedia.primaryStage = primaryStage;
-        Parent root = FXMLLoader.load(getClass().getResource("../resources/view/varpedia.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("../resources/view/welcome.fxml"));
         primaryStage.initStyle(StageStyle.UNDECORATED);
         primaryStage.setResizable(false);
 

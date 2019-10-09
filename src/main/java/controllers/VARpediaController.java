@@ -16,6 +16,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
@@ -43,7 +44,7 @@ public class VARpediaController implements Initializable {
     private String css;
     private MediaPlayer mp;
     private Duration duration;
-    private List<ImageView> gridImages;
+    private List<ImageView> gridImageViews;
     private List<ToggleButton> gridToggles;
     private ObservableList<String> chunksList = FXCollections.observableArrayList();
     private ObservableList<String> actualChunksList = FXCollections.observableArrayList();
@@ -85,10 +86,19 @@ public class VARpediaController implements Initializable {
     private Button btnDeleteChunk;
 
     @FXML
+    private Button btnAddChunk;
+
+    @FXML
+    private Button btnRemoveChunk;
+
+    @FXML
     private ListView<String> listSelectedChunks;
 
     @FXML
     private Button btnClearChunks;
+
+    @FXML
+    private GridPane gridImages;
 
     @FXML
     private ToggleButton toggleGrid1;
@@ -243,13 +253,16 @@ public class VARpediaController implements Initializable {
     @FXML
     private RingProgressIndicator ringCombine;
 
+    @FXML
+    private RingProgressIndicator ringImages;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Clean up
         deleteDirectory(CHUNKS);
         deleteDirectory(TEMP);
 
-        // Initialise "Creations" tab
+        // ----------- Initialise "Creations" tab ----------
         mediaToolbar.setVisible(false);
         if (CREATIONS.exists()) {
             // Find and list all creations using bash
@@ -281,7 +294,7 @@ public class VARpediaController implements Initializable {
             }
         });
         tabMain.addEventFilter(KeyEvent.KEY_PRESSED, event->{
-            if (event.getCode() == KeyCode.SPACE) {
+            if (event.getCode() == KeyCode.SPACE && tabMain.getSelectionModel().getSelectedIndex() == 0) {
                 if (mp != null) {
                     if (mp.getStatus() == MediaPlayer.Status.PAUSED) {
                         mp.play();
@@ -295,27 +308,29 @@ public class VARpediaController implements Initializable {
         btnForward.addEventFilter(KeyEvent.ANY, Event::consume);
         btnReverse.addEventFilter(KeyEvent.ANY, Event::consume);
 
-        // Initialise "Search" tab------
+        // ---------- Initialise "Search" tab -----------
         txaResults.setEditable(false);
         ringSearch.setVisible(false);
 
-        //set listview of chunks to observe the arraylist of chunks
+        // set listview of chunks to observe the arraylist of chunks
         listChunksSearch.setItems(chunksList);
 
-        // Initialise "Combine" tab------
+        // ---------- Initialise "Combine" tab -----------
         ringCombine.setVisible(false);
-        gridImages = new ArrayList<>();
+        gridImageViews = new ArrayList<>();
         gridToggles = new ArrayList<>();
-        Collections.addAll(gridImages,imgGrid1,imgGrid2,imgGrid3,imgGrid4,imgGrid5,imgGrid6,imgGrid7,imgGrid8,imgGrid9,imgGrid10,imgGrid11,imgGrid12);
+        Collections.addAll(gridImageViews,imgGrid1,imgGrid2,imgGrid3,imgGrid4,imgGrid5,imgGrid6,imgGrid7,imgGrid8,imgGrid9,imgGrid10,imgGrid11,imgGrid12);
         Collections.addAll(gridToggles,toggleGrid1,toggleGrid2,toggleGrid3,toggleGrid4,toggleGrid5,toggleGrid5,toggleGrid6,toggleGrid7,toggleGrid8,toggleGrid8,toggleGrid9,toggleGrid10,toggleGrid11,toggleGrid12);
+        gridImages.setVisible(false);
+        ringImages.setVisible(false);
 
-        //set listview of all available chunks to same arraylist of chunks as prior chunk listview
+        // set listview of all available chunks to same arraylist of chunks as prior chunk listview
         listAllChunks.setItems(chunksList);
         listSelectedChunks.setItems(actualChunksList);
 
-        // Initialise "Quiz" tab-------
+        // ---------- Initialise "Quiz" tab ----------
 
-        // Initialise "Options" tab
+        // ---------- Initialise "Options" tab ----------
         if (VARpedia.isDark) {
             btnLightTheme.setSelected(false);
             btnDarkTheme.setSelected(true);
@@ -458,6 +473,7 @@ public class VARpediaController implements Initializable {
         VARpedia.primaryStage.setIconified(true);
     }
 
+    // THIS REGION HANDLES THE MEDIA PLAYER
     private String currentlyPlaying;
     private boolean mute;
     private double volume;
@@ -671,19 +687,28 @@ public class VARpediaController implements Initializable {
 
         String query = txtSearch.getText().trim().toLowerCase();
         if (!query.isEmpty()) {
+
+            // Multithreading - search Wikit for query
             WikitTask bgWikit = new WikitTask(query);
             bg.submit(bgWikit);
+
+            // Lock controls, reveal loading ring
             txaResults.clear();
             txaResults.setEditable(false);
             btnSearch.setDisable(true);
             ringSearch.setVisible(true);
 
+            // Multithreading - search Flickr API for images
             FlickrTask bgFlickr = new FlickrTask(query);
             bg.submit(bgFlickr);
+
+            // Lock controls, reveal loading ring
             btnCreateCreation.setDisable(true);
-            ringCombine.setVisible(true);
+            gridImages.setVisible(false);
+            ringImages.setVisible(true);
 
             bgWikit.setOnSucceeded(e -> {
+                // Unlock controls, hide loading ring
                 btnSearch.setDisable(false);
                 ringSearch.setVisible(false);
                 txaResults.setStyle("-fx-text-fill: font-color;");
@@ -712,12 +737,14 @@ public class VARpediaController implements Initializable {
             });
 
             bgFlickr.setOnSucceeded(e -> {
+                // Unlock controls, hide loading ring
                 btnCreateCreation.setDisable(false);
-                ringCombine.setVisible(false);
+                gridImages.setVisible(true);
+                ringImages.setVisible(false);
 
                 // Once all images are downloaded, we place each into the image grid
                 int imgCount = 1;
-                for (ImageView imgView: gridImages){
+                for (ImageView imgView: gridImageViews){
                     File file = new File(TEMP.toString() + "/" + query + "-" + imgCount + ".jpg");
                     Image image = new Image(file.toURI().toString());
                     imgView.setImage(image);
@@ -729,17 +756,15 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void listAllChunksClicked(MouseEvent event) {
-        String chunk;
         if (event.getClickCount() == 2) {
-            chunk = listCreations.getSelectionModel().getSelectedItem();
+            btnAddChunk.fire();
         }
     }
 
     @FXML
     void listChunksSearchClicked(MouseEvent event) {
-        String chunk;
         if (event.getClickCount() == 2) {
-            chunk = listCreations.getSelectionModel().getSelectedItem();
+            btnSearchPreviewChunk.fire();
         }
     }
 
@@ -752,9 +777,8 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void listSelectedChunksClicked(MouseEvent event) {
-        String chunk;
         if (event.getClickCount() == 2) {
-            chunk = listCreations.getSelectionModel().getSelectedItem();
+            btnRemoveChunk.fire();
         }
     }
 
