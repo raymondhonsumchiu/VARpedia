@@ -48,7 +48,7 @@ public class CombineTask extends Task<Void> {
 
         // Create video slideshow
         double frameRate = numImages == 1 ? 1 : numImages / length;
-        String vidCmd = "cat *.jpg | ffmpeg -f image2pipe -framerate " + frameRate + " -i - -t " + length + " -c:v libx264 -pix_fmt yuv420p -vf \"scale=560:480\" -r 25 -max_muxing_queue_size 1024 -y temp.mp4";
+        String vidCmd = "cat *.jpg | ffmpeg -f image2pipe -framerate " + frameRate + " -i - -t " + length + " -c:v libx264 -pix_fmt yuv420p -vf \"scale=735:630\" -r 25 -max_muxing_queue_size 1024 -y temp.mp4";
         ProcessBuilder b7 = new ProcessBuilder("/bin/bash", "-c", vidCmd);
         b7.directory(TEMP);
         Process p7 = b7.start();
