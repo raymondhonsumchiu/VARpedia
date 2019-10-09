@@ -63,7 +63,7 @@ BUTTON, TOGGLE BUTTON, COMBO BOX
     -fx-pref-width: 320px;
 }
 .button-media {
-    -fx-pref-width: 60px;
+    -fx-pref-width: 50px;
     -fx-background-color: transparent;
     -fx-border-color: transparent;
 }

@@ -71,28 +71,28 @@
                                     <Insets />
                                  </VBox.margin>
                               </Pane>
-                              <HBox fx:id="mediaToolbar" alignment="CENTER_LEFT" prefHeight="55.0" prefWidth="200.0">
+                              <HBox fx:id="mediaToolbar" alignment="CENTER_LEFT" prefHeight="55.0" prefWidth="200.0" spacing="5.0">
                                  <children>
-                                    <Button mnemonicParsing="false" onAction="#btnReverseClicked" prefHeight="50.0" prefWidth="60.0" styleClass="button-media">
+                                    <Button fx:id="btnReverse" mnemonicParsing="false" onAction="#btnReverseClicked" styleClass="button-media">
                                        <graphic>
-                                          <ImageView id="image-view-back" fitHeight="40.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true" rotate="180.0" styleClass="image-view-media" />
+                                          <ImageView id="image-view-back" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" rotate="180.0" styleClass="image-view-media" />
                                        </graphic>
                                     </Button>
-                                    <Button layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnPlayPauseClicked" prefHeight="50.0" prefWidth="60.0" styleClass="button-media">
+                                    <Button fx:id="btnPlayPause" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnPlayPauseClicked" styleClass="button-media">
                                        <graphic>
-                                          <ImageView id="image-view-play-pause" fx:id="imgPlayPause" fitHeight="40.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media">
+                                          <ImageView id="image-view-play-pause" fx:id="imgPlayPause" fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media">
                                              <image>
                                                 <Image url="@../images" />
                                              </image>
                                           </ImageView>
                                        </graphic>
                                     </Button>
-                                    <Button layoutX="70.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnForwardClicked" prefHeight="50.0" prefWidth="60.0" styleClass="button-media">
+                                    <Button fx:id="btnForward" layoutX="70.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnForwardClicked" styleClass="button-media">
                                        <graphic>
-                                          <ImageView id="image-view-forward" fitHeight="40.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media" />
+                                          <ImageView id="image-view-forward" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media" />
                                        </graphic>
                                     </Button>
-                                    <Label fx:id="lblCurrentTime" alignment="CENTER_RIGHT" prefWidth="83.0">
+                                    <Label fx:id="lblCurrentTime" alignment="CENTER_RIGHT" prefWidth="85.0">
                                        <HBox.margin>
                                           <Insets right="5.0" />
                                        </HBox.margin>
@@ -103,14 +103,14 @@
                                           <Slider fx:id="sliderProgress" onDragDetected="#sliderCreationDragged" styleClass="slider-progress" />
                                        </children>
                                     </StackPane>
-                                    <Label fx:id="lblTotalTime" prefWidth="83.0">
+                                    <Label fx:id="lblTotalTime" prefWidth="85.0">
                                        <HBox.margin>
                                           <Insets left="5.0" />
                                        </HBox.margin>
                                     </Label>
-                                    <ImageView id="image-view-volume" fitHeight="40.0" fitWidth="42.0" pickOnBounds="true" preserveRatio="true">
+                                    <ImageView id="image-view-volume" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
                                        <HBox.margin>
-                                          <Insets left="5.0" right="9.0" />
+                                          <Insets left="5.0" right="5.0" />
                                        </HBox.margin></ImageView>
                                     <StackPane prefWidth="100.0">
                                        <children>
@@ -119,6 +119,9 @@
                                        </children>
                                     </StackPane>
                                  </children>
+                                 <padding>
+                                    <Insets top="5.0" />
+                                 </padding>
                               </HBox>
                            </children>
                            <BorderPane.margin>

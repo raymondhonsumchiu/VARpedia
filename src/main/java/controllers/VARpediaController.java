@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -12,6 +13,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -205,6 +208,15 @@ public class VARpediaController implements Initializable {
     private Button btnPlayCreation;
 
     @FXML
+    private Button btnPlayPause;
+
+    @FXML
+    private Button btnForward;
+
+    @FXML
+    private Button btnReverse;
+
+    @FXML
     private Label lblCurrentTime;
 
     @FXML
@@ -261,7 +273,24 @@ public class VARpediaController implements Initializable {
         }
         tabMain.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             if (mp != null) { mp.pause();} // Pause media player on tab change
+            if (tabMain.getSelectionModel().getSelectedIndex() == 0) {
+                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/play-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            }
         });
+        tabMain.addEventFilter(KeyEvent.KEY_PRESSED, event->{
+            if (event.getCode() == KeyCode.SPACE) {
+                if (mp != null) {
+                    if (mp.getStatus() == MediaPlayer.Status.PAUSED) {
+                        mp.play();
+                    } else {
+                        mp.pause();
+                    }
+                }
+            }
+        });
+        btnPlayPause.addEventFilter(KeyEvent.ANY, Event::consume);
+        btnForward.addEventFilter(KeyEvent.ANY, Event::consume);
+        btnReverse.addEventFilter(KeyEvent.ANY, Event::consume);
 
         // Initialise "Search" tab------
         txaResults.setEditable(false);
@@ -368,7 +397,6 @@ public class VARpediaController implements Initializable {
             VARpedia.primaryStage.getScene().setUserAgentStylesheet(null);
             css = getClass().getResource("../../resources/css/light.css").toExternalForm();
             VARpedia.primaryStage.getScene().getStylesheets().add(css);
-            //imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/" + (mp.getStatus() == MediaPlayer.Status.PAUSED ? "play" : "pause") + "-light.png").toURI().toString()));
         }
     }
 
@@ -384,7 +412,6 @@ public class VARpediaController implements Initializable {
             VARpedia.primaryStage.getScene().setUserAgentStylesheet(null);
             css = getClass().getResource("../../resources/css/dark.css").toExternalForm();
             VARpedia.primaryStage.getScene().getStylesheets().add(css);
-            //imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/" + (mp.getStatus() == MediaPlayer.Status.PAUSED ? "play" : "pause") + "-dark.png").toURI().toString()));
         }
     }
 
@@ -460,7 +487,8 @@ public class VARpediaController implements Initializable {
             });
 
             mp.setOnEndOfMedia(() -> {
-                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/play-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+                mp.stop();
+                mp.pause();
             });
         }
     }
