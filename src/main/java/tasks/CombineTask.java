@@ -13,12 +13,14 @@ public class CombineTask extends Task<Void> {
     private String name, query;
     private List<String> chunkList;
     private int numImages;
+    private List<String> listImages;
 
-    public CombineTask(String name, String query, List<String> chunkList, int numImages) {
+    public CombineTask(String name, String query, List<String> chunkList, List<String> listImages) {
         this.name = name;
         this.query = query;
         this.chunkList = chunkList;
-        this.numImages = numImages;
+        this.listImages = listImages;
+        this.numImages = listImages.size();
     }
 
     @Override
@@ -26,6 +28,14 @@ public class CombineTask extends Task<Void> {
 
         CHUNKS.mkdirs();
         CREATIONS.mkdirs();
+        TEMPIMGS.mkdirs();
+
+        //move a copy of all selected images to a new directory
+        for (String img: listImages) {
+            ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "cp " + TEMP.toString() + img + " " + TEMPIMGS.toString() + img);
+            Process p1 = b1.start();
+            p1.waitFor();
+        }
 
         // Combine audio chunks
         String chunkString = "";
@@ -46,11 +56,11 @@ public class CombineTask extends Task<Void> {
         BufferedReader stdout6 = new BufferedReader(new InputStreamReader(out6));
         double length = Double.parseDouble(stdout6.readLine());
 
-        // Create video slideshow
+        // Create video slideshow and send output to TEMP
         double frameRate = numImages == 1 ? 1 : numImages / length;
-        String vidCmd = "cat *.jpg | ffmpeg -f image2pipe -framerate " + frameRate + " -i - -t " + length + " -c:v libx264 -pix_fmt yuv420p -vf \"scale=560:480\" -r 25 -max_muxing_queue_size 1024 -y temp.mp4";
+        String vidCmd = "cat *.jpg | ffmpeg -f image2pipe -framerate " + frameRate + " -i - -t " + length + " -c:v libx264 -pix_fmt yuv420p -vf \"scale=560:480\" -r 25 -max_muxing_queue_size 1024 -y " + TEMP.toString() + "/" + "temp.mp4";
         ProcessBuilder b7 = new ProcessBuilder("/bin/bash", "-c", vidCmd);
-        b7.directory(TEMP);
+        b7.directory(TEMPIMGS);
         Process p7 = b7.start();
         p7.waitFor();
 

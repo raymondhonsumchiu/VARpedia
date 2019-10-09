@@ -36,6 +36,7 @@ public class VARpediaController implements Initializable {
     private List<ToggleButton> gridToggles;
     private ObservableList<String> chunksList = FXCollections.observableArrayList();
     private ObservableList<String> actualChunksList = FXCollections.observableArrayList();
+    private ArrayList<String> selectedImgs;
 
     @FXML
     private TabPane tabMain;
@@ -192,6 +193,8 @@ public class VARpediaController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        selectedImgs = new ArrayList<String>();
+
         // Clean up
         deleteDirectory(CHUNKS);
         deleteDirectory(TEMP);
@@ -233,7 +236,7 @@ public class VARpediaController implements Initializable {
         gridImages = new ArrayList<>();
         gridToggles = new ArrayList<>();
         Collections.addAll(gridImages,imgGrid1,imgGrid2,imgGrid3,imgGrid4,imgGrid5,imgGrid6,imgGrid7,imgGrid8,imgGrid9,imgGrid10,imgGrid11,imgGrid12);
-        Collections.addAll(gridToggles,toggleGrid1,toggleGrid2,toggleGrid3,toggleGrid4,toggleGrid5,toggleGrid5,toggleGrid6,toggleGrid7,toggleGrid8,toggleGrid8,toggleGrid9,toggleGrid10,toggleGrid11,toggleGrid12);
+        Collections.addAll(gridToggles,toggleGrid1,toggleGrid2,toggleGrid3,toggleGrid4,toggleGrid5,toggleGrid6,toggleGrid7,toggleGrid8,toggleGrid9,toggleGrid10,toggleGrid11,toggleGrid12);
 
         //set listview of all available chunks to same arraylist of chunks as prior chunk listview
         listAllChunks.setItems(chunksList);
@@ -313,7 +316,44 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnCreateCreationClicked(ActionEvent event) {
+        //add error checks here:
 
+
+        //-------------------
+        //TEMPIMGS.mkdir();
+        //obtain all selected images
+        ArrayList<String> selectedImgs = new ArrayList<String>();
+        int index = 0;
+        for(ToggleButton imgButton: gridToggles){
+            if (imgButton.isSelected()){
+                String img = this.selectedImgs.get(index);
+                selectedImgs.add(img);
+            }
+            index++;
+        }
+
+        //check if all imgs correct
+        for(String path: selectedImgs){
+            System.out.println(path);
+        }
+
+        //------------testing purposes, will be in bg task-------
+//        TEMPIMGS.mkdir();
+//        for (String img: selectedImgs) {
+//            ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "cp " + TEMP.toString() + img + " " + TEMPIMGS.toString() + img);
+//            Process p1 = null;
+//            try {
+//                p1 = b1.start();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            try {
+//                p1.waitFor();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+        //----------------------------------------------
     }
 
     @FXML
@@ -461,9 +501,13 @@ public class VARpediaController implements Initializable {
                 //once all images are downloaded, we place each into the image grid
                 int imgCount = 1;
                 for (ImageView imgView: gridImages){
+                    //set each image
                     File file = new File(TEMP.toString() + "/" + query + "-" + imgCount + ".jpg");
                     Image image = new Image(file.toURI().toString());
                     imgView.setImage(image);
+
+                    //add image path to arraylist so it can be extracted later for creation
+                    selectedImgs.add( "/" + query + "-" + imgCount + ".jpg");
                     imgCount++;
                 }
 
