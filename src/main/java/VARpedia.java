@@ -36,6 +36,7 @@ public class VARpedia extends Application {
     public static final File TEMP = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "temp");
     public static final File TEMPIMGS = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "tempImages");
     public static final File CHUNKS = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "chunks");
+    public static final File ICONS = new File(System.getProperty("user.dir") + "/src/main/resources/images");
     public static final ExecutorService bg = Executors.newFixedThreadPool(3);
     public static ButtonType btnYes = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
     public static ButtonType btnNo = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -43,7 +44,7 @@ public class VARpedia extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception{
         VARpedia.primaryStage = primaryStage;
-        Parent root = FXMLLoader.load(getClass().getResource("../resources/view/welcome.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("../resources/view/varpedia.fxml"));
         primaryStage.initStyle(StageStyle.UNDECORATED);
         primaryStage.setResizable(false);
 

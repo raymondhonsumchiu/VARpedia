@@ -1,8 +1,10 @@
 package main.java.controllers;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -11,9 +13,16 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 import main.java.VARpedia;
 import main.java.skins.progressindicator.RingProgressIndicator;
 import main.java.tasks.FlickrTask;
@@ -32,6 +41,8 @@ public class VARpediaController implements Initializable {
     private double xOffset = 0;
     private double yOffset = 0;
     private String css;
+    private MediaPlayer mp;
+    private Duration duration;
     private List<ImageView> gridImages;
     private List<ToggleButton> gridToggles;
     private ObservableList<String> chunksList = FXCollections.observableArrayList();
@@ -153,6 +164,12 @@ public class VARpediaController implements Initializable {
     private ImageView imgGrid12;
 
     @FXML
+    private ImageView imgPlayPause;
+
+    @FXML
+    private ImageView imgVolume;
+
+    @FXML
     private Button btnPreviewCreation;
 
     @FXML
@@ -183,7 +200,43 @@ public class VARpediaController implements Initializable {
     private TextArea txaResults;
 
     @FXML
-    private MediaView medPlayCreation;
+    private MediaView mvPlayCreation;
+
+    @FXML
+    private Pane mvPane;
+
+    @FXML
+    private HBox mediaToolbar;
+
+    @FXML
+    private Button btnPlayCreation;
+
+    @FXML
+    private Button btnPlayPause;
+
+    @FXML
+    private Button btnForward;
+
+    @FXML
+    private Button btnReverse;
+
+    @FXML
+    private Label lblCurrentTime;
+
+    @FXML
+    private Label lblTotalTime;
+
+    @FXML
+    private Slider sliderProgress;
+
+    @FXML
+    private ProgressBar progressSlider;
+
+    @FXML
+    private Slider sliderVol;
+
+    @FXML
+    private ProgressBar progressVol;
 
     @FXML
     private RingProgressIndicator ringSearch;
@@ -200,6 +253,7 @@ public class VARpediaController implements Initializable {
         deleteDirectory(TEMP);
 
         // Initialise "Creations" tab
+        mediaToolbar.setVisible(false);
         if (CREATIONS.exists()) {
             // Find and list all creations using bash
             ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "ls *.mp4");
@@ -223,6 +277,26 @@ public class VARpediaController implements Initializable {
                 e.printStackTrace();
             }
         }
+        tabMain.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
+            if (mp != null) { mp.pause();} // Pause media player on tab change
+            if (tabMain.getSelectionModel().getSelectedIndex() == 0) {
+                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/play-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            }
+        });
+        tabMain.addEventFilter(KeyEvent.KEY_PRESSED, event->{
+            if (event.getCode() == KeyCode.SPACE) {
+                if (mp != null) {
+                    if (mp.getStatus() == MediaPlayer.Status.PAUSED) {
+                        mp.play();
+                    } else {
+                        mp.pause();
+                    }
+                }
+            }
+        });
+        btnPlayPause.addEventFilter(KeyEvent.ANY, Event::consume);
+        btnForward.addEventFilter(KeyEvent.ANY, Event::consume);
+        btnReverse.addEventFilter(KeyEvent.ANY, Event::consume);
 
         // Initialise "Search" tab------
         txaResults.setEditable(false);
@@ -266,6 +340,8 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnBackClicked(ActionEvent event) throws IOException {
+        if (mp != null) { mp.stop();}
+
         Parent root = FXMLLoader.load(getClass().getResource("../../resources/view/welcome.fxml"));
 
         root.setOnMousePressed(event1 -> {
@@ -422,9 +498,190 @@ public class VARpediaController implements Initializable {
         VARpedia.primaryStage.setIconified(true);
     }
 
+    private String currentlyPlaying;
+    private boolean mute;
+    private double volume;
     @FXML
     void btnPlayCreationClicked(ActionEvent event) {
+        if (listCreations.getSelectionModel().getSelectedItem() != null) {
+            currentlyPlaying = listCreations.getSelectionModel().getSelectedItem();
+            imgVolume.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            mute = false;
+            volume = 100;
 
+            Media video = new Media(CREATIONS.toURI().toString() + currentlyPlaying + ".mp4");
+            mp = new MediaPlayer(video);
+            mvPlayCreation.setMediaPlayer(mp);
+            mp.setAutoPlay(true);
+            mvPlayCreation.fitWidthProperty().bind(mvPane.widthProperty());
+            mvPlayCreation.fitHeightProperty().bind(mvPane.heightProperty());
+            mvPlayCreation.setPreserveRatio(false);
+
+            mediaToolbar.setVisible(true);
+            progressSlider.progressProperty().bind(sliderProgress.valueProperty().divide(100.0));
+            progressVol.progressProperty().bind(sliderVol.valueProperty().divide(100.0));
+
+            mp.currentTimeProperty().addListener(ov -> updateValues());
+
+            sliderVol.valueProperty().addListener(ov -> {
+                if (sliderVol.isValueChanging()) {
+                    mp.setVolume(sliderVol.getValue() / 100.0);
+                }
+            });
+
+            mp.setOnReady(() -> {
+                duration = mp.getMedia().getDuration();
+                updateValues();
+            });
+
+            mp.setOnPlaying(() -> {
+                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/pause-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            });
+
+            mp.setOnPaused(() -> {
+                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/play-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            });
+
+            mp.setOnEndOfMedia(() -> {
+                mp.stop();
+                mp.pause();
+            });
+        }
+    }
+
+    private void updateValues() {
+        Platform.runLater(() -> {
+            Duration currentTime = mp.getCurrentTime();
+            lblCurrentTime.setText(formatTime(currentTime, duration, false));
+            lblTotalTime.setText(formatTime(currentTime, duration, true));
+            sliderProgress.setDisable(duration.isUnknown());
+            progressSlider.setDisable(duration.isUnknown());
+            if (!sliderProgress.isDisabled() && duration.greaterThan(Duration.ZERO) && !sliderProgress.isValueChanging()) {
+                sliderProgress.setValue(currentTime.toMillis() / duration.toMillis() * 100.0);
+            }
+            if (!sliderVol.isValueChanging()) {
+                sliderVol.setValue((int) Math.round(mp.getVolume() * 100));
+            }
+        });
+    }
+
+    private static String formatTime(Duration elapsed, Duration duration, boolean totalTime) {
+        int intElapsed = (int) Math.floor(elapsed.toSeconds());
+        int elapsedHours = intElapsed / (60 * 60);
+        if (elapsedHours > 0) {
+            intElapsed -= elapsedHours * 60 * 60;
+        }
+        int elapsedMinutes = intElapsed / 60;
+        int elapsedSeconds = intElapsed - elapsedHours * 60 * 60
+                - elapsedMinutes * 60;
+
+        if (duration.greaterThan(Duration.ZERO)) {
+            int intDuration = (int) Math.floor(duration.toSeconds());
+            int durationHours = intDuration / (60 * 60);
+            if (durationHours > 0) {
+                intDuration -= durationHours * 60 * 60;
+            }
+            int durationMinutes = intDuration / 60;
+            int durationSeconds = intDuration - durationHours * 60 * 60
+                    - durationMinutes * 60;
+            if (durationHours > 0) {
+                if (totalTime) {
+                    return String.format("%d:%02d:%02d", durationHours, durationMinutes, durationSeconds);
+                } else {
+                    return String.format("%d:%02d:%02d", elapsedHours, elapsedMinutes, elapsedSeconds);
+                }
+            } else {
+                if (totalTime) {
+                    return String.format("%02d:%02d", durationMinutes, durationSeconds);
+                } else {
+                    return String.format("%02d:%02d", elapsedMinutes, elapsedSeconds);
+                }
+            }
+        } else {
+            if (!totalTime) {
+                if (elapsedHours > 0) {
+                    return String.format("%d:%02d:%02d", elapsedHours,
+                            elapsedMinutes, elapsedSeconds);
+                } else {
+                    return String.format("%02d:%02d", elapsedMinutes,
+                            elapsedSeconds);
+                }
+            } else {
+                return "";
+            }
+        }
+    }
+
+    @FXML
+    void sliderCreationDragged(MouseEvent event) {
+        sliderProgress.valueProperty().addListener(ov -> {
+            if (sliderProgress.isValueChanging()) {
+                // multiply duration by percentage calculated by slider position
+                mp.seek(duration.multiply(sliderProgress.getValue() / 100.0));
+            }
+        });
+    }
+
+    @FXML
+    void btnPlayPauseClicked(ActionEvent event) {
+        if (mp != null) {
+            MediaPlayer.Status status = mp.getStatus();
+
+            if (status == MediaPlayer.Status.UNKNOWN || status == MediaPlayer.Status.HALTED) {
+                // don't do anything in these states
+                return;
+            }
+
+            // rewind the movie if we're sitting at the end
+            if (mp.getCurrentTime().equals(duration)) {
+                listCreations.getSelectionModel().select(currentlyPlaying);
+                btnPlayCreation.fire();
+            } else if (status == MediaPlayer.Status.PAUSED || status == MediaPlayer.Status.READY || status == MediaPlayer.Status.STOPPED) {
+                mp.play();
+            } else {
+                mp.pause();
+            }
+        }
+    }
+
+    @FXML
+    void btnReverseClicked(ActionEvent event) {
+        if (mp != null) {
+            double time = mp.getCurrentTime().toMillis() - duration.toMillis() / 10.0;
+            if (time > 0) {
+                mp.seek(mp.getCurrentTime().subtract(duration.divide(10.0)));
+            } else {
+                mp.seek(mp.getStartTime());
+            }
+        }
+    }
+
+    @FXML
+    void btnForwardClicked(ActionEvent event) {
+        if (mp != null) {
+            double time = mp.getCurrentTime().toMillis() + duration.toMillis() / 10.0;
+            if (time < duration.toMillis()) {
+                mp.seek(mp.getCurrentTime().add(duration.divide(10.0)));
+            } else {
+                mp.seek(duration);
+            }
+        }
+    }
+
+    @FXML
+    void btnMuteClicked(ActionEvent event) {
+        if (!mute) {
+            volume = sliderVol.getValue();
+            sliderVol.setValue(0);
+            imgVolume.setImage(new Image(new File(ICONS.toString() + "/mute-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            mp.setVolume(0);
+            mute = true;
+        } else {
+            sliderVol.setValue(volume);
+            imgVolume.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            mp.setVolume(volume / 100.0);
+            mute = false;
+        }
     }
 
     @FXML
@@ -498,7 +755,7 @@ public class VARpediaController implements Initializable {
                 btnCreateCreation.setDisable(false);
                 ringCombine.setVisible(false);
 
-                //once all images are downloaded, we place each into the image grid
+                // Once all images are downloaded, we place each into the image grid
                 int imgCount = 1;
                 for (ImageView imgView: gridImages){
                     //set each image
@@ -510,8 +767,6 @@ public class VARpediaController implements Initializable {
                     selectedImgs.add( "/" + query + "-" + imgCount + ".jpg");
                     imgCount++;
                 }
-
-                //imgGrid1 = new ImageView(getClass().getResource(TEMP.toString() + "/" + query + "-1.jpg").toExternalForm());
             });
         }
     }
@@ -534,9 +789,8 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void listCreationsClicked(MouseEvent event) {
-        String creation;
         if (event.getClickCount() == 2) {
-            creation = listCreations.getSelectionModel().getSelectedItem();
+            btnPlayCreation.fire();
         }
     }
 
