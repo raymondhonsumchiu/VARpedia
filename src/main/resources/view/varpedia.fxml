@@ -8,6 +8,7 @@
 <?import javafx.scene.media.MediaView?>
 <?import javafx.scene.text.Font?>
 <?import main.java.skins.progressindicator.RingProgressIndicator?>
+<?import java.lang.String?>
 <AnchorPane prefHeight="810.0" prefWidth="1440.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.controllers.VARpediaController">
    <children>
       <TabPane fx:id="tabMain" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseDragged="#tabMainMouseDragged" onMousePressed="#tabMainMousePressed" onMouseReleased="#tabMainMouseReleased" prefHeight="810.0" prefWidth="1440.0" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="30.0" tabMaxWidth="160.0" tabMinHeight="30.0" tabMinWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -501,7 +502,7 @@
                      <center>
                         <StackPane BorderPane.alignment="CENTER">
                            <children>
-                              <VBox fx:id="vQuizTitle" alignment="CENTER" spacing="5.0">
+                              <VBox fx:id="vQuizTitle" alignment="CENTER" spacing="5.0" visible="false">
                                  <children>
                                     <Label styleClass="label-title" text="Guess the term!" />
                                     <Label layoutX="629.0" layoutY="325.0" />
@@ -509,57 +510,63 @@
                                     <Label layoutX="629.0" layoutY="333.0" text="then try to guess the correct word!" />
                                  </children>
                               </VBox>
+                              <VBox fx:id="vQuizError" alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="5.0">
+                                 <children>
+                                    <Label text=":(">
+                                       <styleClass>
+                                          <String fx:value="label-title" />
+                                          <String fx:value="label-error" />
+                                       </styleClass>
+                                    </Label>
+                                    <Label layoutX="629.0" layoutY="325.0" />
+                                    <Label layoutX="672.0" layoutY="325.0" text="No creations found!" />
+                                    <Label layoutX="629.0" layoutY="333.0" text="Please create some first, then try again." />
+                                 </children>
+                              </VBox>
                               <VBox fx:id="vQuizPlayer" alignment="CENTER" visible="false">
                                  <children>
-                                    <VBox>
+                                    <Pane fx:id="mvQuizPane">
                                        <children>
-                                          <Pane fx:id="mvQuizPane">
-                                             <children>
-                                                <MediaView fx:id="mvQuiz" fitHeight="606.0" fitWidth="1420.0" />
-                                             </children>
-                                             <VBox.margin>
-                                                <Insets />
-                                             </VBox.margin>
-                                          </Pane>
-                                          <HBox alignment="CENTER_LEFT" prefHeight="55.0" prefWidth="200.0" spacing="5.0">
-                                             <children>
-                                                <Label fx:id="lblQuizCurrentTime" alignment="CENTER_RIGHT" prefWidth="85.0">
-                                                   <HBox.margin>
-                                                      <Insets right="5.0" />
-                                                   </HBox.margin>
-                                                </Label>
-                                                <StackPane maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
-                                                   <children>
-                                                      <ProgressBar fx:id="progressSliderQuiz" maxWidth="1.7976931348623157E308" progress="0.0" styleClass="progress-slider" />
-                                                      <Slider fx:id="sliderProgressQuiz" maxWidth="1.7976931348623157E308" onDragDetected="#sliderQuizDragged" styleClass="slider-progress" />
-                                                   </children>
-                                                </StackPane>
-                                                <Label fx:id="lblQuizTotalTime" prefWidth="85.0">
-                                                   <HBox.margin>
-                                                      <Insets left="5.0" />
-                                                   </HBox.margin>
-                                                </Label>
-                                                <Button mnemonicParsing="false" onAction="#btnMuteQuizClicked" styleClass="button-media">
-                                                   <graphic>
-                                                      <ImageView id="image-view-volume" fx:id="imgVolumeQuiz" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media" />
-                                                   </graphic>
-                                                </Button>
-                                                <StackPane prefWidth="100.0">
-                                                   <children>
-                                                      <ProgressBar fx:id="progressVolQuiz" prefWidth="100.0" progress="0.0" styleClass="progress-slider" />
-                                                      <Slider fx:id="sliderVolQuiz" prefWidth="100.0" styleClass="slider-progress" />
-                                                   </children>
-                                                </StackPane>
-                                             </children>
-                                             <padding>
-                                                <Insets top="5.0" />
-                                             </padding>
-                                          </HBox>
+                                          <MediaView fx:id="mvQuiz" fitHeight="606.0" fitWidth="1420.0" />
                                        </children>
                                        <VBox.margin>
-                                          <Insets left="5.0" right="5.0" />
+                                          <Insets />
                                        </VBox.margin>
-                                    </VBox>
+                                    </Pane>
+                                    <HBox alignment="CENTER_LEFT" prefHeight="55.0" prefWidth="200.0" spacing="5.0">
+                                       <children>
+                                          <Label fx:id="lblQuizCurrentTime" alignment="CENTER_RIGHT" prefWidth="85.0">
+                                             <HBox.margin>
+                                                <Insets right="5.0" />
+                                             </HBox.margin>
+                                          </Label>
+                                          <StackPane maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                             <children>
+                                                <ProgressBar fx:id="progressSliderQuiz" maxWidth="1.7976931348623157E308" progress="0.0" styleClass="progress-slider" />
+                                                <Slider fx:id="sliderProgressQuiz" maxWidth="1.7976931348623157E308" styleClass="slider-progress" />
+                                             </children>
+                                          </StackPane>
+                                          <Label fx:id="lblQuizTotalTime" prefWidth="85.0">
+                                             <HBox.margin>
+                                                <Insets left="5.0" />
+                                             </HBox.margin>
+                                          </Label>
+                                          <Button mnemonicParsing="false" onAction="#btnMuteQuizClicked" styleClass="button-media">
+                                             <graphic>
+                                                <ImageView id="image-view-volume" fx:id="imgVolumeQuiz" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media" />
+                                             </graphic>
+                                          </Button>
+                                          <StackPane prefWidth="100.0">
+                                             <children>
+                                                <ProgressBar fx:id="progressVolQuiz" prefWidth="100.0" progress="0.0" styleClass="progress-slider" />
+                                                <Slider fx:id="sliderVolQuiz" prefWidth="100.0" styleClass="slider-progress" />
+                                             </children>
+                                          </StackPane>
+                                       </children>
+                                       <padding>
+                                          <Insets top="5.0" />
+                                       </padding>
+                                    </HBox>
                                  </children>
                               </VBox>
                               <VBox fx:id="vQuizTimeOut" alignment="CENTER" spacing="20.0" visible="false">
@@ -581,30 +588,36 @@
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </padding>
                      <top>
-                        <HBox fx:id="hQuizDifficulty" alignment="CENTER_RIGHT" prefHeight="55.0" prefWidth="200.0" spacing="20.0" BorderPane.alignment="CENTER">
+                        <HBox fx:id="hQuizToolbar" alignment="CENTER_RIGHT" prefHeight="55.0" prefWidth="200.0" spacing="20.0" BorderPane.alignment="CENTER">
                            <children>
-                              <HBox alignment="CENTER" spacing="5.0">
+                              <Button fx:id="btnQuizReset" layoutX="1285.0" layoutY="15.0" mnemonicParsing="false" onAction="#btnQuizResetClicked" prefHeight="40.0" prefWidth="150.0" text="Reset" />
+                              <Region maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                              <HBox fx:id="hQuizDifficulty" alignment="CENTER" spacing="20.0">
                                  <children>
-                                    <ToggleButton fx:id="toggleQuizEasy" mnemonicParsing="false" prefHeight="125.0" prefWidth="200.0" text="Easy" />
-                                    <Label styleClass="label-small" text="Video &amp; Audio" />
+                                    <HBox alignment="CENTER" spacing="5.0">
+                                       <children>
+                                          <ToggleButton fx:id="toggleQuizEasy" mnemonicParsing="false" onAction="#toggleQuizEasyClicked" prefHeight="125.0" prefWidth="200.0" text="Easy" />
+                                          <Label styleClass="label-small" text="Video &amp; Audio" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" spacing="5.0">
+                                       <children>
+                                          <ToggleButton fx:id="toggleQuizMedium" mnemonicParsing="false" onAction="#toggleQuizMediumClicked" prefHeight="125.0" prefWidth="200.0" text="Medium" />
+                                          <Label styleClass="label-small" text="Video only" />
+                                       </children>
+                                    </HBox>
+                                    <HBox alignment="CENTER" spacing="5.0">
+                                       <children>
+                                          <ToggleButton fx:id="toggleQuizHard" mnemonicParsing="false" onAction="#toggleQuizHardClicked" prefHeight="125.0" prefWidth="200.0" text="Hard" />
+                                          <Label styleClass="label-small" text="Audio only" />
+                                       </children>
+                                    </HBox>
+                                    <Button fx:id="btnQuizBegin" defaultButton="true" mnemonicParsing="false" onAction="#btnQuizBeginClicked" prefHeight="40.0" prefWidth="150.0" text="Begin" />
                                  </children>
                               </HBox>
-                              <HBox alignment="CENTER" spacing="5.0">
-                                 <children>
-                                    <ToggleButton fx:id="toggleQuizMedium" mnemonicParsing="false" prefHeight="125.0" prefWidth="200.0" text="Medium" />
-                                    <Label styleClass="label-small" text="Video only" />
-                                 </children>
-                              </HBox>
-                              <HBox alignment="CENTER" spacing="5.0">
-                                 <children>
-                                    <ToggleButton fx:id="toggleQuizHard" mnemonicParsing="false" prefHeight="125.0" prefWidth="200.0" text="Hard" />
-                                    <Label styleClass="label-small" text="Audio only" />
-                                 </children>
-                              </HBox>
-                              <Button fx:id="btnQuizBegin" defaultButton="true" mnemonicParsing="false" onAction="#btnQuizBeginClicked" prefHeight="40.0" prefWidth="150.0" text="Begin" />
                            </children>
                            <BorderPane.margin>
-                              <Insets right="5.0" top="5.0" />
+                              <Insets left="5.0" right="5.0" top="5.0" />
                            </BorderPane.margin>
                            <padding>
                               <Insets bottom="5.0" />

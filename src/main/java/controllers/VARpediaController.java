@@ -42,7 +42,7 @@ public class VARpediaController implements Initializable {
     private double xOffset = 0;
     private double yOffset = 0;
     private String css;
-    private MediaPlayer mp;
+    private MediaPlayer playerCreation;
     private Duration duration;
     private List<ImageView> gridImages;
     private List<ToggleButton> gridToggles;
@@ -255,6 +255,9 @@ public class VARpediaController implements Initializable {
     private VBox vQuizTitle;
 
     @FXML
+    private VBox vQuizError;
+
+    @FXML
     private VBox vQuizPlayer;
 
     @FXML
@@ -300,6 +303,9 @@ public class VARpediaController implements Initializable {
     private HBox hQuizDifficulty;
 
     @FXML
+    private HBox hQuizToolbar;
+
+    @FXML
     private ToggleButton toggleQuizEasy;
 
     @FXML
@@ -310,6 +316,9 @@ public class VARpediaController implements Initializable {
 
     @FXML
     private Button btnQuizBegin;
+
+    @FXML
+    private Button btnQuizReset;
 
     @FXML
     private HBox hQuizAnswer;
@@ -323,6 +332,13 @@ public class VARpediaController implements Initializable {
     @FXML
     private Button btnQuizSubmit;
 
+
+    private boolean creationsExist() {
+        if (CREATIONS.exists() && CREATIONS.isDirectory()) {
+            if (CREATIONS.listFiles().length > 0) { return true; }
+        }
+        return false;
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -357,19 +373,13 @@ public class VARpediaController implements Initializable {
                 e.printStackTrace();
             }
         }
-        tabMain.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
-            if (mp != null) { mp.pause();} // Pause media player on tab change
-            if (tabMain.getSelectionModel().getSelectedIndex() == 0) {
-                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/play-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            }
-        });
         tabMain.addEventFilter(KeyEvent.KEY_PRESSED, event->{
             if (event.getCode() == KeyCode.SPACE) {
-                if (mp != null) {
-                    if (mp.getStatus() == MediaPlayer.Status.PAUSED) {
-                        mp.play();
+                if (playerCreation != null) {
+                    if (playerCreation.getStatus() == MediaPlayer.Status.PAUSED) {
+                        playerCreation.play();
                     } else {
-                        mp.pause();
+                        playerCreation.pause();
                     }
                 }
             }
@@ -397,11 +407,7 @@ public class VARpediaController implements Initializable {
         listSelectedChunks.setItems(actualChunksList);
 
         // Initialise "Quiz" tab-------
-        hQuizDifficulty.setVisible(true);
-        vQuizTitle.setVisible(true);
-        vQuizPlayer.setVisible(false);
-        vQuizTimeOut.setVisible(false);
-        hQuizAnswer.setVisible(false);
+        initialiseQuizTab();
 
         // Initialise "Options" tab
         if (VARpedia.isDark) {
@@ -413,6 +419,19 @@ public class VARpediaController implements Initializable {
             btnDarkTheme.setSelected(false);
             css = getClass().getResource("../../resources/css/light.css").toExternalForm();
         }
+
+        // Listener for tab changes
+        tabMain.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
+            if (playerCreation != null) { playerCreation.pause();} // Pause media player on tab change
+            int tab = tabMain.getSelectionModel().getSelectedIndex();
+            if (tab == 0) {
+                // Bug fix for play/pause icon on theme change
+                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/play-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            } else if (tab == 4) {
+                // Refresh quiz tab
+                initialiseQuizTab();
+            }
+        });
     }
 
     @FXML
@@ -425,7 +444,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnBackClicked(ActionEvent event) throws IOException {
-        if (mp != null) { mp.stop();}
+        if (playerCreation != null) { playerCreation.stop();}
 
         Parent root = FXMLLoader.load(getClass().getResource("../../resources/view/welcome.fxml"));
 
@@ -595,9 +614,9 @@ public class VARpediaController implements Initializable {
             volume = 100;
 
             Media video = new Media(CREATIONS.toURI().toString() + currentlyPlaying + ".mp4");
-            mp = new MediaPlayer(video);
-            mvPlayCreation.setMediaPlayer(mp);
-            mp.setAutoPlay(true);
+            playerCreation = new MediaPlayer(video);
+            mvPlayCreation.setMediaPlayer(playerCreation);
+            playerCreation.setAutoPlay(true);
             mvPlayCreation.fitWidthProperty().bind(mvPane.widthProperty());
             mvPlayCreation.fitHeightProperty().bind(mvPane.heightProperty());
             mvPlayCreation.setPreserveRatio(false);
@@ -606,37 +625,37 @@ public class VARpediaController implements Initializable {
             progressSlider.progressProperty().bind(sliderProgress.valueProperty().divide(100.0));
             progressVol.progressProperty().bind(sliderVol.valueProperty().divide(100.0));
 
-            mp.currentTimeProperty().addListener(ov -> updateValues());
+            playerCreation.currentTimeProperty().addListener(ov -> updateValues());
 
             sliderVol.valueProperty().addListener(ov -> {
                 if (sliderVol.isValueChanging()) {
-                    mp.setVolume(sliderVol.getValue() / 100.0);
+                    playerCreation.setVolume(sliderVol.getValue() / 100.0);
                 }
             });
 
-            mp.setOnReady(() -> {
-                duration = mp.getMedia().getDuration();
+            playerCreation.setOnReady(() -> {
+                duration = playerCreation.getMedia().getDuration();
                 updateValues();
             });
 
-            mp.setOnPlaying(() -> {
+            playerCreation.setOnPlaying(() -> {
                 imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/pause-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
             });
 
-            mp.setOnPaused(() -> {
+            playerCreation.setOnPaused(() -> {
                 imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/play-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
             });
 
-            mp.setOnEndOfMedia(() -> {
-                mp.stop();
-                mp.pause();
+            playerCreation.setOnEndOfMedia(() -> {
+                playerCreation.stop();
+                playerCreation.pause();
             });
         }
     }
 
     private void updateValues() {
         Platform.runLater(() -> {
-            Duration currentTime = mp.getCurrentTime();
+            Duration currentTime = playerCreation.getCurrentTime();
             lblCurrentTime.setText(formatTime(currentTime, duration, false));
             lblTotalTime.setText(formatTime(currentTime, duration, true));
             sliderProgress.setDisable(duration.isUnknown());
@@ -645,7 +664,7 @@ public class VARpediaController implements Initializable {
                 sliderProgress.setValue(currentTime.toMillis() / duration.toMillis() * 100.0);
             }
             if (!sliderVol.isValueChanging()) {
-                sliderVol.setValue((int) Math.round(mp.getVolume() * 100));
+                sliderVol.setValue((int) Math.round(playerCreation.getVolume() * 100));
             }
         });
     }
@@ -702,15 +721,15 @@ public class VARpediaController implements Initializable {
         sliderProgress.valueProperty().addListener(ov -> {
             if (sliderProgress.isValueChanging()) {
                 // multiply duration by percentage calculated by slider position
-                mp.seek(duration.multiply(sliderProgress.getValue() / 100.0));
+                playerCreation.seek(duration.multiply(sliderProgress.getValue() / 100.0));
             }
         });
     }
 
     @FXML
     void btnPlayPauseClicked(ActionEvent event) {
-        if (mp != null) {
-            MediaPlayer.Status status = mp.getStatus();
+        if (playerCreation != null) {
+            MediaPlayer.Status status = playerCreation.getStatus();
 
             if (status == MediaPlayer.Status.UNKNOWN || status == MediaPlayer.Status.HALTED) {
                 // don't do anything in these states
@@ -718,37 +737,37 @@ public class VARpediaController implements Initializable {
             }
 
             // rewind the movie if we're sitting at the end
-            if (mp.getCurrentTime().equals(duration)) {
+            if (playerCreation.getCurrentTime().equals(duration)) {
                 listCreations.getSelectionModel().select(currentlyPlaying);
                 btnPlayCreation.fire();
             } else if (status == MediaPlayer.Status.PAUSED || status == MediaPlayer.Status.READY || status == MediaPlayer.Status.STOPPED) {
-                mp.play();
+                playerCreation.play();
             } else {
-                mp.pause();
+                playerCreation.pause();
             }
         }
     }
 
     @FXML
     void btnReverseClicked(ActionEvent event) {
-        if (mp != null) {
-            double time = mp.getCurrentTime().toMillis() - duration.toMillis() / 10.0;
+        if (playerCreation != null) {
+            double time = playerCreation.getCurrentTime().toMillis() - duration.toMillis() / 10.0;
             if (time > 0) {
-                mp.seek(mp.getCurrentTime().subtract(duration.divide(10.0)));
+                playerCreation.seek(playerCreation.getCurrentTime().subtract(duration.divide(10.0)));
             } else {
-                mp.seek(mp.getStartTime());
+                playerCreation.seek(playerCreation.getStartTime());
             }
         }
     }
 
     @FXML
     void btnForwardClicked(ActionEvent event) {
-        if (mp != null) {
-            double time = mp.getCurrentTime().toMillis() + duration.toMillis() / 10.0;
+        if (playerCreation != null) {
+            double time = playerCreation.getCurrentTime().toMillis() + duration.toMillis() / 10.0;
             if (time < duration.toMillis()) {
-                mp.seek(mp.getCurrentTime().add(duration.divide(10.0)));
+                playerCreation.seek(playerCreation.getCurrentTime().add(duration.divide(10.0)));
             } else {
-                mp.seek(duration);
+                playerCreation.seek(duration);
             }
         }
     }
@@ -759,12 +778,12 @@ public class VARpediaController implements Initializable {
             volume = sliderVol.getValue();
             sliderVol.setValue(0);
             imgVolume.setImage(new Image(new File(ICONS.toString() + "/mute-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            mp.setVolume(0);
+            playerCreation.setVolume(0);
             mute = true;
         } else {
             sliderVol.setValue(volume);
             imgVolume.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            mp.setVolume(volume / 100.0);
+            playerCreation.setVolume(volume / 100.0);
             mute = false;
         }
     }
@@ -920,14 +939,63 @@ public class VARpediaController implements Initializable {
     }
 
     // QUIZ METHODS
-    @FXML
-    void sliderQuizDragged(MouseEvent event) {
+    private void initialiseQuizTab() {
+        hQuizToolbar.setVisible(true);
+        hQuizDifficulty.setDisable(false);
+        vQuizTitle.setVisible(true);
+        vQuizError.setVisible(false);
+        vQuizPlayer.setVisible(false);
+        vQuizTimeOut.setVisible(false);
+        hQuizAnswer.setVisible(false);
+        toggleQuizEasy.setSelected(true);
+        if (!creationsExist()) {
+            hQuizToolbar.setVisible(false);
+            vQuizTitle.setVisible(false);
+            vQuizError.setVisible(true);
+        }
+    }
 
+    @FXML
+    void toggleQuizEasyClicked(ActionEvent event) {
+        if (toggleQuizEasy.isSelected()) {
+            toggleQuizMedium.setSelected(false);
+            toggleQuizHard.setSelected(false);
+        } else {
+            toggleQuizEasy.setSelected(true);
+        }
+    }
+
+    @FXML
+    void toggleQuizMediumClicked(ActionEvent event) {
+        if (toggleQuizMedium.isSelected()) {
+            toggleQuizEasy.setSelected(false);
+            toggleQuizHard.setSelected(false);
+        } else {
+            toggleQuizMedium.setSelected(true);
+        }
+    }
+
+    @FXML
+    void toggleQuizHardClicked(ActionEvent event) {
+        if (toggleQuizHard.isSelected()) {
+            toggleQuizMedium.setSelected(false);
+            toggleQuizEasy.setSelected(false);
+        } else {
+            toggleQuizHard.setSelected(true);
+        }
     }
 
     @FXML
     void btnQuizBeginClicked(ActionEvent event) {
+        hQuizDifficulty.setDisable(true);
+        vQuizTitle.setVisible(false);
+        vQuizPlayer.setVisible(true);
+        hQuizAnswer.setVisible(true);
+    }
 
+    @FXML
+    void btnQuizResetClicked(ActionEvent event) {
+        initialiseQuizTab();
     }
 
     @FXML

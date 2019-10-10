@@ -183,6 +183,9 @@ LABEL
 .label-title {
     -fx-font-size: 48px;
 }
+.label-error {
+    -fx-text-fill: close-color;
+}
 .label-small {
     -fx-font-size: 16px;
 }
