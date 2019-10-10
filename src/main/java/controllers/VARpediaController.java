@@ -28,6 +28,7 @@ import javafx.util.Duration;
 import main.java.VARpedia;
 import main.java.skins.progressindicator.RingProgressIndicator;
 import main.java.tasks.FlickrTask;
+import main.java.tasks.PreviewChunkTask;
 import main.java.tasks.WikitTask;
 
 import java.io.*;
@@ -36,10 +37,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static main.java.VARpedia.*;
 
 public class VARpediaController implements Initializable {
+    Process p1 = null;
     // General window fields
     private double xOffset = 0;
     private double yOffset = 0;
@@ -59,6 +63,9 @@ public class VARpediaController implements Initializable {
     // Quiz tab fields
     private MediaPlayer playerQuiz;
     private Duration durationQuiz;
+
+    //background thread
+    private ExecutorService bg = Executors.newSingleThreadExecutor();
 
     @FXML
     private TabPane tabMain;
@@ -414,6 +421,9 @@ public class VARpediaController implements Initializable {
         // ---------- Initialise "Search" tab -----------
         txaResults.setEditable(false);
         ringSearch.setVisible(false);
+
+        cboVoice.getItems().addAll("voice_kal_diphone", "voice_akl_nz_jdt_diphone");
+        cboVoice.getSelectionModel().selectFirst();
 
         // set listview of chunks to observe the arraylist of chunks
         listChunksSearch.setItems(chunksList);
@@ -816,7 +826,67 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnPreviewChunkClicked(ActionEvent event) {
+    void btnPreviewChunkClicked(ActionEvent event) throws IOException, InterruptedException {
+        CHUNKS.mkdir();
+       // PreviewChunkTask previewTask = new PreviewChunkTask();
+
+        if(btnSearchPreviewChunk.getText().equals("Preview")) {
+            //obtain selecetd text and check num of words
+            String previewText = txaResults.getSelectedText().trim();
+            int numWords = previewText.length() - previewText.replaceAll("\\s", "").length();
+            System.out.println(previewText);
+
+            //PLACEHOLDER POP UPS UNTIL ERROR HANDLING IS DISCUSSED
+            if (previewText.length() == 0) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("New chunk");
+                alert.setContentText("No text selected!");
+                alert.showAndWait();
+            } else if (numWords > 40) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("New chunk");
+                alert.setContentText("Please select no more than 40 words per chunk.");
+                alert.showAndWait();
+            } else {
+                //handle previewing of chunk
+
+                //create preview audio file, this will allow the stopping of its playing
+                File festChunk = new File(CHUNKS.toString() + System.getProperty("file.separator") + "festivalChunk");
+                CHUNKS.mkdirs();
+                festChunk.createNewFile();
+                BufferedWriter w = new BufferedWriter(new FileWriter(CHUNKS.toString() + System.getProperty("file.separator") + "festivalChunk"));
+                w.write("(" + cboVoice.getValue() + ")\n");
+                w.write("(set! utt1 (Utterance Text \"" + previewText + "\"))\n");
+                w.write("(utt.synth utt1)\n");
+                w.write("(utt.save.wave utt1 \"previewChunk\" 'riff)");
+                w.close();
+                ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
+                b.directory(CHUNKS);
+                Process p = b.start();
+                p.waitFor();
+
+                //2nd process for actually playing the audio
+                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit previewChunk");
+                b1.directory(CHUNKS);
+                p1 = b1.start();
+
+                //bg thread keeps an eye on the process while it is alive
+                PreviewChunkTask previewTask = new PreviewChunkTask(p1);
+                bg.submit(previewTask);
+                //once finished, the text is set back
+                previewTask.setOnSucceeded(e ->{
+                    btnSearchPreviewChunk.setText("Preview");
+                });
+
+                //set text to allowing stopping of audio
+                btnSearchPreviewChunk.setText("Stop Preview");
+
+            }
+        }else{
+            //handle stopping of preview
+            p1.destroy();
+            btnSearchPreviewChunk.setText("Preview");
+        }
 
     }
 
