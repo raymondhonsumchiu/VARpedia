@@ -82,6 +82,14 @@ public class VARpedia extends Application {
         return dir.delete();
     }
 
+    // Checks if a directory exists
+    public static boolean existDirectory(File dir) {
+        if (dir.exists() && dir.isDirectory()) {
+            if (dir.listFiles().length > 0) { return true; }
+        }
+        return false;
+    }
+
     public static void main(String[] args) {
         launch(args);
     }

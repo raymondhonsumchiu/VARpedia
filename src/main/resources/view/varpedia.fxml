@@ -499,15 +499,16 @@
                      <center>
                         <StackPane BorderPane.alignment="CENTER">
                            <children>
-                              <VBox fx:id="vQuizTitle" alignment="CENTER" spacing="5.0" visible="false">
+                              <VBox fx:id="vQuizTitle" alignment="CENTER" spacing="5.0">
                                  <children>
                                     <Label styleClass="label-title" text="Guess the term!" />
                                     <Label layoutX="629.0" layoutY="325.0" />
                                     <Label layoutX="672.0" layoutY="325.0" text="Select a difficulty from above" />
                                     <Label layoutX="629.0" layoutY="333.0" text="then try to guess the correct word!" />
+                                    <Label layoutX="611.0" layoutY="357.0" text="Switching tabs will reset the game, so no cheating :)" />
                                  </children>
                               </VBox>
-                              <VBox fx:id="vQuizError" alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="5.0">
+                              <VBox fx:id="vQuizError" alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="5.0" visible="false">
                                  <children>
                                     <Label text=":(">
                                        <styleClass>
@@ -566,14 +567,14 @@
                                     </HBox>
                                  </children>
                               </VBox>
-                              <VBox fx:id="vQuizTimeOut" alignment="CENTER" spacing="20.0" visible="false">
+                              <VBox fx:id="vQuizCorrect" alignment="CENTER" spacing="20.0" visible="false">
                                  <children>
-                                    <Label styleClass="label-title" text="Out of time!" />
+                                    <Label fx:id="lblQuizCorrect" styleClass="label-title" text="Out of time!" />
                                     <HBox alignment="CENTER" spacing="10.0">
                                        <children>
-                                          <Button fx:id="btnQuizNext" mnemonicParsing="false" onAction="#btnQuizNextClicked" prefHeight="50.0" prefWidth="131.0" text="Next" />
-                                          <Button fx:id="btnQuizRetry" mnemonicParsing="false" onAction="#btnQuizRetryClicked" prefHeight="50.0" prefWidth="131.0" text="Retry" />
                                           <Button fx:id="btnQuizFinish" mnemonicParsing="false" onAction="#btnQuizFinishClicked" prefHeight="50.0" prefWidth="131.0" text="Finish" />
+                                          <Button fx:id="btnQuizRetry" mnemonicParsing="false" onAction="#btnQuizRetryClicked" prefHeight="50.0" prefWidth="131.0" text="Retry" />
+                                          <Button fx:id="btnQuizNext" defaultButton="true" mnemonicParsing="false" onAction="#btnQuizNextClicked" prefHeight="50.0" prefWidth="131.0" text="Next" />
                                        </children>
                                     </HBox>
                                  </children>
@@ -622,10 +623,10 @@
                         </HBox>
                      </top>
                      <bottom>
-                        <HBox fx:id="hQuizAnswer" alignment="CENTER" prefHeight="55.0" spacing="5.0" visible="false" BorderPane.alignment="CENTER">
+                        <HBox fx:id="hQuizAnswer" alignment="CENTER" prefHeight="55.0" spacing="5.0" BorderPane.alignment="CENTER">
                            <children>
                               <Label id="label-quiz-answer" fx:id="lblQuizAnswer" layoutX="445.0" layoutY="32.0" text="Answer:" />
-                              <TextField fx:id="txtQuizAnswer" prefHeight="50.0" prefWidth="336.0" HBox.hgrow="ALWAYS">
+                              <TextField fx:id="txtQuizAnswer" onAction="#txtQuizAnswerEnter" prefHeight="50.0" prefWidth="336.0" HBox.hgrow="ALWAYS">
                                  <padding>
                                     <Insets left="30.0" />
                                  </padding>

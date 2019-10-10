@@ -40,16 +40,25 @@ import java.util.ResourceBundle;
 import static main.java.VARpedia.*;
 
 public class VARpediaController implements Initializable {
+    // General window fields
     private double xOffset = 0;
     private double yOffset = 0;
     private String css;
+
+    // Creations tab fields
     private MediaPlayer playerCreation;
     private Duration duration;
+
+    // Combine tab fields
     private List<ImageView> gridImageViews;
     private List<ToggleButton> gridToggles;
     private ObservableList<String> chunksList = FXCollections.observableArrayList();
     private ObservableList<String> actualChunksList = FXCollections.observableArrayList();
     private ArrayList<String> selectedImgs;
+
+    // Quiz tab fields
+    private MediaPlayer playerQuiz;
+    private Duration durationQuiz;
 
     @FXML
     private TabPane tabMain;
@@ -307,7 +316,10 @@ public class VARpediaController implements Initializable {
     private Slider sliderVolQuiz;
 
     @FXML
-    private VBox vQuizTimeOut;
+    private VBox vQuizCorrect;
+
+    @FXML
+    private Label lblQuizCorrect;
 
     @FXML
     private Button btnQuizNext;
@@ -350,14 +362,6 @@ public class VARpediaController implements Initializable {
 
     @FXML
     private Button btnQuizSubmit;
-
-
-    private boolean creationsExist() {
-        if (CREATIONS.exists() && CREATIONS.isDirectory()) {
-            if (CREATIONS.listFiles().length > 0) { return true; }
-        }
-        return false;
-    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -444,12 +448,13 @@ public class VARpediaController implements Initializable {
         // Listener for tab changes
         tabMain.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             if (playerCreation != null) { playerCreation.pause();} // Pause media player on tab change
+            if (playerQuiz != null) {playerQuiz.stop();} // Stop quiz player on tab change
             int tab = tabMain.getSelectionModel().getSelectedIndex();
             if (tab == 0) {
                 // Bug fix for play/pause icon on theme change
                 imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/play-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            } else if (tab == 4) {
-                // Refresh quiz tab
+            } else if (tab == 3) {
+                // Reset quiz tab on change (prevents cheating among other things)
                 initialiseQuizTab();
             }
         });
@@ -623,7 +628,7 @@ public class VARpediaController implements Initializable {
         VARpedia.primaryStage.setIconified(true);
     }
 
-    // THIS REGION HANDLES THE MEDIA PLAYER
+    // Creations tab methods
     private String currentlyPlaying;
     private boolean mute;
     private double volume;
@@ -1010,16 +1015,24 @@ public class VARpediaController implements Initializable {
     }
 
     // QUIZ METHODS
+    private int numQuestions;
+    private int currentQuestion;
+    private int numCorrect;
     private void initialiseQuizTab() {
+        numQuestions = CREATIONS.listFiles().length;
+        currentQuestion = 0;
+        numCorrect = 0;
         hQuizToolbar.setVisible(true);
         hQuizDifficulty.setDisable(false);
         vQuizTitle.setVisible(true);
         vQuizError.setVisible(false);
         vQuizPlayer.setVisible(false);
-        vQuizTimeOut.setVisible(false);
+        vQuizCorrect.setVisible(false);
         hQuizAnswer.setVisible(false);
         toggleQuizEasy.setSelected(true);
-        if (!creationsExist()) {
+        toggleQuizMedium.setSelected(false);
+        toggleQuizHard.setSelected(false);
+        if (!existDirectory(CREATIONS)) {
             hQuizToolbar.setVisible(false);
             vQuizTitle.setVisible(false);
             vQuizError.setVisible(true);
@@ -1056,17 +1069,99 @@ public class VARpediaController implements Initializable {
         }
     }
 
+    private boolean quizMute;
+    private double quizVolume;
     @FXML
     void btnQuizBeginClicked(ActionEvent event) {
+        // Hide/reveal appropriate components
         hQuizDifficulty.setDisable(true);
         vQuizTitle.setVisible(false);
         vQuizPlayer.setVisible(true);
         hQuizAnswer.setVisible(true);
+
+        imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+        quizMute = false;
+        quizVolume = 100;
+
+        //TODO this section: pick quiz files depending on difficulty
+
+        // -------------------------------------------------------------------------------------------------------
+        int difficulty = 0; // 0 = easy, 1 = med, 2 = hard
+        if (toggleQuizMedium.isSelected()) {
+            difficulty = 1;
+        } else if (toggleQuizHard.isSelected()) {
+            difficulty = 2;
+        }
+
+        // Randomise list of files
+        File[] fi = CREATIONS.listFiles(); // change this to the proper directory
+        List<File> files = new ArrayList<>();
+        for (File f : fi) {
+            files.add(f);
+        }
+        Collections.shuffle(files);
+
+        Media video = new Media(files.get(currentQuestion).toURI().toString());
+        currentQuestion++;
+
+        // -------------------------------------------------------------------------------------------------------
+
+        // Play selected file
+        playerQuiz = new MediaPlayer(video);
+        mvQuiz.setMediaPlayer(playerQuiz);
+        playerQuiz.setAutoPlay(true);
+        mvQuiz.fitWidthProperty().bind(mvQuizPane.widthProperty());
+        mvQuiz.fitHeightProperty().bind(mvQuizPane.heightProperty());
+        mvQuiz.setPreserveRatio(false);
+
+        progressSliderQuiz.progressProperty().bind(sliderProgressQuiz.valueProperty().divide(100.0));
+        progressVolQuiz.progressProperty().bind(sliderVolQuiz.valueProperty().divide(100.0));
+
+        playerQuiz.currentTimeProperty().addListener(ov -> updateValuesQuiz());
+
+        sliderVolQuiz.valueProperty().addListener(ov -> {
+            if (sliderVolQuiz.isValueChanging()) {
+                playerQuiz.setVolume(sliderVolQuiz.getValue() / 100.0);
+            }
+        });
+
+        playerQuiz.setOnReady(() -> {
+            durationQuiz = playerQuiz.getMedia().getDuration();
+            updateValuesQuiz();
+        });
+
+        playerQuiz.setOnEndOfMedia(() -> {
+            playerQuiz.stop();
+
+            // Display "out of time" panel
+            vQuizPlayer.setVisible(false);
+            hQuizAnswer.setVisible(false);
+            vQuizCorrect.setVisible(true);
+            btnQuizRetry.setVisible(true);
+            lblQuizCorrect.setText("Out of time!");
+        });
+    }
+
+    private void updateValuesQuiz() {
+        Platform.runLater(() -> {
+            Duration currentTime = playerQuiz.getCurrentTime();
+            lblQuizCurrentTime.setText(formatTime(currentTime, durationQuiz, false));
+            lblQuizTotalTime.setText(formatTime(currentTime, durationQuiz, true));
+            sliderProgressQuiz.setDisable(durationQuiz.isUnknown());
+            progressSliderQuiz.setDisable(durationQuiz.isUnknown());
+            if (!sliderProgressQuiz.isDisabled() && durationQuiz.greaterThan(Duration.ZERO) && !sliderProgressQuiz.isValueChanging()) {
+                sliderProgressQuiz.setValue(currentTime.toMillis() / durationQuiz.toMillis() * 100.0);
+            }
+            if (!sliderVolQuiz.isValueChanging()) {
+                sliderVolQuiz.setValue((int) Math.round(playerQuiz.getVolume() * 100));
+            }
+        });
     }
 
     @FXML
     void btnQuizResetClicked(ActionEvent event) {
         initialiseQuizTab();
+        if (playerQuiz != null) {playerQuiz.stop();}
     }
 
     @FXML
@@ -1086,12 +1181,36 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnQuizSubmitClicked(ActionEvent event) {
+        //TODO logic (use the variable currentQuestion)
 
+        // if correct
+        playerQuiz.stop();
+        vQuizPlayer.setVisible(false);
+        hQuizAnswer.setVisible(false);
+        vQuizCorrect.setVisible(true);
+        lblQuizCorrect.setText("Correct!");
+        btnQuizRetry.setVisible(false);
+    }
+
+    @FXML
+    void txtQuizAnswerEnter(ActionEvent event) {
+        btnQuizSubmit.fire();
     }
 
     @FXML
     void btnMuteQuizClicked(ActionEvent event) {
-
+        if (!quizMute) {
+            quizVolume = sliderVolQuiz.getValue();
+            sliderVolQuiz.setValue(0);
+            imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/mute-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            playerQuiz.setVolume(0);
+            quizMute = true;
+        } else {
+            sliderVolQuiz.setValue(quizVolume);
+            imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            playerQuiz.setVolume(quizVolume / 100.0);
+            quizMute = false;
+        }
     }
 
 }
