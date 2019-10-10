@@ -38,10 +38,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 
 import static main.java.VARpedia.*;
 
 public class VARpediaController implements Initializable {
+    //num of chunks
+    int numChunks = 0;
+
     // General window fields
     private double xOffset = 0;
     private double yOffset = 0;
@@ -431,6 +437,30 @@ public class VARpediaController implements Initializable {
 
         // set listview of chunks to observe the arraylist of chunks
         listChunksSearch.setItems(chunksList);
+        //add listener to listview to allow for previewing of chunk text
+        listChunksSearch.getSelectionModel().selectedItemProperty().addListener(e ->{
+            String selectedChunk = listChunksSearch.getSelectionModel().getSelectedItem();
+            //use bash to read chunk's txt file
+            ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "cat " + selectedChunk + "/" + selectedChunk + ".txt");
+            b.directory(CHUNKS);
+            String chunktxt = "";
+            try {
+                Process p = b.start();
+                InputStream stdout = p.getInputStream();
+                InputStream stderr = p.getErrorStream();
+                BufferedReader stdoutBuffered = new BufferedReader(new InputStreamReader(stdout));
+
+                //use obtained string to add to textArea
+                String line = null;
+                while ((line = stdoutBuffered.readLine()) != null ) {
+                    chunktxt += line + "\n";
+                }
+
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            txaPreviewChunk1.setText(chunktxt);
+        });
 
         // ---------- Initialise "Combine" tab -----------
         ringCombine.setVisible(false);
@@ -525,13 +555,75 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnCreateChunkClicked(ActionEvent event) {
+    void btnCreateChunkClicked(ActionEvent event) throws IOException, InterruptedException {
+        CHUNKS.mkdir();
+
+        String selectedText = txaResults.getSelectedText().trim();
+        int numWords = selectedText.length() - selectedText.replaceAll("\\s", "").length();
+        System.out.println(selectedText);
+        if (selectedText.length() == 0) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("New chunk");
+            alert.setContentText("No text selected!");
+            alert.showAndWait();
+        } else if (numWords > 40) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("New chunk");
+            alert.setContentText("Please select no more than 40 words per chunk.");
+            alert.showAndWait();
+        } else {
+
+            //obtain chunk name
+            String chunkName = txtChunkName.getText();
+            //if name contains illegal chars, PLACEHOLDER pop-up
+            if (chunkName.startsWith("-") || !Pattern.matches("^[-_a-zA-Z0-9]*$", chunkName)) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("New chunk");
+                alert.setContentText("Invalid chunk name, please try again.");
+                alert.showAndWait();
+            }else {
+                //handle default chunk name
+                numChunks++;
+                if (chunkName.isEmpty()) {
+                    chunkName = "chunk" + numChunks;
+                }
+
+                //create new chunk's directory
+                File NEWCHUNK = new File(CHUNKS.toString() + "/" + chunkName);
+                NEWCHUNK.mkdir();
+
+                File festChunk = new File(NEWCHUNK.toString() + System.getProperty("file.separator") + "festivalChunk");
+                festChunk.createNewFile();
+                BufferedWriter w = new BufferedWriter(new FileWriter(NEWCHUNK.toString() + System.getProperty("file.separator") + "festivalChunk"));
+                w.write("(" + cboVoice.getValue() + ")\n");
+                w.write("(set! utt1 (Utterance Text \"" + selectedText + "\"))\n");
+                w.write("(utt.synth utt1)\n");
+                w.write("(utt.save.wave utt1 \"" + chunkName + "\" 'riff)");
+                w.close();
+                ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
+                b.directory(NEWCHUNK);
+                Process p = b.start();
+                p.waitFor();
+
+                System.out.println(txaResults.getSelectedText().trim());
+                ProcessBuilder b2 = new ProcessBuilder("/bin/bash", "-c", "echo \"" + txaResults.getSelectedText().trim() + "\" > " + chunkName + ".txt");
+                b2.directory(NEWCHUNK);
+                Process p2 = b2.start();
+                p2.waitFor();
+
+
+                chunksList.add(chunkName);
+                Collections.sort(chunksList);
+
+            }
+
+
+        }
 
         //PLace holder for chunk creation
         //this list will house the names of all the chunks that will be displayed by the chunk listviews
         //ideally these following lines will be kept, just swapping the name of the chunk
-        chunksList.add("Hello!");
-        Collections.sort(chunksList);
+
     }
 
     @FXML

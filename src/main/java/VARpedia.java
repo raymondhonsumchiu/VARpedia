@@ -35,7 +35,9 @@ public class VARpedia extends Application {
     public static final File CREATIONS = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "Creations");
     public static final File TEMP = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "temp");
     public static final File TEMPIMGS = new File(TEMP.toString() + System.getProperty("file.separator") + "img");
+    public static final File SELIMGS = new File(TEMP.toString() + System.getProperty("file.separator") + "selImgs");
     public static final File CHUNKS = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "chunks");
+    public static final File PREVCHUNK = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "prevChunks");
     public static final File ICONS = new File(System.getProperty("user.dir") + "/src/main/resources/images");
     public static final ExecutorService bg = Executors.newFixedThreadPool(3);
     public static ButtonType btnYes = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
