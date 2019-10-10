@@ -23,6 +23,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
+import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import main.java.VARpedia;
@@ -49,6 +50,11 @@ public class VARpediaController implements Initializable {
     // Creations tab fields
     private MediaPlayer playerCreation;
     private Duration duration;
+
+    // Search tab fields
+    public static double voicePitch;
+    public static double voicePitchRange;
+    public static double voiceSpeed;
 
     // Combine tab fields
     private List<ImageView> gridImageViews;
@@ -418,6 +424,10 @@ public class VARpediaController implements Initializable {
 
         cboVoice.getItems().addAll("US Male", "New Zealand Male");
         cboVoice.getSelectionModel().selectFirst();
+
+        voicePitch = 1;
+        voicePitchRange = 1;
+        voiceSpeed = 1;
 
         // set listview of chunks to observe the arraylist of chunks
         listChunksSearch.setItems(chunksList);
@@ -819,6 +829,31 @@ public class VARpediaController implements Initializable {
         }
     }
 
+    @FXML
+    void btnVoiceOptionClicked(ActionEvent event) throws IOException {
+        Parent root = FXMLLoader.load(getClass().getResource("../../resources/view/voiceoptions.fxml"));
+
+        Stage stage = new Stage();
+        stage.initStyle(StageStyle.UNDECORATED);
+        stage.setResizable(false);
+
+        root.setOnMousePressed(e -> {
+            xOffset = e.getSceneX();
+            yOffset = e.getSceneY();
+        });
+
+        root.setOnMouseDragged(e -> {
+            stage.setX(e.getScreenX() - xOffset);
+            stage.setY(e.getScreenY() - yOffset);
+        });
+
+        Scene scene = new Scene(root, 375, 240);
+        scene.getStylesheets().add(css);
+        stage.setScene(scene);
+        stage.show();
+
+    }
+
     Process p1;
     @FXML
     void btnPreviewChunkClicked(ActionEvent event) throws IOException, InterruptedException {
@@ -849,9 +884,7 @@ public class VARpediaController implements Initializable {
                 BufferedWriter w = new BufferedWriter(new FileWriter(CHUNKS.toString() + System.getProperty("file.separator") + "festivalChunk"));
 
                 String voice = "voice_kal_diphone";
-                if (cboVoice.getValue() == "New Zealand Male") {
-                    voice = "voice_akl_nz_jdt_diphone";
-                }
+                if (cboVoice.getValue() == "New Zealand Male") { voice = "voice_akl_nz_jdt_diphone"; }
 
                 w.write("(" + voice + ")\n");
                 w.write("(set! utt1 (Utterance Text \"" + previewText + "\"))\n");

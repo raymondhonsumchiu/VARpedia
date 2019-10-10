@@ -227,6 +227,15 @@
                                     <Insets />
                                  </HBox.margin>
                               </TextField>
+                              <Button mnemonicParsing="false" onAction="#btnVoiceOptionClicked" prefHeight="50.0" prefWidth="50.0" styleClass="button-square">
+                                 <graphic>
+                                    <ImageView fitHeight="30.0" fitWidth="30.0" opacity="0.6" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../images/options.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic>
+                              </Button>
                               <ComboBox fx:id="cboVoice" prefHeight="50.0" prefWidth="320.0" promptText="Select a voice" styleClass="combo-long" visibleRowCount="5">
                                  <padding>
                                     <Insets left="5.0" />
@@ -342,7 +351,7 @@
                                                       <Insets left="30.0" />
                                                    </padding>
                                                 </TextField>
-                                                <Button id="button-flickr" fx:id="btnSearchFlickr" mnemonicParsing="false" onAction="#btnSearchFlickrClicked" prefHeight="50.0" prefWidth="50.0">
+                                                <Button fx:id="btnSearchFlickr" mnemonicParsing="false" onAction="#btnSearchFlickrClicked" prefHeight="50.0" prefWidth="50.0" styleClass="button-square">
                                                    <HBox.margin>
                                                       <Insets />
                                                    </HBox.margin>

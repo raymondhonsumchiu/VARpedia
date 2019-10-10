@@ -59,7 +59,7 @@ BUTTON, TOGGLE BUTTON
     -fx-border-color: transparent;
     -fx-pref-width: 67px;
 }
-#button-flickr {
+.button-square {
     -fx-pref-width: 50px;
 }
 .button-long {
@@ -302,11 +302,12 @@ SLIDER
 .slider > .thumb:hover {
     -fx-background-color: -fx-hover-base;
 }
+.slider > .track {
+    -fx-background-color: -fx-control-inner;
+    -fx-border-color: border-color;
+}
 .slider-progress .track {
     -fx-background-color: transparent;  /* Hide the track */
-    -fx-background-insets: 1 0 -1 0, 0, 1;
-    -fx-background-radius: 2.5, 2.5, 1.5;
-    -fx-padding: 0.208333em; /* 2.5 */
 }
 
 /**
