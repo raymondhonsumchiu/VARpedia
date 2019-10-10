@@ -28,7 +28,7 @@
 }
 
 /**
-BUTTON, TOGGLE BUTTON, COMBO BOX
+BUTTON, TOGGLE BUTTON
 **/
 .button, .toggle-button {
     -fx-background-color: -fx-body-color;
@@ -118,7 +118,7 @@ COMBO BOX
     -fx-border-color: -fx-accent;
     -fx-border-radius: 5 5 5 5;
     -fx-background-radius: 5 5 5 5;
-    -fx-pref-height: 150px;
+    -fx-pref-height: 110px;
     -fx-background-insets: 0, 1;
 }
 .combo-box-popup .list-view .list-cell {
