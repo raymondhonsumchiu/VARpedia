@@ -38,8 +38,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
 import static main.java.VARpedia.*;
@@ -58,9 +56,11 @@ public class VARpediaController implements Initializable {
     private Duration duration;
 
     // Search tab fields
+    private static Stage stage;
     public static double voicePitch;
     public static double voicePitchRange;
     public static double voiceSpeed;
+    private String query;
 
     // Combine tab fields
     private List<ImageView> gridImageViews;
@@ -434,31 +434,14 @@ public class VARpediaController implements Initializable {
         voicePitch = 1;
         voicePitchRange = 1;
         voiceSpeed = 1;
+        query = "";
 
         // set listview of chunks to observe the arraylist of chunks
         listChunksSearch.setItems(chunksList);
         //add listener to listview to allow for previewing of chunk text
         listChunksSearch.getSelectionModel().selectedItemProperty().addListener(e ->{
-            String selectedChunk = listChunksSearch.getSelectionModel().getSelectedItem();
-            //use bash to read chunk's txt file
-            ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "cat " + selectedChunk + "/" + selectedChunk + ".txt");
-            b.directory(CHUNKS);
-            String chunktxt = "";
-            try {
-                Process p = b.start();
-                InputStream stdout = p.getInputStream();
-                InputStream stderr = p.getErrorStream();
-                BufferedReader stdoutBuffered = new BufferedReader(new InputStreamReader(stdout));
-
-                //use obtained string to add to textArea
-                String line = null;
-                while ((line = stdoutBuffered.readLine()) != null ) {
-                    chunktxt += line + "\n";
-                }
-
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            String chunktxt = getChunkText(listChunksSearch.getSelectionModel().getSelectedItem());
+            txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
             txaPreviewChunk1.setText(chunktxt);
         });
 
@@ -470,6 +453,13 @@ public class VARpediaController implements Initializable {
         Collections.addAll(gridToggles,toggleGrid1,toggleGrid2,toggleGrid3,toggleGrid4,toggleGrid5,toggleGrid5,toggleGrid6,toggleGrid7,toggleGrid8,toggleGrid8,toggleGrid9,toggleGrid10,toggleGrid11,toggleGrid12);
         vImages.setVisible(false);
         ringImages.setVisible(false);
+
+        //add listener to listview to allow for previewing of chunk text
+        listAllChunks.getSelectionModel().selectedItemProperty().addListener(e ->{
+            String chunktxt = getChunkText(listAllChunks.getSelectionModel().getSelectedItem());
+            txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
+            txaPreviewChunk2.setText(chunktxt);
+        });
 
         // set listview of all available chunks to same arraylist of chunks as prior chunk listview
         listAllChunks.setItems(chunksList);
@@ -493,6 +483,8 @@ public class VARpediaController implements Initializable {
         tabMain.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             if (playerCreation != null) { playerCreation.pause();} // Pause media player on tab change
             if (playerQuiz != null) {playerQuiz.stop();} // Stop quiz player on tab change
+            if (btnSearchPreviewChunk.getText() == "Stop") { btnSearchPreviewChunk.fire(); } // Stop chunk preview on tab change
+            if (btnPreviewChunkCombine.getText() == "Stop") { btnPreviewChunkCombine.fire(); } // Stop chunk preview on tab change
             int tab = tabMain.getSelectionModel().getSelectedIndex();
             if (tab == 0) {
                 // Bug fix for play/pause icon on theme change
@@ -547,125 +539,7 @@ public class VARpediaController implements Initializable {
         deleteDirectory(TEMP);
         deleteDirectory(CHUNKS);
         VARpedia.primaryStage.close();
-    }
-
-    @FXML
-    void btnCombineClicked(ActionEvent event) {
-        tabMain.getSelectionModel().select(2);
-    }
-
-    @FXML
-    void btnCreateChunkClicked(ActionEvent event) throws IOException, InterruptedException {
-        CHUNKS.mkdir();
-
-        String selectedText = txaResults.getSelectedText().trim();
-        int numWords = selectedText.length() - selectedText.replaceAll("\\s", "").length();
-        System.out.println(selectedText);
-        if (selectedText.length() == 0) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("New chunk");
-            alert.setContentText("No text selected!");
-            alert.showAndWait();
-        } else if (numWords > 40) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("New chunk");
-            alert.setContentText("Please select no more than 40 words per chunk.");
-            alert.showAndWait();
-        } else {
-
-            //obtain chunk name
-            String chunkName = txtChunkName.getText();
-            //if name contains illegal chars, PLACEHOLDER pop-up
-            if (chunkName.startsWith("-") || !Pattern.matches("^[-_a-zA-Z0-9]*$", chunkName)) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("New chunk");
-                alert.setContentText("Invalid chunk name, please try again.");
-                alert.showAndWait();
-            }else {
-                //handle default chunk name
-                numChunks++;
-                if (chunkName.isEmpty()) {
-                    chunkName = "chunk" + numChunks;
-                }
-
-                //create new chunk's directory
-                File NEWCHUNK = new File(CHUNKS.toString() + "/" + chunkName);
-                NEWCHUNK.mkdir();
-
-                File festChunk = new File(NEWCHUNK.toString() + System.getProperty("file.separator") + "festivalChunk");
-                festChunk.createNewFile();
-                BufferedWriter w = new BufferedWriter(new FileWriter(NEWCHUNK.toString() + System.getProperty("file.separator") + "festivalChunk"));
-                w.write("(" + cboVoice.getValue() + ")\n");
-                w.write("(set! utt1 (Utterance Text \"" + selectedText + "\"))\n");
-                w.write("(utt.synth utt1)\n");
-                w.write("(utt.save.wave utt1 \"" + chunkName + "\" 'riff)");
-                w.close();
-                ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
-                b.directory(NEWCHUNK);
-                Process p = b.start();
-                p.waitFor();
-
-                System.out.println(txaResults.getSelectedText().trim());
-                ProcessBuilder b2 = new ProcessBuilder("/bin/bash", "-c", "echo \"" + txaResults.getSelectedText().trim() + "\" > " + chunkName + ".txt");
-                b2.directory(NEWCHUNK);
-                Process p2 = b2.start();
-                p2.waitFor();
-
-
-                chunksList.add(chunkName);
-                Collections.sort(chunksList);
-
-            }
-
-
-        }
-
-        //PLace holder for chunk creation
-        //this list will house the names of all the chunks that will be displayed by the chunk listviews
-        //ideally these following lines will be kept, just swapping the name of the chunk
-
-    }
-
-    @FXML
-    void btnCreateCreationClicked(ActionEvent event) {
-        //add error checks here:
-
-
-        //-------------------
-        //TEMPIMGS.mkdir();
-        //obtain all selected images
-        ArrayList<String> selectedImgs = new ArrayList<String>();
-        int index = 0;
-        for(ToggleButton imgButton: gridToggles){
-            if (imgButton.isSelected()){
-                String img = this.selectedImgs.get(index);
-                selectedImgs.add(img);
-            }
-            index++;
-        }
-
-        //check if all imgs correct
-        for(String path: selectedImgs){
-            System.out.println(path);
-        }
-
-        //------------testing purposes, will be in bg task-------
-//        TEMPIMGS.mkdir();
-//        for (String img: selectedImgs) {
-//            ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "cp " + TEMP.toString() + img + " " + TEMPIMGS.toString() + img);
-//            Process p1 = null;
-//            try {
-//                p1 = b1.start();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            try {
-//                p1.waitFor();
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-        //----------------------------------------------
+        if (stage != null) { stage.close(); }
     }
 
     @FXML
@@ -921,11 +795,34 @@ public class VARpediaController implements Initializable {
         }
     }
 
+    // This method returns the text content of a chunk as a string
+    private String getChunkText(String chunkName) {
+        ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "cat " + chunkName + "/" + chunkName + ".txt");
+        b.directory(CHUNKS);
+        String chunktxt = "";
+        try {
+            Process p = b.start();
+            InputStream stdout = p.getInputStream();
+            BufferedReader stdoutBuffered = new BufferedReader(new InputStreamReader(stdout));
+
+            //use obtained string to add to textArea
+            String line;
+            while ((line = stdoutBuffered.readLine()) != null ) {
+                chunktxt += line + "\n";
+            }
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return chunktxt;
+    }
+
     @FXML
     void btnVoiceOptionClicked(ActionEvent event) throws IOException {
+        if (btnSearchPreviewChunk.getText() == "Stop") { btnSearchPreviewChunk.fire(); }
         Parent root = FXMLLoader.load(getClass().getResource("../../resources/view/voiceoptions.fxml"));
 
-        Stage stage = new Stage();
+        stage = new Stage();
         stage.initStyle(StageStyle.UNDECORATED);
         stage.setResizable(false);
 
@@ -939,7 +836,7 @@ public class VARpediaController implements Initializable {
             stage.setY(e.getScreenY() - yOffset);
         });
 
-        Scene scene = new Scene(root, 375, 240);
+        Scene scene = new Scene(root, 500, 240);
         scene.getStylesheets().add(css);
         stage.setScene(scene);
         stage.show();
@@ -949,25 +846,38 @@ public class VARpediaController implements Initializable {
     Process p1;
     @FXML
     void btnPreviewChunkClicked(ActionEvent event) throws IOException, InterruptedException {
-        CHUNKS.mkdir();
-        txaPreviewChunk1.setText("");
-        txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
-       // PreviewChunkTask previewTask = new PreviewChunkTask();
+        CHUNKS.mkdirs();
 
         if(btnSearchPreviewChunk.getText().equals("Preview")) {
             // Obtain selected text and check num of words
             String previewText = txaResults.getSelectedText().trim();
             int numWords = previewText.length() - previewText.replaceAll("\\s", "").length();
 
-            if (previewText.length() == 0) {
+            if (listChunksSearch.getSelectionModel().getSelectedItem() != null) {
+                // If a chunk from the list is selected, preview its audio
+                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit festivalChunk");
+                b1.directory(new File(CHUNKS.toString() + "/" + listChunksSearch.getSelectionModel().getSelectedItem()));
+                p1 = b1.start();
+                // bg thread keeps an eye on the process while it is alive
+                PreviewChunkTask previewTask = new PreviewChunkTask(p1);
+                bg.submit(previewTask);
+                // Once finished, the text is set back
+                previewTask.setOnSucceeded(e ->{
+                    btnSearchPreviewChunk.setText("Preview");
+                });
+
+                // Set text to allowing stopping of audio
+                btnSearchPreviewChunk.setText("Stop");
+            } else if (previewText.length() == 0) {
                 txaPreviewChunk1.setText("Nothing to preview.");
                 txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
             } else if (numWords > 40) {
                 txaPreviewChunk1.setText("Please select no more than 40 words per chunk.");
                 txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
             } else {
-                txaPreviewChunk1.setText(previewText);
                 // Handle previewing of chunk
+                txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
+                txaPreviewChunk1.setText(previewText);
 
                 // Create preview audio file, this will allow stopping
                 File festChunk = new File(CHUNKS.toString() + System.getProperty("file.separator") + "festivalChunk");
@@ -977,8 +887,11 @@ public class VARpediaController implements Initializable {
 
                 String voice = "voice_kal_diphone";
                 if (cboVoice.getValue() == "New Zealand Male") { voice = "voice_akl_nz_jdt_diphone"; }
+                double stretch = 2.0 - voiceSpeed;
+                if (stretch < 0.1) { stretch = 0.1; }
 
                 w.write("(" + voice + ")\n");
+                w.write("(Parameter.set 'Duration_Stretch " + stretch + ")");
                 w.write("(set! utt1 (Utterance Text \"" + previewText + "\"))\n");
                 w.write("(utt.synth utt1)\n");
                 w.write("(utt.save.wave utt1 \"previewChunk\" 'riff)");
@@ -1014,6 +927,156 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
+    void btnPreviewChunkCombineClicked(ActionEvent event) throws IOException, InterruptedException {
+        CHUNKS.mkdirs();
+
+        if(btnPreviewChunkCombine.getText().equals("Preview")) {
+            if (listAllChunks.getSelectionModel().getSelectedItem() != null) {
+                // If a chunk from the list is selected, preview its audio
+                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit festivalChunk");
+                b1.directory(new File(CHUNKS.toString() + "/" + listAllChunks.getSelectionModel().getSelectedItem()));
+                p1 = b1.start();
+                // Set text to allowing stopping of audio
+                btnPreviewChunkCombine.setText("Stop");
+            }
+        } else {
+            // Handle stopping of preview
+            p1.destroy();
+            btnPreviewChunkCombine.setText("Preview");
+        }
+
+    }
+
+    @FXML
+    void btnCombineClicked(ActionEvent event) {
+        tabMain.getSelectionModel().select(2);
+    }
+
+    @FXML
+    void txaResultsDragged(MouseEvent event) {
+        listChunksSearch.getSelectionModel().clearSelection();
+        txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
+        txaPreviewChunk1.setText("");
+    }
+
+    @FXML
+    void btnCreateChunkClicked(ActionEvent event) throws IOException, InterruptedException {
+        CHUNKS.mkdirs();
+
+        String selectedText = txaResults.getSelectedText().trim();
+        int numWords = selectedText.length() - selectedText.replaceAll("\\s", "").length();
+        if (selectedText.length() == 0) {
+            txaPreviewChunk1.setText("No text selected.");
+            txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+        } else if (numWords > 40) {
+            txaPreviewChunk1.setText("Please select no more than 40 words per chunk.");
+            txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+        } else {
+
+            //obtain chunk name
+            String chunkName = txtChunkName.getText();
+
+            if (chunkName.startsWith("-") || !Pattern.matches("^[-_a-zA-Z0-9]*$", chunkName)) {
+                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+                txaPreviewChunk1.setText("Invalid chunk name, please try again.");
+            } else if (chunksList.contains(chunkName)) {
+                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+                txaPreviewChunk1.setText("\"" + chunkName + "\" already exists!\n Please choose a unique chunk name.");
+            } else {
+                txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
+                txaPreviewChunk1.setText(selectedText);
+
+                //handle default chunk name
+                numChunks++;
+                if (chunkName.isEmpty()) {
+                    chunkName = query + numChunks;
+                }
+
+                //create new chunk's directory
+                File NEWCHUNK = new File(CHUNKS.toString() + "/" + chunkName);
+                NEWCHUNK.mkdirs();
+
+                File festChunk = new File(NEWCHUNK.toString() + System.getProperty("file.separator") + "festivalChunk");
+                festChunk.createNewFile();
+                BufferedWriter w = new BufferedWriter(new FileWriter(NEWCHUNK.toString() + System.getProperty("file.separator") + "festivalChunk"));
+
+                String voice = "voice_kal_diphone";
+                if (cboVoice.getValue() == "New Zealand Male") { voice = "voice_akl_nz_jdt_diphone"; }
+                double stretch = 2.0 - voiceSpeed;
+                if (stretch < 0.1) { stretch = 0.1; }
+
+                w.write("(" + voice + ")\n");
+                w.write("(Parameter.set 'Duration_Stretch " + stretch + ")");
+                w.write("(set! utt1 (Utterance Text \"" + selectedText + "\"))\n");
+                w.write("(utt.synth utt1)\n");
+                w.write("(utt.save.wave utt1 \"festivalChunk\" 'riff)");
+                w.close();
+                ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
+                b.directory(NEWCHUNK);
+                Process p = b.start();
+                p.waitFor();
+
+                ProcessBuilder b2 = new ProcessBuilder("/bin/bash", "-c", "echo \"" + txaResults.getSelectedText().trim() + "\" > " + chunkName + ".txt");
+                b2.directory(NEWCHUNK);
+                Process p2 = b2.start();
+                p2.waitFor();
+
+
+                chunksList.add(chunkName);
+                Collections.sort(chunksList);
+
+            }
+        }
+
+        //PLace holder for chunk creation
+        //this list will house the names of all the chunks that will be displayed by the chunk listviews
+        //ideally these following lines will be kept, just swapping the name of the chunk
+
+    }
+
+    @FXML
+    void btnCreateCreationClicked(ActionEvent event) {
+        //add error checks here:
+
+
+        //-------------------
+        //TEMPIMGS.mkdirs();
+        //obtain all selected images
+        ArrayList<String> selectedImgs = new ArrayList<String>();
+        int index = 0;
+        for(ToggleButton imgButton: gridToggles){
+            if (imgButton.isSelected()){
+                String img = this.selectedImgs.get(index);
+                selectedImgs.add(img);
+            }
+            index++;
+        }
+
+        //check if all imgs correct
+        for(String path: selectedImgs){
+            System.out.println(path);
+        }
+
+        //------------testing purposes, will be in bg task-------
+//        TEMPIMGS.mkdirs();
+//        for (String img: selectedImgs) {
+//            ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "cp " + TEMP.toString() + img + " " + TEMPIMGS.toString() + img);
+//            Process p1 = null;
+//            try {
+//                p1 = b1.start();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            try {
+//                p1.waitFor();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+        //----------------------------------------------
+    }
+
+    @FXML
     void btnPreviewCreationClicked(ActionEvent event) {
 
     }
@@ -1035,7 +1098,7 @@ public class VARpediaController implements Initializable {
         deleteDirectory(CHUNKS);
         error = false;
 
-        String query = txtSearch.getText().trim().toLowerCase();
+        query = txtSearch.getText().trim().toLowerCase();
         if (!query.isEmpty()) {
 
             // Multithreading - search Wikit for query
@@ -1156,11 +1219,6 @@ public class VARpediaController implements Initializable {
         if (event.getClickCount() == 2) {
             btnSearchPreviewChunk.fire();
         }
-    }
-
-    @FXML
-    void txaResultsDragged(MouseEvent event) {
-        listChunksSearch.getSelectionModel().clearSelection();
     }
 
     @FXML

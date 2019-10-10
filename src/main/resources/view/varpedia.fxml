@@ -277,12 +277,12 @@
                                     </Label>
                                     <ListView fx:id="listAllChunks" onMouseClicked="#listAllChunksClicked" prefWidth="370.0" VBox.vgrow="ALWAYS" />
                                     <TextArea fx:id="txaPreviewChunk2" editable="false" prefHeight="200.0" prefWidth="200.0" promptText="Preview chunk text" />
-                                    <HBox alignment="CENTER" spacing="1.0">
+                                    <HBox alignment="CENTER" spacing="2.0">
                                        <VBox.margin>
                                           <Insets />
                                        </VBox.margin>
                                        <children>
-                                          <Button fx:id="btnPreviewChunkCombine" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnPreviewChunkClicked" text="Preview" HBox.hgrow="ALWAYS" />
+                                          <Button fx:id="btnPreviewChunkCombine" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnPreviewChunkCombineClicked" text="Preview" HBox.hgrow="ALWAYS" />
                                           <Button fx:id="btnDeleteChunk" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnDeleteChunkClicked" text="Delete chunk" HBox.hgrow="ALWAYS" />
                                        </children>
                                     </HBox>

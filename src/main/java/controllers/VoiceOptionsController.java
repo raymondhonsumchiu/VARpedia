@@ -37,6 +37,14 @@ public class VoiceOptionsController implements Initializable {
     }
 
     @FXML
+    void btnResetClicked(ActionEvent event) {
+        voicePitch = 1.0;
+        voicePitchRange = 1.0;
+        voiceSpeed = 1.0;
+        initialize(null, null);
+    }
+
+    @FXML
     void btnSaveClicked(ActionEvent event) {
         voicePitch = sliderPitch.getValue() / 50;
         voicePitchRange = sliderPitchRange.getValue() / 50;

@@ -3,7 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="240.0" prefWidth="375.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.controllers.VoiceOptionsController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="240.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.controllers.VoiceOptionsController">
    <top>
       <Label text="Voice options" BorderPane.alignment="CENTER" />
    </top>
@@ -18,19 +18,19 @@
             <Slider fx:id="sliderSpeed" />
          </children>
          <BorderPane.margin>
-            <Insets right="20.0" />
+            <Insets right="80.0" />
          </BorderPane.margin>
       </VBox>
    </center>
    <left>
-      <VBox alignment="CENTER_RIGHT" prefHeight="150.0" prefWidth="150.0" spacing="10.0" BorderPane.alignment="CENTER">
+      <VBox alignment="CENTER_RIGHT" prefHeight="150.0" prefWidth="197.0" spacing="10.0" BorderPane.alignment="CENTER">
          <children>
             <Label text="Pitch" />
             <Label layoutX="44.0" layoutY="49.0" text="Pitch Range" />
             <Label text="Speed" />
          </children>
          <BorderPane.margin>
-            <Insets right="20.0" />
+            <Insets right="40.0" />
          </BorderPane.margin>
       </VBox>
    </left>
@@ -38,6 +38,7 @@
       <HBox alignment="CENTER" prefHeight="55.0" spacing="5.0" BorderPane.alignment="CENTER">
          <children>
             <Button cancelButton="true" mnemonicParsing="false" onAction="#btnCancelClicked" text="Cancel" />
+            <Button layoutX="196.0" layoutY="27.0" mnemonicParsing="false" onAction="#btnResetClicked" text="Reset" />
             <Button defaultButton="true" mnemonicParsing="false" onAction="#btnSaveClicked" text="Save" />
          </children>
          <padding>
