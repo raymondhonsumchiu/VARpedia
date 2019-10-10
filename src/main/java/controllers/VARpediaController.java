@@ -1007,6 +1007,7 @@ public class VARpediaController implements Initializable {
     @FXML
     void txtSearchFlickrEnter(ActionEvent event) {
         btnSearchFlickr.fire();
+    }
 
     // QUIZ METHODS
     private void initialiseQuizTab() {
