@@ -37,13 +37,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static main.java.VARpedia.*;
 
 public class VARpediaController implements Initializable {
-    Process p1 = null;
     // General window fields
     private double xOffset = 0;
     private double yOffset = 0;
@@ -63,9 +60,6 @@ public class VARpediaController implements Initializable {
     // Quiz tab fields
     private MediaPlayer playerQuiz;
     private Duration durationQuiz;
-
-    //background thread
-    private ExecutorService bg = Executors.newSingleThreadExecutor();
 
     @FXML
     private TabPane tabMain;
@@ -384,7 +378,7 @@ public class VARpediaController implements Initializable {
             // Find and list all creations using bash
             ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "ls *.mp4");
             b.directory(CREATIONS);
-            Process p = null;
+            Process p;
             try {
                 p = b.start();
                 InputStream out = p.getInputStream();
@@ -422,7 +416,7 @@ public class VARpediaController implements Initializable {
         txaResults.setEditable(false);
         ringSearch.setVisible(false);
 
-        cboVoice.getItems().addAll("voice_kal_diphone", "voice_akl_nz_jdt_diphone");
+        cboVoice.getItems().addAll("US Male", "New Zealand Male");
         cboVoice.getSelectionModel().selectFirst();
 
         // set listview of chunks to observe the arraylist of chunks
@@ -825,37 +819,41 @@ public class VARpediaController implements Initializable {
         }
     }
 
+    Process p1;
     @FXML
     void btnPreviewChunkClicked(ActionEvent event) throws IOException, InterruptedException {
         CHUNKS.mkdir();
+        txaPreviewChunk1.setText("");
+        txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
        // PreviewChunkTask previewTask = new PreviewChunkTask();
 
         if(btnSearchPreviewChunk.getText().equals("Preview")) {
-            //obtain selecetd text and check num of words
+            // Obtain selected text and check num of words
             String previewText = txaResults.getSelectedText().trim();
             int numWords = previewText.length() - previewText.replaceAll("\\s", "").length();
-            System.out.println(previewText);
 
-            //PLACEHOLDER POP UPS UNTIL ERROR HANDLING IS DISCUSSED
             if (previewText.length() == 0) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("New chunk");
-                alert.setContentText("No text selected!");
-                alert.showAndWait();
+                txaPreviewChunk1.setText("Nothing to preview.");
+                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
             } else if (numWords > 40) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("New chunk");
-                alert.setContentText("Please select no more than 40 words per chunk.");
-                alert.showAndWait();
+                txaPreviewChunk1.setText("Please select no more than 40 words per chunk.");
+                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
             } else {
-                //handle previewing of chunk
+                txaPreviewChunk1.setText(previewText);
+                // Handle previewing of chunk
 
-                //create preview audio file, this will allow the stopping of its playing
+                // Create preview audio file, this will allow stopping
                 File festChunk = new File(CHUNKS.toString() + System.getProperty("file.separator") + "festivalChunk");
                 CHUNKS.mkdirs();
                 festChunk.createNewFile();
                 BufferedWriter w = new BufferedWriter(new FileWriter(CHUNKS.toString() + System.getProperty("file.separator") + "festivalChunk"));
-                w.write("(" + cboVoice.getValue() + ")\n");
+
+                String voice = "voice_kal_diphone";
+                if (cboVoice.getValue() == "New Zealand Male") {
+                    voice = "voice_akl_nz_jdt_diphone";
+                }
+
+                w.write("(" + voice + ")\n");
                 w.write("(set! utt1 (Utterance Text \"" + previewText + "\"))\n");
                 w.write("(utt.synth utt1)\n");
                 w.write("(utt.save.wave utt1 \"previewChunk\" 'riff)");
@@ -865,25 +863,25 @@ public class VARpediaController implements Initializable {
                 Process p = b.start();
                 p.waitFor();
 
-                //2nd process for actually playing the audio
+                // Second process for actually playing the audio
                 ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit previewChunk");
                 b1.directory(CHUNKS);
                 p1 = b1.start();
 
-                //bg thread keeps an eye on the process while it is alive
+                // bg thread keeps an eye on the process while it is alive
                 PreviewChunkTask previewTask = new PreviewChunkTask(p1);
                 bg.submit(previewTask);
-                //once finished, the text is set back
+                // Once finished, the text is set back
                 previewTask.setOnSucceeded(e ->{
                     btnSearchPreviewChunk.setText("Preview");
                 });
 
-                //set text to allowing stopping of audio
-                btnSearchPreviewChunk.setText("Stop Preview");
+                // Set text to allowing stopping of audio
+                btnSearchPreviewChunk.setText("Stop");
 
             }
-        }else{
-            //handle stopping of preview
+        } else {
+            // Handle stopping of preview
             p1.destroy();
             btnSearchPreviewChunk.setText("Preview");
         }
@@ -1021,6 +1019,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void listAllChunksClicked(MouseEvent event) {
+        listSelectedChunks.getSelectionModel().clearSelection();
         if (event.getClickCount() == 2) {
             btnAddChunk.fire();
         }
@@ -1028,9 +1027,15 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void listChunksSearchClicked(MouseEvent event) {
+        txaResults.deselect();
         if (event.getClickCount() == 2) {
             btnSearchPreviewChunk.fire();
         }
+    }
+
+    @FXML
+    void txaResultsDragged(MouseEvent event) {
+        listChunksSearch.getSelectionModel().clearSelection();
     }
 
     @FXML
@@ -1042,6 +1047,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void listSelectedChunksClicked(MouseEvent event) {
+        listAllChunks.getSelectionModel().clearSelection();
         if (event.getClickCount() == 2) {
             btnRemoveChunk.fire();
         }

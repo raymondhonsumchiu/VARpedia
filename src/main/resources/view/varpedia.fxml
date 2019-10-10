@@ -181,7 +181,7 @@
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                               </Label>
-                              <TextArea fx:id="txaResults" VBox.vgrow="ALWAYS" />
+                              <TextArea fx:id="txaResults" onDragDetected="#txaResultsDragged" VBox.vgrow="ALWAYS" />
                            </children>
                            <BorderPane.margin>
                               <Insets right="2.0" />
