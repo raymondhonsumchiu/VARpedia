@@ -1,13 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.Cursor?>
-<?import javafx.scene.image.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.media.MediaView?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 <?import main.java.skins.progressindicator.RingProgressIndicator?>
+
 <AnchorPane prefHeight="810.0" prefWidth="1440.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.controllers.VARpediaController">
    <children>
       <TabPane fx:id="tabMain" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseDragged="#tabMainMouseDragged" onMousePressed="#tabMainMousePressed" onMouseReleased="#tabMainMouseReleased" prefHeight="810.0" prefWidth="1440.0" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="30.0" tabMaxWidth="160.0" tabMinHeight="30.0" tabMinWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -489,7 +511,28 @@
             </Tab>
             <Tab text="Quiz">
                <content>
-                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <ToggleButton fx:id="toggleVidQuiz" layoutX="100.0" layoutY="79.0" mnemonicParsing="false" prefHeight="125.0" prefWidth="200.0" text="ToggleButton" />
+                        <ToggleButton fx:id="toggleBothQuiz" layoutX="100.0" layoutY="487.0" mnemonicParsing="false" prefHeight="125.0" prefWidth="200.0" text="ToggleButton" />
+                        <ToggleButton fx:id="toggleAudioQuiz" layoutX="100.0" layoutY="288.0" mnemonicParsing="false" prefHeight="125.0" prefWidth="200.0" text="ToggleButton" />
+                        <Button layoutX="125.0" layoutY="682.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="150.0" text="Begin" />
+                        <Label layoutX="182.0" layoutY="221.0" text="Video" />
+                        <Label layoutX="154.0" layoutY="627.0" text="Video &amp; Audio" />
+                        <Label layoutX="182.0" layoutY="428.0" text="Audio" />
+                        <Text fx:id="txtQuizTitle" layoutX="701.0" layoutY="99.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Guess the Term!">
+                           <font>
+                              <Font size="60.0" />
+                           </font>
+                        </Text>
+                        <TextField fx:id="txtQuizAnswer" layoutX="701.0" layoutY="577.0" prefHeight="50.0" prefWidth="336.0" />
+                        <Button fx:id="btnSubmitAns" layoutX="1083.0" layoutY="578.0" mnemonicParsing="false" prefHeight="48.0" prefWidth="119.0" text="Submit" />
+                        <Label fx:id="lblWrongAns" layoutX="702.0" layoutY="550.0" prefHeight="16.0" prefWidth="335.0" text="error message" textFill="RED" />
+                        <Button fx:id="btnNextQuiz" layoutX="655.0" layoutY="677.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="131.0" text="Next" />
+                        <Button fx:id="btnRetryQuiz" layoutX="880.0" layoutY="677.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="131.0" text="Retry" />
+                        <Button fx:id="btnFinQuiz" layoutX="1108.0" layoutY="677.0" mnemonicParsing="false" prefHeight="50.0" prefWidth="131.0" text="Finish" />
+                        <ImageView fx:id="imgQuiz" fitHeight="296.0" fitWidth="534.0" layoutX="679.0" layoutY="203.0" pickOnBounds="true" preserveRatio="true" />
+                     </children></AnchorPane>
                </content>
             </Tab>
             <Tab text="Options">

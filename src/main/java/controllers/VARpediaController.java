@@ -21,6 +21,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
+import javafx.scene.text.Text;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import main.java.VARpedia;
@@ -244,6 +245,42 @@ public class VARpediaController implements Initializable {
     @FXML
     private RingProgressIndicator ringCombine;
 
+    @FXML
+    private ToggleButton toggleVidQuiz;
+
+    @FXML
+    private ToggleButton toggleAudioQuiz;
+
+    @FXML
+    private ToggleButton toggleBothQuiz;
+
+    @FXML
+    private Label lblWrongAns;
+
+    @FXML
+    private TextField txtQuizAnswer;
+
+    @FXML
+    private Button btnSubmitAns;
+
+    @FXML
+    private Text txtQuizTitle;
+
+    @FXML
+    private ImageView imgQuiz;
+
+    @FXML
+    private Button btnNextQuiz;
+
+    @FXML
+    private Button btnRetryQuiz;
+
+    @FXML
+    private Button btnFinQuiz;
+
+
+
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         selectedImgs = new ArrayList<String>();
@@ -317,6 +354,15 @@ public class VARpediaController implements Initializable {
         listSelectedChunks.setItems(actualChunksList);
 
         // Initialise "Quiz" tab-------
+        imgQuiz.setVisible(false);
+        txtQuizTitle.setVisible(false);
+        txtQuizAnswer.setVisible(false);
+        lblWrongAns.setVisible(false);
+        btnSubmitAns.setVisible(false);
+        btnNextQuiz.setVisible(false);
+        btnRetryQuiz.setVisible(false);
+        btnFinQuiz.setVisible(false);
+
 
         // Initialise "Options" tab
         if (VARpedia.isDark) {
