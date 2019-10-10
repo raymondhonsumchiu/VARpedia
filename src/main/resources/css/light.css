@@ -59,6 +59,9 @@ BUTTON, TOGGLE BUTTON, COMBO BOX
     -fx-border-color: transparent;
     -fx-pref-width: 67px;
 }
+#button-flickr {
+    -fx-pref-width: 50px;
+}
 .button-long {
     -fx-pref-width: 325px;
 }
@@ -77,8 +80,8 @@ BUTTON, TOGGLE BUTTON, COMBO BOX
   -fx-background-color: transparent;
   -fx-border-color: transparent;
   -fx-base: -fx-accent;
-  -fx-pref-width: 200px;
-  -fx-pref-height: 163px;
+  -fx-pref-width: 155px;
+  -fx-pref-height: 155px;
 }
 .toggle-image:hover, .toggle-image:selected:hover {
   -fx-border-color: -fx-body-color;

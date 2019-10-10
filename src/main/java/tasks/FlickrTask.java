@@ -12,7 +12,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 
-import static main.java.VARpedia.TEMP;
+import static main.java.VARpedia.TEMPIMGS;
 import static main.java.VARpedia.deleteDirectory;
 
 public class FlickrTask extends Task<Void> {
@@ -25,8 +25,8 @@ public class FlickrTask extends Task<Void> {
     @Override
     protected Void call() throws Exception {
 
-        deleteDirectory(TEMP);
-        TEMP.mkdirs();
+        deleteDirectory(TEMPIMGS);
+        TEMPIMGS.mkdirs();
 
         try {
             // Obtain API keys from text file
@@ -54,7 +54,7 @@ public class FlickrTask extends Task<Void> {
                     String filename = query.trim().replace(' ', '-')+ "-" + i + ".jpg";
 
                     // Downloads images into temp directory
-                    File outputfile = new File(TEMP.toString(),filename);
+                    File outputfile = new File(TEMPIMGS.toString(),filename);
                     ImageIO.write(image, "jpg", outputfile);
                     System.out.println(filename + " downloaded");
                     i++;

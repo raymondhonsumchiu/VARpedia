@@ -8,6 +8,7 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -44,7 +45,7 @@ public class VARpediaController implements Initializable {
     private String css;
     private MediaPlayer mp;
     private Duration duration;
-    private List<ImageView> gridImages;
+    private List<ImageView> gridImageViews;
     private List<ToggleButton> gridToggles;
     private ObservableList<String> chunksList = FXCollections.observableArrayList();
     private ObservableList<String> actualChunksList = FXCollections.observableArrayList();
@@ -64,6 +65,9 @@ public class VARpediaController implements Initializable {
 
     @FXML
     private Button btnSearch;
+
+    @FXML
+    private Button btnSearchFlickr;
 
     @FXML
     private ListView<String> listChunksSearch;
@@ -87,10 +91,19 @@ public class VARpediaController implements Initializable {
     private Button btnDeleteChunk;
 
     @FXML
+    private Button btnAddChunk;
+
+    @FXML
+    private Button btnRemoveChunk;
+
+    @FXML
     private ListView<String> listSelectedChunks;
 
     @FXML
     private Button btnClearChunks;
+
+    @FXML
+    private VBox vImages;
 
     @FXML
     private ToggleButton toggleGrid1;
@@ -192,6 +205,9 @@ public class VARpediaController implements Initializable {
     private TextField txtSearch;
 
     @FXML
+    private TextField txtSearchFlickr;
+
+    @FXML
     private TextField txtCreationName;
 
     @FXML
@@ -250,6 +266,9 @@ public class VARpediaController implements Initializable {
 
     @FXML
     private RingProgressIndicator ringCombine;
+
+    @FXML
+    private RingProgressIndicator ringImages;
 
     @FXML
     private VBox vQuizTitle;
@@ -323,7 +342,6 @@ public class VARpediaController implements Initializable {
     @FXML
     private Button btnQuizSubmit;
 
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         selectedImgs = new ArrayList<String>();
@@ -331,8 +349,8 @@ public class VARpediaController implements Initializable {
         // Clean up
         deleteDirectory(CHUNKS);
         deleteDirectory(TEMP);
-
-        // Initialise "Creations" tab
+      
+        // ----------- Initialise "Creations" tab ----------
         vMedia.setVisible(false);
         if (CREATIONS.exists()) {
             // Find and list all creations using bash
@@ -364,7 +382,7 @@ public class VARpediaController implements Initializable {
             }
         });
         tabMain.addEventFilter(KeyEvent.KEY_PRESSED, event->{
-            if (event.getCode() == KeyCode.SPACE) {
+            if (event.getCode() == KeyCode.SPACE && tabMain.getSelectionModel().getSelectedIndex() == 0) {
                 if (mp != null) {
                     if (mp.getStatus() == MediaPlayer.Status.PAUSED) {
                         mp.play();
@@ -378,32 +396,34 @@ public class VARpediaController implements Initializable {
         btnForward.addEventFilter(KeyEvent.ANY, Event::consume);
         btnReverse.addEventFilter(KeyEvent.ANY, Event::consume);
 
-        // Initialise "Search" tab------
+        // ---------- Initialise "Search" tab -----------
         txaResults.setEditable(false);
         ringSearch.setVisible(false);
 
-        //set listview of chunks to observe the arraylist of chunks
+        // set listview of chunks to observe the arraylist of chunks
         listChunksSearch.setItems(chunksList);
 
-        // Initialise "Combine" tab------
+        // ---------- Initialise "Combine" tab -----------
         ringCombine.setVisible(false);
-        gridImages = new ArrayList<>();
+        gridImageViews = new ArrayList<>();
         gridToggles = new ArrayList<>();
-        Collections.addAll(gridImages,imgGrid1,imgGrid2,imgGrid3,imgGrid4,imgGrid5,imgGrid6,imgGrid7,imgGrid8,imgGrid9,imgGrid10,imgGrid11,imgGrid12);
-        Collections.addAll(gridToggles,toggleGrid1,toggleGrid2,toggleGrid3,toggleGrid4,toggleGrid5,toggleGrid6,toggleGrid7,toggleGrid8,toggleGrid9,toggleGrid10,toggleGrid11,toggleGrid12);
+        Collections.addAll(gridImageViews,imgGrid1,imgGrid2,imgGrid3,imgGrid4,imgGrid5,imgGrid6,imgGrid7,imgGrid8,imgGrid9,imgGrid10,imgGrid11,imgGrid12);
+        Collections.addAll(gridToggles,toggleGrid1,toggleGrid2,toggleGrid3,toggleGrid4,toggleGrid5,toggleGrid5,toggleGrid6,toggleGrid7,toggleGrid8,toggleGrid8,toggleGrid9,toggleGrid10,toggleGrid11,toggleGrid12);
+        vImages.setVisible(false);
+        ringImages.setVisible(false);
 
-        //set listview of all available chunks to same arraylist of chunks as prior chunk listview
+        // set listview of all available chunks to same arraylist of chunks as prior chunk listview
         listAllChunks.setItems(chunksList);
         listSelectedChunks.setItems(actualChunksList);
 
-        // Initialise "Quiz" tab-------
+        // ---------- Initialise "Quiz" tab ----------
         hQuizDifficulty.setVisible(true);
         vQuizTitle.setVisible(true);
         vQuizPlayer.setVisible(false);
         vQuizTimeOut.setVisible(false);
         hQuizAnswer.setVisible(false);
 
-        // Initialise "Options" tab
+        // ---------- Initialise "Options" tab ----------
         if (VARpedia.isDark) {
             btnLightTheme.setSelected(false);
             btnDarkTheme.setSelected(true);
@@ -583,6 +603,7 @@ public class VARpediaController implements Initializable {
         VARpedia.primaryStage.setIconified(true);
     }
 
+    // THIS REGION HANDLES THE MEDIA PLAYER
     private String currentlyPlaying;
     private boolean mute;
     private double volume;
@@ -788,27 +809,32 @@ public class VARpediaController implements Initializable {
         }
     }
 
+    private boolean error;
     @FXML
     void btnSearchClicked(ActionEvent event) {
         // Clean up for new search
         deleteDirectory(TEMP);
         deleteDirectory(CHUNKS);
+        error = false;
 
         String query = txtSearch.getText().trim().toLowerCase();
         if (!query.isEmpty()) {
+
+            // Multithreading - search Wikit for query
             WikitTask bgWikit = new WikitTask(query);
             bg.submit(bgWikit);
+
+            // Lock controls, reveal loading ring
             txaResults.clear();
             txaResults.setEditable(false);
             btnSearch.setDisable(true);
+            btnSearchFlickr.setDisable(true);
             ringSearch.setVisible(true);
 
-            FlickrTask bgFlickr = new FlickrTask(query);
-            bg.submit(bgFlickr);
-            btnCreateCreation.setDisable(true);
-            ringCombine.setVisible(true);
+            fillGridImages(query);
 
             bgWikit.setOnSucceeded(e -> {
+                // Unlock controls, hide loading ring
                 btnSearch.setDisable(false);
                 ringSearch.setVisible(false);
                 txaResults.setStyle("-fx-text-fill: font-color;");
@@ -820,12 +846,14 @@ public class VARpediaController implements Initializable {
                     // Reset search field
                     txtSearch.selectAll();
                     txtSearch.requestFocus();
+                    error = true;
                 } else if (list.get(0).contains("Ambiguous results, ") || list.get(0).contains("may also refer to:") || (list.size() > 1 && list.get(1).contains("may also refer to:"))) {
                     txaResults.setText("Ambiguous results found for \"" + query + "\".");
                     txaResults.setStyle("-fx-text-fill: close-color;");
                     // Reset search field
                     txtSearch.selectAll();
                     txtSearch.requestFocus();
+                    error = true;
                 } else {
                     txaResults.setEditable(true);
                     for (String s : list) {
@@ -833,42 +861,80 @@ public class VARpediaController implements Initializable {
                     }
                     txaResults.requestFocus();
                     txaResults.positionCaret(0);
+                    error = false;
                 }
             });
+        }
+    }
+
+    @FXML
+    void btnSearchFlickrClicked(ActionEvent event) {
+        fillGridImages(txtSearchFlickr.getText().trim().toLowerCase());
+    }
+
+    private void fillGridImages(String query) {
+        if (!query.isEmpty()) {
+
+            // Multithreading - search Flickr API for images
+            FlickrTask bgFlickr = new FlickrTask(query);
+            bg.submit(bgFlickr);
+
+            // Lock controls, reveal loading ring
+            btnCreateCreation.setDisable(true);
+            vImages.setVisible(false);
+            ringImages.setVisible(true);
+
+            // Reset selection
+            for (ToggleButton t : gridToggles) {
+                t.setSelected(false);
+            }
 
             bgFlickr.setOnSucceeded(e -> {
+                // Unlock controls, hide loading ring
                 btnCreateCreation.setDisable(false);
-                ringCombine.setVisible(false);
+                btnSearchFlickr.setDisable(false);
+                vImages.setVisible(true);
+                ringImages.setVisible(false);
 
                 // Once all images are downloaded, we place each into the image grid
                 int imgCount = 1;
-                for (ImageView imgView: gridImages){
+                for (ImageView imgView : gridImageViews) {
                     //set each image
-                    File file = new File(TEMP.toString() + "/" + query + "-" + imgCount + ".jpg");
+                    File file = new File(TEMPIMGS.toString() + "/" + query + "-" + imgCount + ".jpg");
                     Image image = new Image(file.toURI().toString());
+                    double n = (image.getWidth() < image.getHeight()) ? image.getWidth() : image.getHeight();
+                    double x = (image.getWidth() - n) / 2;
+                    double y = (image.getHeight() - n) / 2;
+                    Rectangle2D rect = new Rectangle2D(x, y, n, n);
+
+                    imgView.setViewport(rect);
+                    imgView.setSmooth(true);
                     imgView.setImage(image);
 
-                    //add image path to arraylist so it can be extracted later for creation
-                    selectedImgs.add( "/" + query + "-" + imgCount + ".jpg");
+                    // Add image path to arraylist so it can be extracted later for creation
+                    selectedImgs.add("/" + query + "-" + imgCount + ".jpg");
                     imgCount++;
                 }
+                if (error) {
+                    deleteDirectory(TEMPIMGS);
+                    vImages.setVisible(false);
+                }
+                txtSearchFlickr.clear();
             });
         }
     }
 
     @FXML
     void listAllChunksClicked(MouseEvent event) {
-        String chunk;
         if (event.getClickCount() == 2) {
-            chunk = listCreations.getSelectionModel().getSelectedItem();
+            btnAddChunk.fire();
         }
     }
 
     @FXML
     void listChunksSearchClicked(MouseEvent event) {
-        String chunk;
         if (event.getClickCount() == 2) {
-            chunk = listCreations.getSelectionModel().getSelectedItem();
+            btnSearchPreviewChunk.fire();
         }
     }
 
@@ -881,9 +947,8 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void listSelectedChunksClicked(MouseEvent event) {
-        String chunk;
         if (event.getClickCount() == 2) {
-            chunk = listCreations.getSelectionModel().getSelectedItem();
+            btnRemoveChunk.fire();
         }
     }
 
@@ -918,6 +983,10 @@ public class VARpediaController implements Initializable {
     void txtSearchEnter(ActionEvent event) {
         btnSearch.fire();
     }
+  
+    @FXML
+    void txtSearchFlickrEnter(ActionEvent event) {
+        btnSearchFlickr.fire();
 
     // QUIZ METHODS
     @FXML
