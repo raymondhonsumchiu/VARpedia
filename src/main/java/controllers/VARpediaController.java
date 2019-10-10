@@ -190,6 +190,12 @@ public class VARpediaController implements Initializable {
     private Button btnCreateCreation;
 
     @FXML
+    private ComboBox cboVoice;
+
+    @FXML
+    private ComboBox cboMusic;
+
+    @FXML
     private ToggleButton btnDarkTheme;
 
     @FXML
@@ -223,7 +229,7 @@ public class VARpediaController implements Initializable {
     private Pane mvPane;
 
     @FXML
-    private HBox mediaToolbar;
+    private VBox vMedia;
 
     @FXML
     private Button btnPlayCreation;
@@ -264,6 +270,78 @@ public class VARpediaController implements Initializable {
     @FXML
     private RingProgressIndicator ringImages;
 
+    @FXML
+    private VBox vQuizTitle;
+
+    @FXML
+    private VBox vQuizPlayer;
+
+    @FXML
+    private Pane mvQuizPane;
+
+    @FXML
+    private MediaView mvQuiz;
+
+    @FXML
+    private Label lblQuizCurrentTime;
+
+    @FXML
+    private ProgressBar progressSliderQuiz;
+
+    @FXML
+    private Slider sliderProgressQuiz;
+
+    @FXML
+    private Label lblQuizTotalTime;
+
+    @FXML
+    private ImageView imgVolumeQuiz;
+
+    @FXML
+    private ProgressBar progressVolQuiz;
+
+    @FXML
+    private Slider sliderVolQuiz;
+
+    @FXML
+    private VBox vQuizTimeOut;
+
+    @FXML
+    private Button btnQuizNext;
+
+    @FXML
+    private Button btnQuizRetry;
+
+    @FXML
+    private Button btnQuizFinish;
+
+    @FXML
+    private HBox hQuizDifficulty;
+
+    @FXML
+    private ToggleButton toggleQuizEasy;
+
+    @FXML
+    private ToggleButton toggleQuizMedium;
+
+    @FXML
+    private ToggleButton toggleQuizHard;
+
+    @FXML
+    private Button btnQuizBegin;
+
+    @FXML
+    private HBox hQuizAnswer;
+
+    @FXML
+    private Label lblQuizAnswer;
+
+    @FXML
+    private TextField txtQuizAnswer;
+
+    @FXML
+    private Button btnQuizSubmit;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         selectedImgs = new ArrayList<String>();
@@ -271,9 +349,9 @@ public class VARpediaController implements Initializable {
         // Clean up
         deleteDirectory(CHUNKS);
         deleteDirectory(TEMP);
-
+      
         // ----------- Initialise "Creations" tab ----------
-        mediaToolbar.setVisible(false);
+        vMedia.setVisible(false);
         if (CREATIONS.exists()) {
             // Find and list all creations using bash
             ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "ls *.mp4");
@@ -339,6 +417,11 @@ public class VARpediaController implements Initializable {
         listSelectedChunks.setItems(actualChunksList);
 
         // ---------- Initialise "Quiz" tab ----------
+        hQuizDifficulty.setVisible(true);
+        vQuizTitle.setVisible(true);
+        vQuizPlayer.setVisible(false);
+        vQuizTimeOut.setVisible(false);
+        hQuizAnswer.setVisible(false);
 
         // ---------- Initialise "Options" tab ----------
         if (VARpedia.isDark) {
@@ -540,7 +623,7 @@ public class VARpediaController implements Initializable {
             mvPlayCreation.fitHeightProperty().bind(mvPane.heightProperty());
             mvPlayCreation.setPreserveRatio(false);
 
-            mediaToolbar.setVisible(true);
+            vMedia.setVisible(true);
             progressSlider.progressProperty().bind(sliderProgress.valueProperty().divide(100.0));
             progressVol.progressProperty().bind(sliderVol.valueProperty().divide(100.0));
 
@@ -900,10 +983,45 @@ public class VARpediaController implements Initializable {
     void txtSearchEnter(ActionEvent event) {
         btnSearch.fire();
     }
-
+  
     @FXML
     void txtSearchFlickrEnter(ActionEvent event) {
         btnSearchFlickr.fire();
+
+    // QUIZ METHODS
+    @FXML
+    void sliderQuizDragged(MouseEvent event) {
+
+    }
+
+    @FXML
+    void btnQuizBeginClicked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnQuizFinishClicked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnQuizNextClicked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnQuizRetryClicked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnQuizSubmitClicked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnMuteQuizClicked(ActionEvent event) {
+
     }
 
 }

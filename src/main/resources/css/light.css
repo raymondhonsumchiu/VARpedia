@@ -63,7 +63,7 @@ BUTTON, TOGGLE BUTTON, COMBO BOX
     -fx-pref-width: 50px;
 }
 .button-long {
-    -fx-pref-width: 320px;
+    -fx-pref-width: 325px;
 }
 .button-media {
     -fx-pref-width: 50px;
@@ -183,8 +183,15 @@ IMAGE VIEW
 /**
 LABEL
 **/
-.labelTitle {
+.label-title {
     -fx-font-size: 48px;
+}
+.label-small {
+    -fx-font-size: 16px;
+}
+#label-quiz-answer {
+    -fx-pref-width: 150px;
+    -fx-alignment: center-right;
 }
 
 /**

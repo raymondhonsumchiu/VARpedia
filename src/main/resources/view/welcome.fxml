@@ -16,10 +16,10 @@
       </ImageView>
       <VBox alignment="CENTER_LEFT">
          <children>
-            <Label styleClass="labelTitle"  text="Welcome to" />
-            <Label layoutX="10.0" layoutY="389.0" styleClass="labelTitle"  text="VARpedia" />
+            <Label styleClass="label-title" text="Welcome to" />
+            <Label layoutX="10.0" layoutY="389.0" styleClass="label-title" text="VARpedia" />
             <Region prefHeight="100.0" prefWidth="260.0" />
-            <Button id="button-begin" defaultButton="true" mnemonicParsing="false" onAction="#btnBeginClick" prefWidth="249.0"  text="Begin" />
+            <Button id="button-begin" defaultButton="true" mnemonicParsing="false" onAction="#btnBeginClick" prefWidth="249.0" text="Begin" />
          </children>
       </VBox>
    </children>
