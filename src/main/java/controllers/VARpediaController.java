@@ -18,10 +18,10 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
-import javafx.scene.text.Text;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import main.java.VARpedia;
@@ -177,6 +177,12 @@ public class VARpediaController implements Initializable {
     private Button btnCreateCreation;
 
     @FXML
+    private ComboBox cboVoice;
+
+    @FXML
+    private ComboBox cboMusic;
+
+    @FXML
     private ToggleButton btnDarkTheme;
 
     @FXML
@@ -207,7 +213,7 @@ public class VARpediaController implements Initializable {
     private Pane mvPane;
 
     @FXML
-    private HBox mediaToolbar;
+    private VBox vMedia;
 
     @FXML
     private Button btnPlayCreation;
@@ -246,39 +252,76 @@ public class VARpediaController implements Initializable {
     private RingProgressIndicator ringCombine;
 
     @FXML
-    private ToggleButton toggleVidQuiz;
+    private VBox vQuizTitle;
 
     @FXML
-    private ToggleButton toggleAudioQuiz;
+    private VBox vQuizPlayer;
 
     @FXML
-    private ToggleButton toggleBothQuiz;
+    private Pane mvQuizPane;
 
     @FXML
-    private Label lblWrongAns;
+    private MediaView mvQuiz;
+
+    @FXML
+    private Label lblQuizCurrentTime;
+
+    @FXML
+    private ProgressBar progressSliderQuiz;
+
+    @FXML
+    private Slider sliderProgressQuiz;
+
+    @FXML
+    private Label lblQuizTotalTime;
+
+    @FXML
+    private ImageView imgVolumeQuiz;
+
+    @FXML
+    private ProgressBar progressVolQuiz;
+
+    @FXML
+    private Slider sliderVolQuiz;
+
+    @FXML
+    private VBox vQuizTimeOut;
+
+    @FXML
+    private Button btnQuizNext;
+
+    @FXML
+    private Button btnQuizRetry;
+
+    @FXML
+    private Button btnQuizFinish;
+
+    @FXML
+    private HBox hQuizDifficulty;
+
+    @FXML
+    private ToggleButton toggleQuizEasy;
+
+    @FXML
+    private ToggleButton toggleQuizMedium;
+
+    @FXML
+    private ToggleButton toggleQuizHard;
+
+    @FXML
+    private Button btnQuizBegin;
+
+    @FXML
+    private HBox hQuizAnswer;
+
+    @FXML
+    private Label lblQuizAnswer;
 
     @FXML
     private TextField txtQuizAnswer;
 
     @FXML
-    private Button btnSubmitAns;
-
-    @FXML
-    private Text txtQuizTitle;
-
-    @FXML
-    private ImageView imgQuiz;
-
-    @FXML
-    private Button btnNextQuiz;
-
-    @FXML
-    private Button btnRetryQuiz;
-
-    @FXML
-    private Button btnFinQuiz;
-
-
+    private Button btnQuizSubmit;
 
 
     @Override
@@ -290,7 +333,7 @@ public class VARpediaController implements Initializable {
         deleteDirectory(TEMP);
 
         // Initialise "Creations" tab
-        mediaToolbar.setVisible(false);
+        vMedia.setVisible(false);
         if (CREATIONS.exists()) {
             // Find and list all creations using bash
             ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "ls *.mp4");
@@ -354,15 +397,11 @@ public class VARpediaController implements Initializable {
         listSelectedChunks.setItems(actualChunksList);
 
         // Initialise "Quiz" tab-------
-        imgQuiz.setVisible(false);
-        txtQuizTitle.setVisible(false);
-        txtQuizAnswer.setVisible(false);
-        lblWrongAns.setVisible(false);
-        btnSubmitAns.setVisible(false);
-        btnNextQuiz.setVisible(false);
-        btnRetryQuiz.setVisible(false);
-        btnFinQuiz.setVisible(false);
-
+        hQuizDifficulty.setVisible(true);
+        vQuizTitle.setVisible(true);
+        vQuizPlayer.setVisible(false);
+        vQuizTimeOut.setVisible(false);
+        hQuizAnswer.setVisible(false);
 
         // Initialise "Options" tab
         if (VARpedia.isDark) {
@@ -563,7 +602,7 @@ public class VARpediaController implements Initializable {
             mvPlayCreation.fitHeightProperty().bind(mvPane.heightProperty());
             mvPlayCreation.setPreserveRatio(false);
 
-            mediaToolbar.setVisible(true);
+            vMedia.setVisible(true);
             progressSlider.progressProperty().bind(sliderProgress.valueProperty().divide(100.0));
             progressVol.progressProperty().bind(sliderVol.valueProperty().divide(100.0));
 
@@ -878,6 +917,42 @@ public class VARpediaController implements Initializable {
     @FXML
     void txtSearchEnter(ActionEvent event) {
         btnSearch.fire();
+    }
+
+    // QUIZ METHODS
+    @FXML
+    void sliderQuizDragged(MouseEvent event) {
+
+    }
+
+    @FXML
+    void btnQuizBeginClicked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnQuizFinishClicked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnQuizNextClicked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnQuizRetryClicked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnQuizSubmitClicked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnMuteQuizClicked(ActionEvent event) {
+
     }
 
 }
