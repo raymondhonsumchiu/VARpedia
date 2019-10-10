@@ -1019,7 +1019,9 @@ public class VARpediaController implements Initializable {
     private int currentQuestion;
     private int numCorrect;
     private void initialiseQuizTab() {
-        numQuestions = CREATIONS.listFiles().length;
+        if (CREATIONS.exists() && CREATIONS.isDirectory()) {
+            numQuestions = CREATIONS.listFiles().length;
+        }
         currentQuestion = 0;
         numCorrect = 0;
         hQuizToolbar.setVisible(true);
