@@ -28,9 +28,7 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import main.java.VARpedia;
 import main.java.skins.progressindicator.RingProgressIndicator;
-import main.java.tasks.FlickrTask;
-import main.java.tasks.PreviewChunkTask;
-import main.java.tasks.WikitTask;
+import main.java.tasks.*;
 
 import java.io.*;
 import java.net.URL;
@@ -390,7 +388,7 @@ public class VARpediaController implements Initializable {
         vMedia.setVisible(false);
         if (CREATIONS.exists()) {
             // Find and list all creations using bash
-            ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "ls *.mp4");
+            ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "ls");
             b.directory(CREATIONS);
             Process p;
             try {
@@ -401,7 +399,8 @@ public class VARpediaController implements Initializable {
                 List<String> list = new ArrayList<>();
                 String line;
                 while ((line = stdout.readLine()) != null) {
-                    list.add(line.substring(0, line.length() - 4));
+                    //list.add(line.substring(0, line.length() - 4));
+                    list.add(line);
                 }
 
                 lblNumberCreations.setText("" + list.size());
@@ -455,7 +454,7 @@ public class VARpediaController implements Initializable {
         gridImageViews = new ArrayList<>();
         gridToggles = new ArrayList<>();
         Collections.addAll(gridImageViews,imgGrid1,imgGrid2,imgGrid3,imgGrid4,imgGrid5,imgGrid6,imgGrid7,imgGrid8,imgGrid9,imgGrid10,imgGrid11,imgGrid12);
-        Collections.addAll(gridToggles,toggleGrid1,toggleGrid2,toggleGrid3,toggleGrid4,toggleGrid5,toggleGrid5,toggleGrid6,toggleGrid7,toggleGrid8,toggleGrid8,toggleGrid9,toggleGrid10,toggleGrid11,toggleGrid12);
+        Collections.addAll(gridToggles,toggleGrid1,toggleGrid2,toggleGrid3,toggleGrid4,toggleGrid5,toggleGrid6,toggleGrid7,toggleGrid8,toggleGrid9,toggleGrid10,toggleGrid11,toggleGrid12);
         vImages.setVisible(false);
         ringImages.setVisible(false);
 
@@ -598,7 +597,8 @@ public class VARpediaController implements Initializable {
             alert.initStyle(StageStyle.UNDECORATED);
             alert.setResizable(false);
             if (alert.showAndWait().get() == btnYes) {
-                new File(CREATIONS.toString() + System.getProperty("file.separator") + vid + ".mp4").delete();
+                deleteDirectory(new File(CREATIONS.toString() + "/" + vid));
+                //new File(CREATIONS.toString() + System.getProperty("file.separator") + vid + ".mp4").delete();
             }
         }
     }
@@ -625,7 +625,7 @@ public class VARpediaController implements Initializable {
             mute = false;
             volume = 100;
 
-            Media video = new Media(CREATIONS.toURI().toString() + currentlyPlaying + ".mp4");
+            Media video = new Media(CREATIONS.toURI().toString() + currentlyPlaying + "/" + currentlyPlaying + ".mp4");
             playerCreation = new MediaPlayer(video);
             mvPlayCreation.setMediaPlayer(playerCreation);
             playerCreation.setAutoPlay(true);
@@ -1094,27 +1094,70 @@ public class VARpediaController implements Initializable {
             System.out.println(path);
         }
 
-        //------------testing purposes, will be in bg task-------
-//        TEMPIMGS.mkdirs();
-//        for (String img: selectedImgs) {
-//            ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "cp " + TEMP.toString() + img + " " + TEMPIMGS.toString() + img);
-//            Process p1 = null;
-//            try {
-//                p1 = b1.start();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            try {
-//                p1.waitFor();
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-        //----------------------------------------------
+        String creationName = txtCreationName.getText();
+        if(creationName.isEmpty()) {
+            //PLACEHOLDER
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("No name!");
+            alert.showAndWait();
+
+        }else if (actualChunksList.isEmpty()){
+            //PLACEHOLDER
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("No chunks!");
+            alert.showAndWait();
+        }else if (selectedImgs.isEmpty()) {
+            //PLACEHOLDER
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("No images!");
+            alert.showAndWait();
+
+        }else{
+            CombineTask bgCreate = new CombineTask(creationName, query, actualChunksList, selectedImgs);
+            bg.submit(bgCreate);
+
+            bgCreate.setOnSucceeded(e ->{
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "\"" + creationName + "\" created successfully!");
+                alert.setTitle("New Creation");
+                alert.setHeaderText("Success");
+                alert.showAndWait();
+            });
+        }
+
     }
 
     @FXML
     void btnPreviewCreationClicked(ActionEvent event) {
+        ArrayList<String> selectedImgs = new ArrayList<String>();
+        int index = 0;
+        for(ToggleButton imgButton: gridToggles){
+            if (imgButton.isSelected()){
+                String img = this.selectedImgs.get(index);
+                selectedImgs.add(img);
+            }
+            index++;
+        }
+
+        if(actualChunksList.isEmpty()){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("No chunks!");
+            alert.showAndWait();
+        }else if (selectedImgs.isEmpty()){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("No images!");
+            alert.showAndWait();
+        }else {
+
+            PrevCombineTask bgCreate = new PrevCombineTask(query, actualChunksList, selectedImgs);
+            bg.submit(bgCreate);
+
+            bgCreate.setOnSucceeded(e -> {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "\"preview\" created successfully!");
+                alert.setTitle("New Creation");
+                alert.setHeaderText("Success");
+                alert.showAndWait();
+            });
+        }
 
     }
 

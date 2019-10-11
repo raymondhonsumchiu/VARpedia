@@ -3,21 +3,20 @@ package main.java.tasks;
 import javafx.concurrent.Task;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 
 import static main.java.VARpedia.*;
 
-public class CombineTask extends Task<Void> {
+public class PrevCombineTask extends Task<Void> {
     private String name, query;
     private List<String> chunkList;
     private int numImages;
     private List<String> listImages;
 
-    public CombineTask(String name, String query, List<String> chunkList, List<String> listImages) {
-        this.name = name;
+    public PrevCombineTask(String query, List<String> chunkList, List<String> listImages) {
+        this.name = "prevCreation";
         this.query = query;
         this.chunkList = chunkList;
         this.listImages = listImages;
@@ -42,7 +41,6 @@ public class CombineTask extends Task<Void> {
         }
         System.out.println("all imgs moved");
 
-        //Clean up any leftover files
         ProcessBuilder b2 = new ProcessBuilder("/bin/bash", "-c", "rm -f prevCreation.mp4 temp.mp4 temp.wav temp1.mp4");
         b2.directory(TEMP);
         Process p2 = b2.start();
@@ -85,12 +83,9 @@ public class CombineTask extends Task<Void> {
         p8.waitFor();
         System.out.println("merged");
 
-        File NEWCREATION = new File(CREATIONS.toString() + "/" + name);
-        NEWCREATION.mkdirs();
-
         // Add text overlay to vid
-        ProcessBuilder b9 = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i ../../temp/temp1.mp4 -vf drawtext=\"fontfile=../myfont.ttf: text='" + query + "': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2\" -codec:a copy " + name + ".mp4");
-        b9.directory(NEWCREATION);
+        ProcessBuilder b9 = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i ../temp/temp1.mp4 -vf drawtext=\"fontfile=../myfont.ttf: text='" + query + "': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2\" -codec:a copy " + name + ".mp4");
+        b9.directory(TEMP);
         Process p9 = b9.start();
         p9.waitFor();
 
