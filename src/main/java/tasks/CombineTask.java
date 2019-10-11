@@ -23,13 +23,13 @@ public class CombineTask extends Task<Void> {
         this.listImages = listImages;
         this.numImages = listImages.size();
 
-        if (music.equals("Funny Piano")){
+        if (music.equals("Funny Piano")) {
             this.music = "funny_piano.mp3";
-        }else if(music.equals("Happy Piano")){
+        } else if (music.equals("Happy Piano")) {
             this.music = "happy_piano.mp3";
-        }else if(music.equals("Groovy Music")){
+        } else if (music.equals("Groovy Music")) {
             this.music = "groovy_music.mp3";
-        }else{
+        } else {
             this.music = null;
         }
     }
@@ -45,7 +45,7 @@ public class CombineTask extends Task<Void> {
         SELIMGS.mkdir();
 
         //move a copy of all selected images to a new directory
-        for (String img: listImages) {
+        for (String img : listImages) {
             ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "cp " + TEMPIMGS.toString() + img + " " + SELIMGS.toString() + img);
             Process p1 = b1.start();
             p1.waitFor();
@@ -97,7 +97,7 @@ public class CombineTask extends Task<Void> {
 
         String vidFile = "temp1.mp4";
         System.out.println(music);
-        if(music != null) {
+        if (music != null) {
             System.out.println("start music add");
             ProcessBuilder bm = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i temp1.mp4 -filter_complex \"amovie=../src/main/resources/music/" + music + ":loop=0,asetpts=N/SR/TB[aud];[0:a][aud]amix[a]\" -map 0:v -map '[a]' -c:v copy -c:a aac -b:a 256k -shortest temp2.mp4");
             bm.directory(TEMP);
@@ -123,7 +123,7 @@ public class CombineTask extends Task<Void> {
         p10.waitFor();
 
         //create 20sec video
-        frameRate =(double)numImages / 20;
+        frameRate = (double) numImages / 20;
         System.out.println(frameRate);
         String quizVidCmd = "cat *.jpg | ffmpeg -f image2pipe -framerate " + frameRate + " -i - -t 20 -c:v libx264 -pix_fmt yuv420p -vf \"scale=560:480\" -r 25 -max_muxing_queue_size 1024 -y " + "../../Creations/" + name + "/" + "video.mp4";
         ProcessBuilder b11 = new ProcessBuilder("/bin/bash", "-c", quizVidCmd);

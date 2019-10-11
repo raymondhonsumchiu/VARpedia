@@ -8,7 +8,7 @@
 <?import javafx.scene.media.MediaView?>
 <?import javafx.scene.text.Font?>
 <?import main.java.skins.progressindicator.RingProgressIndicator?>
-<?import java.lang.String?>
+<?import java.lang.*?>
 <AnchorPane prefHeight="810.0" prefWidth="1440.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.controllers.VARpediaController">
    <children>
       <TabPane fx:id="tabMain" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseDragged="#tabMainMouseDragged" onMousePressed="#tabMainMousePressed" onMouseReleased="#tabMainMouseReleased" prefHeight="810.0" prefWidth="1440.0" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="30.0" tabMaxWidth="160.0" tabMinHeight="30.0" tabMinWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -198,7 +198,7 @@
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                               </Label>
-                              <TextArea fx:id="txaResults" onDragDetected="#txaResultsDragged" VBox.vgrow="ALWAYS" />
+                              <TextArea fx:id="txaResults" onDragDetected="#txaResultsDragged" onMouseClicked="#txaResultsDragged" VBox.vgrow="ALWAYS" />
                            </children>
                            <BorderPane.margin>
                               <Insets right="2.0" />
@@ -295,7 +295,43 @@
                                              </VBox.margin>
                                           </Label>
                                           <ListView fx:id="listAllChunks" onMouseClicked="#listAllChunksClicked" prefWidth="370.0" VBox.vgrow="ALWAYS" />
-                                          <TextArea fx:id="txaPreviewChunk2" editable="false" prefHeight="200.0" prefWidth="200.0" promptText="Preview chunk text" />
+                                          <StackPane>
+                                             <children>
+                                                <VBox fx:id="vPreview" prefHeight="200.0">
+                                                   <children>
+                                                      <Pane fx:id="mvPreviewPane">
+                                                         <children>
+                                                            <MediaView fx:id="mvPreview" fitHeight="175.0" fitWidth="370.0" />
+                                                         </children>
+                                                      </Pane>
+                                                      <HBox alignment="CENTER_LEFT" maxHeight="25.0" prefHeight="25.0" prefWidth="370.0" spacing="5.0">
+                                                         <children>
+                                                            <Label fx:id="lblPreviewCurrentTime" alignment="CENTER_RIGHT" prefWidth="85.0">
+                                                               <HBox.margin>
+                                                                  <Insets right="5.0" />
+                                                               </HBox.margin>
+                                                            </Label>
+                                                            <StackPane maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                                               <children>
+                                                                  <ProgressBar fx:id="progressSliderPreview" maxWidth="1.7976931348623157E308" progress="0.0" styleClass="progress-slider" />
+                                                                  <Slider fx:id="sliderProgressPreview" maxWidth="1.7976931348623157E308" styleClass="slider-progress" />
+                                                               </children>
+                                                            </StackPane>
+                                                            <Label fx:id="lblPreviewTotalTime" prefWidth="85.0">
+                                                               <HBox.margin>
+                                                                  <Insets left="5.0" />
+                                                               </HBox.margin>
+                                                            </Label>
+                                                         </children>
+                                                         <padding>
+                                                            <Insets top="5.0" />
+                                                         </padding>
+                                                      </HBox>
+                                                   </children>
+                                                </VBox>
+                                                <TextArea fx:id="txaPreviewChunk2" editable="false" prefHeight="200.0" prefWidth="200.0" promptText="Preview chunk text" />
+                                             </children>
+                                          </StackPane>
                                           <HBox alignment="CENTER" spacing="2.0">
                                              <VBox.margin>
                                                 <Insets />
@@ -338,7 +374,7 @@
                                              </VBox.margin>
                                           </Label>
                                           <ListView fx:id="listSelectedChunks" onMouseClicked="#listSelectedChunksClicked" prefWidth="370.0" VBox.vgrow="ALWAYS" />
-                                          <Button fx:id="btnClearChunks" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnClearChunksClicked" text="Clear selected chunks">
+                                          <Button fx:id="btnClearChunks" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnClearChunksClicked" text="Deselect all chunks and images">
                                              <VBox.margin>
                                                 <Insets />
                                              </VBox.margin>
@@ -500,13 +536,17 @@
                                           <Insets />
                                        </HBox.margin>
                                     </TextField>
-                                    <ComboBox fx:id="cboMusic" prefHeight="50.0" prefWidth="320.0" promptText="Select music" styleClass="combo-long" visibleRowCount="5">
+                                    <ComboBox fx:id="cboMusic" prefHeight="50.0" prefWidth="320.0" promptText="Select music" visibleRowCount="5">
                                        <padding>
                                           <Insets left="5.0" />
                                        </padding>
                                        <HBox.margin>
                                           <Insets />
                                        </HBox.margin>
+                                       <styleClass>
+                                          <String fx:value="combo-long" />
+                                          <String fx:value="combo-tall" />
+                                       </styleClass>
                                     </ComboBox>
                                     <Button fx:id="btnPreviewCreation" mnemonicParsing="false" onAction="#btnPreviewCreationClicked" styleClass="button-long" text="Preview Creation" />
                                     <Button fx:id="btnCreateCreation" defaultButton="true" mnemonicParsing="false" onAction="#btnCreateCreationClicked" text="Create!" />
