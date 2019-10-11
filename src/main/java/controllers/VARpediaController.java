@@ -17,6 +17,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -75,6 +76,12 @@ public class VARpediaController implements Initializable {
 
     @FXML
     private Tab tabSearch;
+
+    @FXML
+    private VBox vCreationsEmpty;
+
+    @FXML
+    private BorderPane paneCreations;
 
     @FXML
     private Label lblNumberCreations;
@@ -248,7 +255,7 @@ public class VARpediaController implements Initializable {
     private Pane mvPane;
 
     @FXML
-    private VBox vMedia;
+    private VBox vMediaControls;
 
     @FXML
     private Button btnPlayCreation;
@@ -378,38 +385,32 @@ public class VARpediaController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        selectedImgs = new ArrayList<String>();
-
-        // Clean up
+        // --------------------------------------------- Clean up -----------------------------------------------
         deleteDirectory(CHUNKS);
         deleteDirectory(TEMP);
 
-        // ----------- Initialise "Creations" tab ----------
-        vMedia.setVisible(false);
-        if (CREATIONS.exists()) {
-            // Find and list all creations using bash
-            ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "ls");
-            b.directory(CREATIONS);
-            Process p;
-            try {
-                p = b.start();
-                InputStream out = p.getInputStream();
-                BufferedReader stdout = new BufferedReader(new InputStreamReader(out));
-
-                List<String> list = new ArrayList<>();
-                String line;
-                while ((line = stdout.readLine()) != null) {
-                    //list.add(line.substring(0, line.length() - 4));
-                    list.add(line);
-                }
-
-                lblNumberCreations.setText("" + list.size());
-                Collections.sort(list);
-                listCreations.setItems(FXCollections.observableArrayList(list));
-            } catch (IOException e) {
-                e.printStackTrace();
+        // --------------------------------------- Listener for tab changes -------------------------------------
+        tabMain.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
+            if (playerCreation != null) { playerCreation.stop();} // Stop media player on tab change
+            if (playerQuiz != null) {playerQuiz.stop();} // Stop quiz player on tab change
+            if (btnSearchPreviewChunk.getText() == "Stop") { btnSearchPreviewChunk.fire(); } // Stop chunk preview on tab change
+            if (btnPreviewChunkCombine.getText() == "Stop") { btnPreviewChunkCombine.fire(); } // Stop chunk preview on tab change
+            int tab = tabMain.getSelectionModel().getSelectedIndex();
+            if (tab == 0) {
+                // Refresh list of creations, but also resets media player.
+                initialiseCreationsTab();
+            } else if (tab == 2) {
+                //initialiseCombineTab();
+            } else if (tab == 3) {
+                // Reset quiz tab on change (prevents cheating, among other things)
+                initialiseQuizTab();
             }
-        }
+        });
+
+        // ----------------------------- Initialise "Creations" tab --------------------------------
+        initialiseCreationsTab();
+
+        // Pressing space anywhere on this tab will pause the media if it is playing.
         tabMain.addEventFilter(KeyEvent.KEY_PRESSED, event->{
             if (event.getCode() == KeyCode.SPACE && tabMain.getSelectionModel().getSelectedIndex() == 0) {
                 if (playerCreation != null) {
@@ -429,7 +430,7 @@ public class VARpediaController implements Initializable {
         btnForward.addEventFilter(KeyEvent.ANY, Event::consume);
         btnReverse.addEventFilter(KeyEvent.ANY, Event::consume);
 
-        // ---------- Initialise "Search" tab -----------
+        // ------------------------------ Initialise "Search" tab ----------------------------------------
         txaResults.setEditable(false);
         ringSearch.setVisible(false);
 
@@ -449,30 +450,20 @@ public class VARpediaController implements Initializable {
             txaPreviewChunk1.setText(chunktxt);
         });
 
-        // ---------- Initialise "Combine" tab -----------
-        ringCombine.setVisible(false);
-        gridImageViews = new ArrayList<>();
-        gridToggles = new ArrayList<>();
-        Collections.addAll(gridImageViews,imgGrid1,imgGrid2,imgGrid3,imgGrid4,imgGrid5,imgGrid6,imgGrid7,imgGrid8,imgGrid9,imgGrid10,imgGrid11,imgGrid12);
-        Collections.addAll(gridToggles,toggleGrid1,toggleGrid2,toggleGrid3,toggleGrid4,toggleGrid5,toggleGrid6,toggleGrid7,toggleGrid8,toggleGrid9,toggleGrid10,toggleGrid11,toggleGrid12);
-        vImages.setVisible(false);
-        ringImages.setVisible(false);
+        // ------------------------------------ Initialise "Combine" tab ----------------------------------
+        initialiseCombineTab();
 
-        //add listener to listview to allow for previewing of chunk text
+        // Add listener to list view to allow previewing chunk text
         listAllChunks.getSelectionModel().selectedItemProperty().addListener(e ->{
             String chunktxt = getChunkText(listAllChunks.getSelectionModel().getSelectedItem());
             txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
             txaPreviewChunk2.setText(chunktxt);
         });
 
-        // set listview of all available chunks to same arraylist of chunks as prior chunk listview
-        listAllChunks.setItems(chunksList);
-        listSelectedChunks.setItems(actualChunksList);
-
-        // ---------- Initialise "Quiz" tab ----------
+        // ------------------------------------ Initialise "Quiz" tab ------------------------------------
         initialiseQuizTab();
 
-        // ---------- Initialise "Options" tab ----------
+        // --------------------------------- Initialise "Options" tab --------------------------------------
         if (VARpedia.isDark) {
             btnLightTheme.setSelected(false);
             btnDarkTheme.setSelected(true);
@@ -482,31 +473,9 @@ public class VARpediaController implements Initializable {
             btnDarkTheme.setSelected(false);
             css = getClass().getResource("../../resources/css/light.css").toExternalForm();
         }
-
-        // Listener for tab changes
-        tabMain.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
-            if (playerCreation != null) { playerCreation.pause();} // Pause media player on tab change
-            if (playerQuiz != null) {playerQuiz.stop();} // Stop quiz player on tab change
-            if (btnSearchPreviewChunk.getText() == "Stop") { btnSearchPreviewChunk.fire(); } // Stop chunk preview on tab change
-            if (btnPreviewChunkCombine.getText() == "Stop") { btnPreviewChunkCombine.fire(); } // Stop chunk preview on tab change
-            int tab = tabMain.getSelectionModel().getSelectedIndex();
-            if (tab == 0) {
-                // Bug fix for play/pause icon on theme change
-                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/play-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            } else if (tab == 3) {
-                // Reset quiz tab on change (prevents cheating among other things)
-                initialiseQuizTab();
-            }
-        });
     }
 
-    @FXML
-    void btnAddChunkClicked(ActionEvent event) {
-        String chunkToAdd = listAllChunks.getSelectionModel().getSelectedItem();
-        if(chunkToAdd != null){
-            listSelectedChunks.getItems().add(chunkToAdd);
-        }
-    }
+    // ------------------------------------------- GENERAL ------------------------------------------------
 
     @FXML
     void btnBackClicked(ActionEvent event) throws IOException {
@@ -531,9 +500,13 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnClearChunksClicked(ActionEvent event) {
-        //clear all selected items
-        listSelectedChunks.getItems().clear();
+    void btnMinimiseClicked(ActionEvent event) {
+        VARpedia.primaryStage.setIconified(true);
+    }
+
+    @FXML
+    void btnHelpClicked(ActionEvent event) {
+
     }
 
     @FXML
@@ -547,121 +520,64 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnLightThemeClicked(ActionEvent event) {
-        if (!btnLightTheme.isSelected()) {
-            btnLightTheme.setSelected(true);
-            btnDarkTheme.setSelected(false);
-        } else {
-            VARpedia.isDark = false;
-            btnDarkTheme.setSelected(false);
-            VARpedia.primaryStage.getScene().getStylesheets().clear();
-            VARpedia.primaryStage.getScene().setUserAgentStylesheet(null);
-            css = getClass().getResource("../../resources/css/light.css").toExternalForm();
-            VARpedia.primaryStage.getScene().getStylesheets().add(css);
+    void tabMainMouseDragged(MouseEvent event) {
+        VARpedia.primaryStage.setX(event.getScreenX() - xOffset);
+        VARpedia.primaryStage.setY(event.getScreenY() - yOffset);
+    }
+
+    @FXML
+    void tabMainMousePressed(MouseEvent event) {
+        xOffset = event.getSceneX();
+        yOffset = event.getSceneY();
+    }
+
+    @FXML
+    void tabMainMouseReleased(MouseEvent event) {
+        if (tabMain.getSelectionModel().getSelectedIndex() == 1) {
+            txtSearch.requestFocus();
         }
     }
 
-    @FXML
-    void btnDarkThemeClicked(ActionEvent event) {
-        if (!btnDarkTheme.isSelected()) {
-            btnDarkTheme.setSelected(true);
-            btnLightTheme.setSelected(false);
-        } else {
-            VARpedia.isDark = true;
-            btnLightTheme.setSelected(false);
-            VARpedia.primaryStage.getScene().getStylesheets().clear();
-            VARpedia.primaryStage.getScene().setUserAgentStylesheet(null);
-            css = getClass().getResource("../../resources/css/dark.css").toExternalForm();
-            VARpedia.primaryStage.getScene().getStylesheets().add(css);
-        }
-    }
+    // ----------------------------------------------------------------------------------------------------
 
-    @FXML
-    void btnDeleteChunkClicked(ActionEvent event) {
-        if(listAllChunks.getSelectionModel().getSelectedItem() != null){
-            int index = listAllChunks.getSelectionModel().getSelectedIndex();
-            listAllChunks.getItems().remove(index);
-        }
-    }
+    // ---------------------------------- CREATIONS TAB METHODS -------------------------------------------
 
-    @FXML
-    void btnDeleteCreationClicked(ActionEvent event) {
-        if (listCreations.getSelectionModel().getSelectedItem() != null) {
-            // Confirm if user wants to delete Creation
-            String vid = listCreations.getSelectionModel().getSelectedItem();
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete \"" + vid + "\"?", btnYes, btnNo);
-            alert.setTitle("Delete Creation");
-            alert.getDialogPane().getStylesheets().add(css);
-            alert.setHeaderText("Delete Creation");
-            alert.setGraphic(null);
-            alert.initStyle(StageStyle.UNDECORATED);
-            alert.setResizable(false);
-            if (alert.showAndWait().get() == btnYes) {
-                deleteDirectory(new File(CREATIONS.toString() + "/" + vid));
-                //new File(CREATIONS.toString() + System.getProperty("file.separator") + vid + ".mp4").delete();
-            }
-        }
-    }
-
-    @FXML
-    void btnHelpClicked(ActionEvent event) {
-
-    }
-
-    @FXML
-    void btnMinimiseClicked(ActionEvent event) {
-        VARpedia.primaryStage.setIconified(true);
-    }
-
-    // Creations tab methods
     private String currentlyPlaying;
     private boolean mute;
     private double volume;
-    @FXML
-    void btnPlayCreationClicked(ActionEvent event) {
-        if (listCreations.getSelectionModel().getSelectedItem() != null) {
-            currentlyPlaying = listCreations.getSelectionModel().getSelectedItem();
-            imgVolume.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            mute = false;
-            volume = 100;
 
-            Media video = new Media(CREATIONS.toURI().toString() + currentlyPlaying + "/" + currentlyPlaying + ".mp4");
-            playerCreation = new MediaPlayer(video);
-            mvPlayCreation.setMediaPlayer(playerCreation);
-            playerCreation.setAutoPlay(true);
-            mvPlayCreation.fitWidthProperty().bind(mvPane.widthProperty());
-            mvPlayCreation.fitHeightProperty().bind(mvPane.heightProperty());
-            mvPlayCreation.setPreserveRatio(false);
+    private void initialiseCreationsTab() {
+        // Hide and display the appropriate panels
+        vMediaControls.setVisible(false);
+        if (isNonEmptyDirectory(CREATIONS)) {
+            vCreationsEmpty.setVisible(false);
+            paneCreations.setVisible(true);
 
-            vMedia.setVisible(true);
-            progressSlider.progressProperty().bind(sliderProgress.valueProperty().divide(100.0));
-            progressVol.progressProperty().bind(sliderVol.valueProperty().divide(100.0));
+            // Find and list all creations using bash
+            ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "ls");
+            b.directory(CREATIONS);
+            Process p;
+            try {
+                p = b.start();
+                InputStream out = p.getInputStream();
+                BufferedReader stdout = new BufferedReader(new InputStreamReader(out));
 
-            playerCreation.currentTimeProperty().addListener(ov -> updateValues());
-
-            sliderVol.valueProperty().addListener(ov -> {
-                if (sliderVol.isValueChanging()) {
-                    playerCreation.setVolume(sliderVol.getValue() / 100.0);
+                List<String> list = new ArrayList<>();
+                String line;
+                while ((line = stdout.readLine()) != null) {
+                    //list.add(line.substring(0, line.length() - 4));
+                    list.add(line);
                 }
-            });
 
-            playerCreation.setOnReady(() -> {
-                duration = playerCreation.getMedia().getDuration();
-                updateValues();
-            });
-
-            playerCreation.setOnPlaying(() -> {
-                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/pause-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            });
-
-            playerCreation.setOnPaused(() -> {
-                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/play-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            });
-
-            playerCreation.setOnEndOfMedia(() -> {
-                playerCreation.stop();
-                playerCreation.pause();
-            });
+                lblNumberCreations.setText("" + list.size());
+                Collections.sort(list);
+                listCreations.setItems(FXCollections.observableArrayList(list));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            vCreationsEmpty.setVisible(true);
+            paneCreations.setVisible(false);
         }
     }
 
@@ -725,6 +641,54 @@ public class VARpediaController implements Initializable {
             } else {
                 return "";
             }
+        }
+    }
+
+    @FXML
+    void btnPlayCreationClicked(ActionEvent event) {
+        if (listCreations.getSelectionModel().getSelectedItem() != null) {
+            currentlyPlaying = listCreations.getSelectionModel().getSelectedItem();
+            imgVolume.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            mute = false;
+            volume = 100;
+
+            Media video = new Media(CREATIONS.toURI().toString() + currentlyPlaying + "/" + currentlyPlaying + ".mp4");
+            playerCreation = new MediaPlayer(video);
+            mvPlayCreation.setMediaPlayer(playerCreation);
+            playerCreation.setAutoPlay(true);
+            mvPlayCreation.fitWidthProperty().bind(mvPane.widthProperty());
+            mvPlayCreation.fitHeightProperty().bind(mvPane.heightProperty());
+            mvPlayCreation.setPreserveRatio(false);
+
+            vMediaControls.setVisible(true);
+            progressSlider.progressProperty().bind(sliderProgress.valueProperty().divide(100.0));
+            progressVol.progressProperty().bind(sliderVol.valueProperty().divide(100.0));
+
+            playerCreation.currentTimeProperty().addListener(ov -> updateValues());
+
+            sliderVol.valueProperty().addListener(ov -> {
+                if (sliderVol.isValueChanging()) {
+                    playerCreation.setVolume(sliderVol.getValue() / 100.0);
+                }
+            });
+
+            playerCreation.setOnReady(() -> {
+                duration = playerCreation.getMedia().getDuration();
+                updateValues();
+            });
+
+            playerCreation.setOnPlaying(() -> {
+                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/pause-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            });
+
+            playerCreation.setOnPaused(() -> {
+                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/play-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            });
+
+            playerCreation.setOnEndOfMedia(() -> {
+                playerCreation.stop();
+                playerCreation.pause();
+            });
         }
     }
 
@@ -800,6 +764,38 @@ public class VARpediaController implements Initializable {
         }
     }
 
+    @FXML
+    void btnDeleteCreationClicked(ActionEvent event) {
+        if (listCreations.getSelectionModel().getSelectedItem() != null) {
+            // Confirm if user wants to delete Creation
+            String vid = listCreations.getSelectionModel().getSelectedItem();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete \"" + vid + "\"?", btnYes, btnNo);
+            alert.setTitle("Delete Creation");
+            alert.getDialogPane().getStylesheets().add(css);
+            alert.setHeaderText("Delete Creation");
+            alert.setGraphic(null);
+            alert.initStyle(StageStyle.UNDECORATED);
+            alert.setResizable(false);
+            if (alert.showAndWait().get() == btnYes) {
+                deleteDirectory(new File(CREATIONS.toString() + "/" + vid));
+                //new File(CREATIONS.toString() + System.getProperty("file.separator") + vid + ".mp4").delete();
+            }
+        }
+    }
+
+    @FXML
+    void listCreationsClicked(MouseEvent event) {
+        if (event.getClickCount() == 2) {
+            btnPlayCreation.fire();
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------
+
+    // ------------------------------------- SEARCH TAB METHODS ------------------------------------------
+
+    private boolean error;
+
     // This method returns the text content of a chunk as a string
     private String getChunkText(String chunkName) {
         ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "cat " + chunkName + "/" + chunkName + ".txt");
@@ -820,6 +816,63 @@ public class VARpediaController implements Initializable {
             ex.printStackTrace();
         }
         return chunktxt;
+    }
+
+    @FXML
+    void btnSearchClicked(ActionEvent event) {
+        // Clean up for new search
+        deleteDirectory(TEMP);
+        deleteDirectory(CHUNKS);
+        error = false;
+
+        query = txtSearch.getText().trim().toLowerCase();
+        if (!query.isEmpty()) {
+
+            // Multithreading - search Wikit for query
+            WikitTask bgWikit = new WikitTask(query);
+            bg.submit(bgWikit);
+
+            // Lock controls, reveal loading ring
+            txaResults.clear();
+            txaResults.setEditable(false);
+            btnSearch.setDisable(true);
+            btnSearchFlickr.setDisable(true);
+            ringSearch.setVisible(true);
+
+            fillGridImages(query);
+
+            bgWikit.setOnSucceeded(e -> {
+                // Unlock controls, hide loading ring
+                btnSearch.setDisable(false);
+                ringSearch.setVisible(false);
+                txaResults.setStyle("-fx-text-fill: font-color;");
+
+                List<String> list = bgWikit.getValue();
+                if (list == null || list.get(0).contains("not found :^(")) {
+                    txaResults.setText("No results found for \"" + query + "\".");
+                    txaResults.setStyle("-fx-text-fill: close-color;");
+                    // Reset search field
+                    txtSearch.selectAll();
+                    txtSearch.requestFocus();
+                    error = true;
+                } else if (list.get(0).contains("Ambiguous results, ") || list.get(0).contains("may also refer to:") || (list.size() > 1 && list.get(1).contains("may also refer to:"))) {
+                    txaResults.setText("Ambiguous results found for \"" + query + "\".");
+                    txaResults.setStyle("-fx-text-fill: close-color;");
+                    // Reset search field
+                    txtSearch.selectAll();
+                    txtSearch.requestFocus();
+                    error = true;
+                } else {
+                    txaResults.setEditable(true);
+                    for (String s : list) {
+                        txaResults.appendText(s);
+                    }
+                    txaResults.requestFocus();
+                    txaResults.positionCaret(0);
+                    error = false;
+                }
+            });
+        }
     }
 
     @FXML
@@ -848,6 +901,413 @@ public class VARpediaController implements Initializable {
         stage.show();
 
     }
+
+    @FXML
+    void btnCombineClicked(ActionEvent event) {
+        tabMain.getSelectionModel().select(2);
+    }
+
+    @FXML
+    void listChunksSearchClicked(MouseEvent event) {
+        txaResults.deselect();
+        if (event.getClickCount() == 2) {
+            btnSearchPreviewChunk.fire();
+        }
+    }
+
+    @FXML
+    void txtSearchEnter(ActionEvent event) {
+        btnSearch.fire();
+    }
+
+    @FXML
+    void txtChunkEnter(ActionEvent event) {
+        btnCreateChunk.fire();
+    }
+
+    @FXML
+    void txaResultsDragged(MouseEvent event) {
+        listChunksSearch.getSelectionModel().clearSelection();
+        txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
+        txaPreviewChunk1.setText("");
+    }
+
+    // ----------------------------------------------------------------------------------------------------
+
+    // ---------------------------------------- COMBINE TAB METHODS ----------------------------------------
+
+    private void initialiseCombineTab() {
+        selectedImgs = new ArrayList<String>();
+        gridImageViews = new ArrayList<>();
+        gridToggles = new ArrayList<>();
+        Collections.addAll(gridImageViews, imgGrid1, imgGrid2, imgGrid3, imgGrid4, imgGrid5, imgGrid6, imgGrid7, imgGrid8, imgGrid9, imgGrid10, imgGrid11, imgGrid12);
+        Collections.addAll(gridToggles, toggleGrid1, toggleGrid2, toggleGrid3, toggleGrid4, toggleGrid5, toggleGrid6, toggleGrid7, toggleGrid8, toggleGrid9, toggleGrid10, toggleGrid11, toggleGrid12);
+
+        // Bind list views to lists
+        listAllChunks.setItems(chunksList);
+        listSelectedChunks.setItems(actualChunksList);
+
+        // Hide images and progress rings
+        ringCombine.setVisible(false);
+        ringImages.setVisible(false);
+        vImages.setVisible(false);
+    }
+
+    private void fillGridImages(String query) {
+        if (!query.isEmpty()) {
+
+            // Multithreading - search Flickr API for images
+            FlickrTask bgFlickr = new FlickrTask(query);
+            bg.submit(bgFlickr);
+
+            // Lock controls, reveal loading ring
+            btnCreateCreation.setDisable(true);
+            btnPreviewCreation.setDisable(true);
+            vImages.setVisible(false);
+            ringImages.setVisible(true);
+
+            // Reset selection
+            for (ToggleButton t : gridToggles) {
+                t.setSelected(false);
+            }
+
+            bgFlickr.setOnSucceeded(e -> {
+                // Unlock controls, hide loading ring
+                btnCreateCreation.setDisable(false);
+                btnPreviewCreation.setDisable(false);
+                btnSearchFlickr.setDisable(false);
+                vImages.setVisible(true);
+                ringImages.setVisible(false);
+
+                // Once all images are downloaded, we place each into the image grid
+                int imgCount = 1;
+                for (ImageView imgView : gridImageViews) {
+                    //set each image
+                    File file = new File(TEMPIMGS.toString() + "/" + query + "-" + imgCount + ".jpg");
+                    Image image = new Image(file.toURI().toString());
+                    double n = (image.getWidth() < image.getHeight()) ? image.getWidth() : image.getHeight();
+                    double x = (image.getWidth() - n) / 2;
+                    double y = (image.getHeight() - n) / 2;
+                    Rectangle2D rect = new Rectangle2D(x, y, n, n);
+
+                    imgView.setViewport(rect);
+                    imgView.setSmooth(true);
+                    imgView.setImage(image);
+
+                    // Add image path to arraylist so it can be extracted later for creation
+                    selectedImgs.add("/" + query + "-" + imgCount + ".jpg");
+                    imgCount++;
+                }
+                if (error) {
+                    deleteDirectory(TEMPIMGS);
+                    vImages.setVisible(false);
+                }
+                txtSearchFlickr.clear();
+            });
+        }
+    }
+
+    @FXML
+    void btnAddChunkClicked(ActionEvent event) {
+        String chunkToAdd = listAllChunks.getSelectionModel().getSelectedItem();
+        if(chunkToAdd != null){
+            listSelectedChunks.getItems().add(chunkToAdd);
+        }
+    }
+
+    @FXML
+    void btnRemoveChunkClicked(ActionEvent event) {
+        //if an item is selected, it will be removed
+        if(listSelectedChunks.getSelectionModel().getSelectedItem() != null){
+            int index = listSelectedChunks.getSelectionModel().getSelectedIndex();
+            listSelectedChunks.getItems().remove(index);
+        }
+    }
+
+    @FXML
+    void btnClearChunksClicked(ActionEvent event) {
+        //clear all selected items
+        listSelectedChunks.getItems().clear();
+    }
+
+    @FXML
+    void btnDeleteChunkClicked(ActionEvent event) {
+        if(listAllChunks.getSelectionModel().getSelectedItem() != null){
+            int index = listAllChunks.getSelectionModel().getSelectedIndex();
+            listAllChunks.getItems().remove(index);
+        }
+    }
+
+    @FXML
+    void btnSearchFlickrClicked(ActionEvent event) {
+        fillGridImages(txtSearchFlickr.getText().trim().toLowerCase());
+    }
+
+    @FXML
+    void listAllChunksClicked(MouseEvent event) {
+        listSelectedChunks.getSelectionModel().clearSelection();
+        if (event.getClickCount() == 2) {
+            btnAddChunk.fire();
+        }
+    }
+
+    @FXML
+    void listSelectedChunksClicked(MouseEvent event) {
+        listAllChunks.getSelectionModel().clearSelection();
+        if (event.getClickCount() == 2) {
+            btnRemoveChunk.fire();
+        }
+    }
+
+    @FXML
+    void txtCreationEnter(ActionEvent event) {
+        btnCreateCreation.fire();
+    }
+
+    @FXML
+    void txtSearchFlickrEnter(ActionEvent event) {
+        btnSearchFlickr.fire();
+    }
+
+    // -----------------------------------------------------------------------------------------------------
+
+    // ----------------------------------------- QUIZ TAB METHODS ---------------------------------------------
+    private int numQuestions;
+    private int currentQuestion;
+    private int numCorrect;
+    private boolean quizMute;
+    private double quizVolume;
+
+    private void initialiseQuizTab() {
+        if (CREATIONS.exists() && CREATIONS.isDirectory()) {
+            numQuestions = CREATIONS.listFiles().length;
+        }
+        currentQuestion = 0;
+        numCorrect = 0;
+        hQuizToolbar.setVisible(true);
+        hQuizDifficulty.setDisable(false);
+        vQuizTitle.setVisible(true);
+        vQuizError.setVisible(false);
+        vQuizPlayer.setVisible(false);
+        vQuizCorrect.setVisible(false);
+        hQuizAnswer.setVisible(false);
+        toggleQuizEasy.setSelected(true);
+        toggleQuizMedium.setSelected(false);
+        toggleQuizHard.setSelected(false);
+        if (!isNonEmptyDirectory(CREATIONS)) {
+            hQuizToolbar.setVisible(false);
+            vQuizTitle.setVisible(false);
+            vQuizError.setVisible(true);
+        }
+    }
+
+    @FXML
+    void toggleQuizEasyClicked(ActionEvent event) {
+        if (toggleQuizEasy.isSelected()) {
+            toggleQuizMedium.setSelected(false);
+            toggleQuizHard.setSelected(false);
+        } else {
+            toggleQuizEasy.setSelected(true);
+        }
+    }
+
+    @FXML
+    void toggleQuizMediumClicked(ActionEvent event) {
+        if (toggleQuizMedium.isSelected()) {
+            toggleQuizEasy.setSelected(false);
+            toggleQuizHard.setSelected(false);
+        } else {
+            toggleQuizMedium.setSelected(true);
+        }
+    }
+
+    @FXML
+    void toggleQuizHardClicked(ActionEvent event) {
+        if (toggleQuizHard.isSelected()) {
+            toggleQuizMedium.setSelected(false);
+            toggleQuizEasy.setSelected(false);
+        } else {
+            toggleQuizHard.setSelected(true);
+        }
+    }
+
+    @FXML
+    void btnQuizBeginClicked(ActionEvent event) {
+        // Hide/reveal appropriate components
+        hQuizDifficulty.setDisable(true);
+        vQuizTitle.setVisible(false);
+        vQuizPlayer.setVisible(true);
+        hQuizAnswer.setVisible(true);
+
+        imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+        quizMute = false;
+        quizVolume = 100;
+
+        //TODO this section: pick quiz files depending on difficulty
+
+        // -------------------------------------------------------------------------------------------------------
+        int difficulty = 0; // 0 = easy, 1 = med, 2 = hard
+        if (toggleQuizMedium.isSelected()) {
+            difficulty = 1;
+        } else if (toggleQuizHard.isSelected()) {
+            difficulty = 2;
+        }
+
+        // Randomise list of files
+        File[] fi = CREATIONS.listFiles(); // change this to the proper directory
+        List<File> files = new ArrayList<>();
+        for (File f : fi) {
+            files.add(f);
+        }
+        Collections.shuffle(files);
+
+        Media video = new Media(files.get(currentQuestion).toURI().toString());
+        currentQuestion++;
+
+        // -------------------------------------------------------------------------------------------------------
+
+        // Play selected file
+        playerQuiz = new MediaPlayer(video);
+        mvQuiz.setMediaPlayer(playerQuiz);
+        playerQuiz.setAutoPlay(true);
+        mvQuiz.fitWidthProperty().bind(mvQuizPane.widthProperty());
+        mvQuiz.fitHeightProperty().bind(mvQuizPane.heightProperty());
+        mvQuiz.setPreserveRatio(false);
+
+        progressSliderQuiz.progressProperty().bind(sliderProgressQuiz.valueProperty().divide(100.0));
+        progressVolQuiz.progressProperty().bind(sliderVolQuiz.valueProperty().divide(100.0));
+
+        playerQuiz.currentTimeProperty().addListener(ov -> updateValuesQuiz());
+
+        sliderVolQuiz.valueProperty().addListener(ov -> {
+            if (sliderVolQuiz.isValueChanging()) {
+                playerQuiz.setVolume(sliderVolQuiz.getValue() / 100.0);
+            }
+        });
+
+        playerQuiz.setOnReady(() -> {
+            durationQuiz = playerQuiz.getMedia().getDuration();
+            updateValuesQuiz();
+        });
+
+        playerQuiz.setOnEndOfMedia(() -> {
+            playerQuiz.stop();
+
+            // Display "out of time" panel
+            vQuizPlayer.setVisible(false);
+            hQuizAnswer.setVisible(false);
+            vQuizCorrect.setVisible(true);
+            btnQuizRetry.setVisible(true);
+            lblQuizCorrect.setText("Out of time!");
+        });
+    }
+
+    private void updateValuesQuiz() {
+        Platform.runLater(() -> {
+            Duration currentTime = playerQuiz.getCurrentTime();
+            lblQuizCurrentTime.setText(formatTime(currentTime, durationQuiz, false));
+            lblQuizTotalTime.setText(formatTime(currentTime, durationQuiz, true));
+            sliderProgressQuiz.setDisable(durationQuiz.isUnknown());
+            progressSliderQuiz.setDisable(durationQuiz.isUnknown());
+            if (!sliderProgressQuiz.isDisabled() && durationQuiz.greaterThan(Duration.ZERO) && !sliderProgressQuiz.isValueChanging()) {
+                sliderProgressQuiz.setValue(currentTime.toMillis() / durationQuiz.toMillis() * 100.0);
+            }
+            if (!sliderVolQuiz.isValueChanging()) {
+                sliderVolQuiz.setValue((int) Math.round(playerQuiz.getVolume() * 100));
+            }
+        });
+    }
+
+    @FXML
+    void btnQuizResetClicked(ActionEvent event) {
+        initialiseQuizTab();
+        if (playerQuiz != null) {playerQuiz.stop();}
+    }
+
+    @FXML
+    void btnQuizFinishClicked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnQuizNextClicked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnQuizRetryClicked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnQuizSubmitClicked(ActionEvent event) {
+        //TODO logic (use the variable currentQuestion)
+
+        // if correct
+        playerQuiz.stop();
+        vQuizPlayer.setVisible(false);
+        hQuizAnswer.setVisible(false);
+        vQuizCorrect.setVisible(true);
+        lblQuizCorrect.setText("Correct!");
+        btnQuizRetry.setVisible(false);
+    }
+
+    @FXML
+    void txtQuizAnswerEnter(ActionEvent event) {
+        btnQuizSubmit.fire();
+    }
+
+    @FXML
+    void btnMuteQuizClicked(ActionEvent event) {
+        if (!quizMute) {
+            quizVolume = sliderVolQuiz.getValue();
+            sliderVolQuiz.setValue(0);
+            imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/mute-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            playerQuiz.setVolume(0);
+            quizMute = true;
+        } else {
+            sliderVolQuiz.setValue(quizVolume);
+            imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            playerQuiz.setVolume(quizVolume / 100.0);
+            quizMute = false;
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------
+
+    // --------------------------------------- OPTIONS TAB METHODS -----------------------------------------
+
+    @FXML
+    void btnLightThemeClicked(ActionEvent event) {
+        if (!btnLightTheme.isSelected()) {
+            btnLightTheme.setSelected(true);
+            btnDarkTheme.setSelected(false);
+        } else {
+            VARpedia.isDark = false;
+            btnDarkTheme.setSelected(false);
+            VARpedia.primaryStage.getScene().getStylesheets().clear();
+            VARpedia.primaryStage.getScene().setUserAgentStylesheet(null);
+            css = getClass().getResource("../../resources/css/light.css").toExternalForm();
+            VARpedia.primaryStage.getScene().getStylesheets().add(css);
+        }
+    }
+
+    @FXML
+    void btnDarkThemeClicked(ActionEvent event) {
+        if (!btnDarkTheme.isSelected()) {
+            btnDarkTheme.setSelected(true);
+            btnLightTheme.setSelected(false);
+        } else {
+            VARpedia.isDark = true;
+            btnLightTheme.setSelected(false);
+            VARpedia.primaryStage.getScene().getStylesheets().clear();
+            VARpedia.primaryStage.getScene().setUserAgentStylesheet(null);
+            css = getClass().getResource("../../resources/css/dark.css").toExternalForm();
+            VARpedia.primaryStage.getScene().getStylesheets().add(css);
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------
 
     Process p1;
     @FXML
@@ -964,18 +1424,6 @@ public class VARpediaController implements Initializable {
             btnPreviewChunkCombine.setText("Preview");
         }
 
-    }
-
-    @FXML
-    void btnCombineClicked(ActionEvent event) {
-        tabMain.getSelectionModel().select(2);
-    }
-
-    @FXML
-    void txaResultsDragged(MouseEvent event) {
-        listChunksSearch.getSelectionModel().clearSelection();
-        txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
-        txaPreviewChunk1.setText("");
     }
 
     @FXML
@@ -1159,399 +1607,6 @@ public class VARpediaController implements Initializable {
             });
         }
 
-    }
-
-    @FXML
-    void btnRemoveChunkClicked(ActionEvent event) {
-        //if an item is selected, it will be removed
-        if(listSelectedChunks.getSelectionModel().getSelectedItem() != null){
-            int index = listSelectedChunks.getSelectionModel().getSelectedIndex();
-            listSelectedChunks.getItems().remove(index);
-        }
-    }
-
-    private boolean error;
-    @FXML
-    void btnSearchClicked(ActionEvent event) {
-        // Clean up for new search
-        deleteDirectory(TEMP);
-        deleteDirectory(CHUNKS);
-        error = false;
-
-        query = txtSearch.getText().trim().toLowerCase();
-        if (!query.isEmpty()) {
-
-            // Multithreading - search Wikit for query
-            WikitTask bgWikit = new WikitTask(query);
-            bg.submit(bgWikit);
-
-            // Lock controls, reveal loading ring
-            txaResults.clear();
-            txaResults.setEditable(false);
-            btnSearch.setDisable(true);
-            btnSearchFlickr.setDisable(true);
-            ringSearch.setVisible(true);
-
-            fillGridImages(query);
-
-            bgWikit.setOnSucceeded(e -> {
-                // Unlock controls, hide loading ring
-                btnSearch.setDisable(false);
-                ringSearch.setVisible(false);
-                txaResults.setStyle("-fx-text-fill: font-color;");
-
-                List<String> list = bgWikit.getValue();
-                if (list == null || list.get(0).contains("not found :^(")) {
-                    txaResults.setText("No results found for \"" + query + "\".");
-                    txaResults.setStyle("-fx-text-fill: close-color;");
-                    // Reset search field
-                    txtSearch.selectAll();
-                    txtSearch.requestFocus();
-                    error = true;
-                } else if (list.get(0).contains("Ambiguous results, ") || list.get(0).contains("may also refer to:") || (list.size() > 1 && list.get(1).contains("may also refer to:"))) {
-                    txaResults.setText("Ambiguous results found for \"" + query + "\".");
-                    txaResults.setStyle("-fx-text-fill: close-color;");
-                    // Reset search field
-                    txtSearch.selectAll();
-                    txtSearch.requestFocus();
-                    error = true;
-                } else {
-                    txaResults.setEditable(true);
-                    for (String s : list) {
-                        txaResults.appendText(s);
-                    }
-                    txaResults.requestFocus();
-                    txaResults.positionCaret(0);
-                    error = false;
-                }
-            });
-        }
-    }
-
-    @FXML
-    void btnSearchFlickrClicked(ActionEvent event) {
-        fillGridImages(txtSearchFlickr.getText().trim().toLowerCase());
-    }
-
-    private void fillGridImages(String query) {
-        if (!query.isEmpty()) {
-
-            // Multithreading - search Flickr API for images
-            FlickrTask bgFlickr = new FlickrTask(query);
-            bg.submit(bgFlickr);
-
-            // Lock controls, reveal loading ring
-            btnCreateCreation.setDisable(true);
-            vImages.setVisible(false);
-            ringImages.setVisible(true);
-
-            // Reset selection
-            for (ToggleButton t : gridToggles) {
-                t.setSelected(false);
-            }
-
-            bgFlickr.setOnSucceeded(e -> {
-                // Unlock controls, hide loading ring
-                btnCreateCreation.setDisable(false);
-                btnSearchFlickr.setDisable(false);
-                vImages.setVisible(true);
-                ringImages.setVisible(false);
-
-                // Once all images are downloaded, we place each into the image grid
-                int imgCount = 1;
-                for (ImageView imgView : gridImageViews) {
-                    //set each image
-                    File file = new File(TEMPIMGS.toString() + "/" + query + "-" + imgCount + ".jpg");
-                    Image image = new Image(file.toURI().toString());
-                    double n = (image.getWidth() < image.getHeight()) ? image.getWidth() : image.getHeight();
-                    double x = (image.getWidth() - n) / 2;
-                    double y = (image.getHeight() - n) / 2;
-                    Rectangle2D rect = new Rectangle2D(x, y, n, n);
-
-                    imgView.setViewport(rect);
-                    imgView.setSmooth(true);
-                    imgView.setImage(image);
-
-                    // Add image path to arraylist so it can be extracted later for creation
-                    selectedImgs.add("/" + query + "-" + imgCount + ".jpg");
-                    imgCount++;
-                }
-                if (error) {
-                    deleteDirectory(TEMPIMGS);
-                    vImages.setVisible(false);
-                }
-                txtSearchFlickr.clear();
-            });
-        }
-    }
-
-    @FXML
-    void listAllChunksClicked(MouseEvent event) {
-        listSelectedChunks.getSelectionModel().clearSelection();
-        if (event.getClickCount() == 2) {
-            btnAddChunk.fire();
-        }
-    }
-
-    @FXML
-    void listChunksSearchClicked(MouseEvent event) {
-        txaResults.deselect();
-        if (event.getClickCount() == 2) {
-            btnSearchPreviewChunk.fire();
-        }
-    }
-
-    @FXML
-    void listCreationsClicked(MouseEvent event) {
-        if (event.getClickCount() == 2) {
-            btnPlayCreation.fire();
-        }
-    }
-
-    @FXML
-    void listSelectedChunksClicked(MouseEvent event) {
-        listAllChunks.getSelectionModel().clearSelection();
-        if (event.getClickCount() == 2) {
-            btnRemoveChunk.fire();
-        }
-    }
-
-    @FXML
-    void tabMainMouseDragged(MouseEvent event) {
-        VARpedia.primaryStage.setX(event.getScreenX() - xOffset);
-        VARpedia.primaryStage.setY(event.getScreenY() - yOffset);
-    }
-
-    @FXML
-    void tabMainMousePressed(MouseEvent event) {
-        xOffset = event.getSceneX();
-        yOffset = event.getSceneY();
-    }
-
-    @FXML
-    void tabMainMouseReleased(MouseEvent event) {
-        txtSearch.requestFocus();
-    }
-
-    @FXML
-    void txtChunkEnter(ActionEvent event) {
-        btnCreateChunk.fire();
-    }
-
-    @FXML
-    void txtCreationEnter(ActionEvent event) {
-        btnCreateCreation.fire();
-    }
-
-    @FXML
-    void txtSearchEnter(ActionEvent event) {
-        btnSearch.fire();
-    }
-
-    @FXML
-    void txtSearchFlickrEnter(ActionEvent event) {
-        btnSearchFlickr.fire();
-    }
-
-    // QUIZ METHODS
-    private int numQuestions;
-    private int currentQuestion;
-    private int numCorrect;
-    private void initialiseQuizTab() {
-        if (CREATIONS.exists() && CREATIONS.isDirectory()) {
-            numQuestions = CREATIONS.listFiles().length;
-        }
-        currentQuestion = 0;
-        numCorrect = 0;
-        hQuizToolbar.setVisible(true);
-        hQuizDifficulty.setDisable(false);
-        vQuizTitle.setVisible(true);
-        vQuizError.setVisible(false);
-        vQuizPlayer.setVisible(false);
-        vQuizCorrect.setVisible(false);
-        hQuizAnswer.setVisible(false);
-        toggleQuizEasy.setSelected(true);
-        toggleQuizMedium.setSelected(false);
-        toggleQuizHard.setSelected(false);
-        if (!existDirectory(CREATIONS)) {
-            hQuizToolbar.setVisible(false);
-            vQuizTitle.setVisible(false);
-            vQuizError.setVisible(true);
-        }
-    }
-
-    @FXML
-    void toggleQuizEasyClicked(ActionEvent event) {
-        if (toggleQuizEasy.isSelected()) {
-            toggleQuizMedium.setSelected(false);
-            toggleQuizHard.setSelected(false);
-        } else {
-            toggleQuizEasy.setSelected(true);
-        }
-    }
-
-    @FXML
-    void toggleQuizMediumClicked(ActionEvent event) {
-        if (toggleQuizMedium.isSelected()) {
-            toggleQuizEasy.setSelected(false);
-            toggleQuizHard.setSelected(false);
-        } else {
-            toggleQuizMedium.setSelected(true);
-        }
-    }
-
-    @FXML
-    void toggleQuizHardClicked(ActionEvent event) {
-        if (toggleQuizHard.isSelected()) {
-            toggleQuizMedium.setSelected(false);
-            toggleQuizEasy.setSelected(false);
-        } else {
-            toggleQuizHard.setSelected(true);
-        }
-    }
-
-    private boolean quizMute;
-    private double quizVolume;
-    @FXML
-    void btnQuizBeginClicked(ActionEvent event) {
-        // Hide/reveal appropriate components
-        hQuizDifficulty.setDisable(true);
-        vQuizTitle.setVisible(false);
-        vQuizPlayer.setVisible(true);
-        hQuizAnswer.setVisible(true);
-
-        imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-        quizMute = false;
-        quizVolume = 100;
-
-        //TODO this section: pick quiz files depending on difficulty
-
-        // -------------------------------------------------------------------------------------------------------
-        int difficulty = 0; // 0 = easy, 1 = med, 2 = hard
-        if (toggleQuizMedium.isSelected()) {
-            difficulty = 1;
-        } else if (toggleQuizHard.isSelected()) {
-            difficulty = 2;
-        }
-
-        // Randomise list of files
-        File[] fi = CREATIONS.listFiles(); // change this to the proper directory
-        List<File> files = new ArrayList<>();
-        for (File f : fi) {
-            files.add(f);
-        }
-        Collections.shuffle(files);
-
-        Media video = new Media(files.get(currentQuestion).toURI().toString());
-        currentQuestion++;
-
-        // -------------------------------------------------------------------------------------------------------
-
-        // Play selected file
-        playerQuiz = new MediaPlayer(video);
-        mvQuiz.setMediaPlayer(playerQuiz);
-        playerQuiz.setAutoPlay(true);
-        mvQuiz.fitWidthProperty().bind(mvQuizPane.widthProperty());
-        mvQuiz.fitHeightProperty().bind(mvQuizPane.heightProperty());
-        mvQuiz.setPreserveRatio(false);
-
-        progressSliderQuiz.progressProperty().bind(sliderProgressQuiz.valueProperty().divide(100.0));
-        progressVolQuiz.progressProperty().bind(sliderVolQuiz.valueProperty().divide(100.0));
-
-        playerQuiz.currentTimeProperty().addListener(ov -> updateValuesQuiz());
-
-        sliderVolQuiz.valueProperty().addListener(ov -> {
-            if (sliderVolQuiz.isValueChanging()) {
-                playerQuiz.setVolume(sliderVolQuiz.getValue() / 100.0);
-            }
-        });
-
-        playerQuiz.setOnReady(() -> {
-            durationQuiz = playerQuiz.getMedia().getDuration();
-            updateValuesQuiz();
-        });
-
-        playerQuiz.setOnEndOfMedia(() -> {
-            playerQuiz.stop();
-
-            // Display "out of time" panel
-            vQuizPlayer.setVisible(false);
-            hQuizAnswer.setVisible(false);
-            vQuizCorrect.setVisible(true);
-            btnQuizRetry.setVisible(true);
-            lblQuizCorrect.setText("Out of time!");
-        });
-    }
-
-    private void updateValuesQuiz() {
-        Platform.runLater(() -> {
-            Duration currentTime = playerQuiz.getCurrentTime();
-            lblQuizCurrentTime.setText(formatTime(currentTime, durationQuiz, false));
-            lblQuizTotalTime.setText(formatTime(currentTime, durationQuiz, true));
-            sliderProgressQuiz.setDisable(durationQuiz.isUnknown());
-            progressSliderQuiz.setDisable(durationQuiz.isUnknown());
-            if (!sliderProgressQuiz.isDisabled() && durationQuiz.greaterThan(Duration.ZERO) && !sliderProgressQuiz.isValueChanging()) {
-                sliderProgressQuiz.setValue(currentTime.toMillis() / durationQuiz.toMillis() * 100.0);
-            }
-            if (!sliderVolQuiz.isValueChanging()) {
-                sliderVolQuiz.setValue((int) Math.round(playerQuiz.getVolume() * 100));
-            }
-        });
-    }
-
-    @FXML
-    void btnQuizResetClicked(ActionEvent event) {
-        initialiseQuizTab();
-        if (playerQuiz != null) {playerQuiz.stop();}
-    }
-
-    @FXML
-    void btnQuizFinishClicked(ActionEvent event) {
-
-    }
-
-    @FXML
-    void btnQuizNextClicked(ActionEvent event) {
-
-    }
-
-    @FXML
-    void btnQuizRetryClicked(ActionEvent event) {
-
-    }
-
-    @FXML
-    void btnQuizSubmitClicked(ActionEvent event) {
-        //TODO logic (use the variable currentQuestion)
-
-        // if correct
-        playerQuiz.stop();
-        vQuizPlayer.setVisible(false);
-        hQuizAnswer.setVisible(false);
-        vQuizCorrect.setVisible(true);
-        lblQuizCorrect.setText("Correct!");
-        btnQuizRetry.setVisible(false);
-    }
-
-    @FXML
-    void txtQuizAnswerEnter(ActionEvent event) {
-        btnQuizSubmit.fire();
-    }
-
-    @FXML
-    void btnMuteQuizClicked(ActionEvent event) {
-        if (!quizMute) {
-            quizVolume = sliderVolQuiz.getValue();
-            sliderVolQuiz.setValue(0);
-            imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/mute-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            playerQuiz.setVolume(0);
-            quizMute = true;
-        } else {
-            sliderVolQuiz.setValue(quizVolume);
-            imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            playerQuiz.setVolume(quizVolume / 100.0);
-            quizMute = false;
-        }
     }
 
 }

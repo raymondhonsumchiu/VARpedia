@@ -22,7 +22,7 @@
       </VBox>
    </center>
    <left>
-      <VBox alignment="CENTER_RIGHT" prefHeight="150.0" prefWidth="197.0" spacing="30.0" BorderPane.alignment="CENTER">
+      <VBox alignment="CENTER_RIGHT" prefHeight="150.0" prefWidth="142.0" spacing="30.0" BorderPane.alignment="CENTER">
          <children>
             <Label text="Pitch" />
             <Label text="Speed" />
