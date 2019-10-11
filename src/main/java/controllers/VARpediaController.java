@@ -17,18 +17,19 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
+import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import main.java.VARpedia;
 import main.java.skins.progressindicator.RingProgressIndicator;
-import main.java.tasks.FlickrTask;
-import main.java.tasks.WikitTask;
+import main.java.tasks.*;
 
 import java.io.*;
 import java.net.URL;
@@ -36,10 +37,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.regex.Pattern;
 
 import static main.java.VARpedia.*;
 
 public class VARpediaController implements Initializable {
+    //num of chunks
+    int numChunks = 0;
+
     // General window fields
     private double xOffset = 0;
     private double yOffset = 0;
@@ -48,6 +53,12 @@ public class VARpediaController implements Initializable {
     // Creations tab fields
     private MediaPlayer playerCreation;
     private Duration duration;
+
+    // Search tab fields
+    private static Stage stage;
+    public static double voicePitch;
+    public static double voiceSpeed;
+    private String query;
 
     // Combine tab fields
     private List<ImageView> gridImageViews;
@@ -65,6 +76,12 @@ public class VARpediaController implements Initializable {
 
     @FXML
     private Tab tabSearch;
+
+    @FXML
+    private VBox vCreationsEmpty;
+
+    @FXML
+    private BorderPane paneCreations;
 
     @FXML
     private Label lblNumberCreations;
@@ -238,10 +255,13 @@ public class VARpediaController implements Initializable {
     private Pane mvPane;
 
     @FXML
-    private VBox vMedia;
+    private VBox vMediaControls;
 
     @FXML
     private Button btnPlayCreation;
+
+    @FXML
+    private Button btnDeleteCreation;
 
     @FXML
     private Button btnPlayPause;
@@ -365,37 +385,32 @@ public class VARpediaController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        selectedImgs = new ArrayList<String>();
-
-        // Clean up
+        // --------------------------------------------- Clean up -----------------------------------------------
         deleteDirectory(CHUNKS);
         deleteDirectory(TEMP);
 
-        // ----------- Initialise "Creations" tab ----------
-        vMedia.setVisible(false);
-        if (CREATIONS.exists()) {
-            // Find and list all creations using bash
-            ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "ls *.mp4");
-            b.directory(CREATIONS);
-            Process p = null;
-            try {
-                p = b.start();
-                InputStream out = p.getInputStream();
-                BufferedReader stdout = new BufferedReader(new InputStreamReader(out));
-
-                List<String> list = new ArrayList<>();
-                String line;
-                while ((line = stdout.readLine()) != null) {
-                    list.add(line.substring(0, line.length() - 4));
-                }
-
-                lblNumberCreations.setText("" + list.size());
-                Collections.sort(list);
-                listCreations.setItems(FXCollections.observableArrayList(list));
-            } catch (IOException e) {
-                e.printStackTrace();
+        // --------------------------------------- Listener for tab changes -------------------------------------
+        tabMain.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
+            if (playerCreation != null) { playerCreation.stop();} // Stop media player on tab change
+            if (playerQuiz != null) {playerQuiz.stop();} // Stop quiz player on tab change
+            if (btnSearchPreviewChunk.getText() == "Stop") { btnSearchPreviewChunk.fire(); } // Stop chunk preview on tab change
+            if (btnPreviewChunkCombine.getText() == "Stop") { btnPreviewChunkCombine.fire(); } // Stop chunk preview on tab change
+            int tab = tabMain.getSelectionModel().getSelectedIndex();
+            if (tab == 0) {
+                // Refresh list of creations, but also resets media player.
+                initialiseCreationsTab();
+            } else if (tab == 2) {
+                //initialiseCombineTab();
+            } else if (tab == 3) {
+                // Reset quiz tab on change (prevents cheating, among other things)
+                initialiseQuizTab();
             }
-        }
+        });
+
+        // ----------------------------- Initialise "Creations" tab --------------------------------
+        initialiseCreationsTab();
+
+        // Pressing space anywhere on this tab will pause the media if it is playing.
         tabMain.addEventFilter(KeyEvent.KEY_PRESSED, event->{
             if (event.getCode() == KeyCode.SPACE && tabMain.getSelectionModel().getSelectedIndex() == 0) {
                 if (playerCreation != null) {
@@ -405,36 +420,50 @@ public class VARpediaController implements Initializable {
                         playerCreation.pause();
                     }
                 }
+            } else if (event.getCode() == KeyCode.DELETE && tabMain.getSelectionModel().getSelectedIndex() == 0) {
+                if (listCreations.getSelectionModel().getSelectedItem() != null) {
+                    btnDeleteCreation.fire();
+                }
             }
         });
         btnPlayPause.addEventFilter(KeyEvent.ANY, Event::consume);
         btnForward.addEventFilter(KeyEvent.ANY, Event::consume);
         btnReverse.addEventFilter(KeyEvent.ANY, Event::consume);
 
-        // ---------- Initialise "Search" tab -----------
+        // ------------------------------ Initialise "Search" tab ----------------------------------------
         txaResults.setEditable(false);
         ringSearch.setVisible(false);
 
+        cboVoice.getItems().addAll("US Male", "New Zealand Male");
+        cboVoice.getSelectionModel().selectFirst();
+
+        voicePitch = 1;
+        voiceSpeed = 1;
+        query = "";
+
         // set listview of chunks to observe the arraylist of chunks
         listChunksSearch.setItems(chunksList);
+        //add listener to listview to allow for previewing of chunk text
+        listChunksSearch.getSelectionModel().selectedItemProperty().addListener(e ->{
+            String chunktxt = getChunkText(listChunksSearch.getSelectionModel().getSelectedItem());
+            txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
+            txaPreviewChunk1.setText(chunktxt);
+        });
 
-        // ---------- Initialise "Combine" tab -----------
-        ringCombine.setVisible(false);
-        gridImageViews = new ArrayList<>();
-        gridToggles = new ArrayList<>();
-        Collections.addAll(gridImageViews,imgGrid1,imgGrid2,imgGrid3,imgGrid4,imgGrid5,imgGrid6,imgGrid7,imgGrid8,imgGrid9,imgGrid10,imgGrid11,imgGrid12);
-        Collections.addAll(gridToggles,toggleGrid1,toggleGrid2,toggleGrid3,toggleGrid4,toggleGrid5,toggleGrid5,toggleGrid6,toggleGrid7,toggleGrid8,toggleGrid8,toggleGrid9,toggleGrid10,toggleGrid11,toggleGrid12);
-        vImages.setVisible(false);
-        ringImages.setVisible(false);
+        // ------------------------------------ Initialise "Combine" tab ----------------------------------
+        initialiseCombineTab();
 
-        // set listview of all available chunks to same arraylist of chunks as prior chunk listview
-        listAllChunks.setItems(chunksList);
-        listSelectedChunks.setItems(actualChunksList);
+        // Add listener to list view to allow previewing chunk text
+        listAllChunks.getSelectionModel().selectedItemProperty().addListener(e ->{
+            String chunktxt = getChunkText(listAllChunks.getSelectionModel().getSelectedItem());
+            txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
+            txaPreviewChunk2.setText(chunktxt);
+        });
 
-        // ---------- Initialise "Quiz" tab ----------
+        // ------------------------------------ Initialise "Quiz" tab ------------------------------------
         initialiseQuizTab();
 
-        // ---------- Initialise "Options" tab ----------
+        // --------------------------------- Initialise "Options" tab --------------------------------------
         if (VARpedia.isDark) {
             btnLightTheme.setSelected(false);
             btnDarkTheme.setSelected(true);
@@ -444,29 +473,9 @@ public class VARpediaController implements Initializable {
             btnDarkTheme.setSelected(false);
             css = getClass().getResource("../../resources/css/light.css").toExternalForm();
         }
-
-        // Listener for tab changes
-        tabMain.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
-            if (playerCreation != null) { playerCreation.pause();} // Pause media player on tab change
-            if (playerQuiz != null) {playerQuiz.stop();} // Stop quiz player on tab change
-            int tab = tabMain.getSelectionModel().getSelectedIndex();
-            if (tab == 0) {
-                // Bug fix for play/pause icon on theme change
-                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/play-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            } else if (tab == 3) {
-                // Reset quiz tab on change (prevents cheating among other things)
-                initialiseQuizTab();
-            }
-        });
     }
 
-    @FXML
-    void btnAddChunkClicked(ActionEvent event) {
-        String chunkToAdd = listAllChunks.getSelectionModel().getSelectedItem();
-        if(chunkToAdd != null){
-            listSelectedChunks.getItems().add(chunkToAdd);
-        }
-    }
+    // ------------------------------------------- GENERAL ------------------------------------------------
 
     @FXML
     void btnBackClicked(ActionEvent event) throws IOException {
@@ -491,9 +500,13 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnClearChunksClicked(ActionEvent event) {
-        //clear all selected items
-        listSelectedChunks.getItems().clear();
+    void btnMinimiseClicked(ActionEvent event) {
+        VARpedia.primaryStage.setIconified(true);
+    }
+
+    @FXML
+    void btnHelpClicked(ActionEvent event) {
+
     }
 
     @FXML
@@ -503,180 +516,68 @@ public class VARpediaController implements Initializable {
         deleteDirectory(TEMP);
         deleteDirectory(CHUNKS);
         VARpedia.primaryStage.close();
+        if (stage != null) { stage.close(); }
     }
 
     @FXML
-    void btnCombineClicked(ActionEvent event) {
-        tabMain.getSelectionModel().select(2);
+    void tabMainMouseDragged(MouseEvent event) {
+        VARpedia.primaryStage.setX(event.getScreenX() - xOffset);
+        VARpedia.primaryStage.setY(event.getScreenY() - yOffset);
     }
 
     @FXML
-    void btnCreateChunkClicked(ActionEvent event) {
-
-        //PLace holder for chunk creation
-        //this list will house the names of all the chunks that will be displayed by the chunk listviews
-        //ideally these following lines will be kept, just swapping the name of the chunk
-        chunksList.add("Hello!");
-        Collections.sort(chunksList);
+    void tabMainMousePressed(MouseEvent event) {
+        xOffset = event.getSceneX();
+        yOffset = event.getSceneY();
     }
 
     @FXML
-    void btnCreateCreationClicked(ActionEvent event) {
-        //add error checks here:
-
-
-        //-------------------
-        //TEMPIMGS.mkdir();
-        //obtain all selected images
-        ArrayList<String> selectedImgs = new ArrayList<String>();
-        int index = 0;
-        for(ToggleButton imgButton: gridToggles){
-            if (imgButton.isSelected()){
-                String img = this.selectedImgs.get(index);
-                selectedImgs.add(img);
-            }
-            index++;
-        }
-
-        //check if all imgs correct
-        for(String path: selectedImgs){
-            System.out.println(path);
-        }
-
-        //------------testing purposes, will be in bg task-------
-//        TEMPIMGS.mkdir();
-//        for (String img: selectedImgs) {
-//            ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "cp " + TEMP.toString() + img + " " + TEMPIMGS.toString() + img);
-//            Process p1 = null;
-//            try {
-//                p1 = b1.start();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            try {
-//                p1.waitFor();
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-        //----------------------------------------------
-    }
-
-    @FXML
-    void btnLightThemeClicked(ActionEvent event) {
-        if (!btnLightTheme.isSelected()) {
-            btnLightTheme.setSelected(true);
-            btnDarkTheme.setSelected(false);
-        } else {
-            VARpedia.isDark = false;
-            btnDarkTheme.setSelected(false);
-            VARpedia.primaryStage.getScene().getStylesheets().clear();
-            VARpedia.primaryStage.getScene().setUserAgentStylesheet(null);
-            css = getClass().getResource("../../resources/css/light.css").toExternalForm();
-            VARpedia.primaryStage.getScene().getStylesheets().add(css);
+    void tabMainMouseReleased(MouseEvent event) {
+        if (tabMain.getSelectionModel().getSelectedIndex() == 1) {
+            txtSearch.requestFocus();
         }
     }
 
-    @FXML
-    void btnDarkThemeClicked(ActionEvent event) {
-        if (!btnDarkTheme.isSelected()) {
-            btnDarkTheme.setSelected(true);
-            btnLightTheme.setSelected(false);
-        } else {
-            VARpedia.isDark = true;
-            btnLightTheme.setSelected(false);
-            VARpedia.primaryStage.getScene().getStylesheets().clear();
-            VARpedia.primaryStage.getScene().setUserAgentStylesheet(null);
-            css = getClass().getResource("../../resources/css/dark.css").toExternalForm();
-            VARpedia.primaryStage.getScene().getStylesheets().add(css);
-        }
-    }
+    // ----------------------------------------------------------------------------------------------------
 
-    @FXML
-    void btnDeleteChunkClicked(ActionEvent event) {
-        if(listAllChunks.getSelectionModel().getSelectedItem() != null){
-            int index = listAllChunks.getSelectionModel().getSelectedIndex();
-            listAllChunks.getItems().remove(index);
-        }
-    }
+    // ---------------------------------- CREATIONS TAB METHODS -------------------------------------------
 
-    @FXML
-    void btnDeleteCreationClicked(ActionEvent event) {
-        if (listCreations.getSelectionModel().getSelectedItem() != null) {
-            // Confirm if user wants to delete Creation
-            String vid = listCreations.getSelectionModel().getSelectedItem();
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete \"" + vid + "\"?", btnYes, btnNo);
-            alert.setTitle("Delete Creation");
-            alert.getDialogPane().getStylesheets().add(css);
-            alert.setHeaderText("Delete Creation");
-            alert.setGraphic(null);
-            alert.initStyle(StageStyle.UNDECORATED);
-            alert.setResizable(false);
-            if (alert.showAndWait().get() == btnYes) {
-                new File(CREATIONS.toString() + System.getProperty("file.separator") + vid + ".mp4").delete();
-            }
-        }
-    }
-
-    @FXML
-    void btnHelpClicked(ActionEvent event) {
-
-    }
-
-    @FXML
-    void btnMinimiseClicked(ActionEvent event) {
-        VARpedia.primaryStage.setIconified(true);
-    }
-
-    // Creations tab methods
     private String currentlyPlaying;
     private boolean mute;
     private double volume;
-    @FXML
-    void btnPlayCreationClicked(ActionEvent event) {
-        if (listCreations.getSelectionModel().getSelectedItem() != null) {
-            currentlyPlaying = listCreations.getSelectionModel().getSelectedItem();
-            imgVolume.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            mute = false;
-            volume = 100;
 
-            Media video = new Media(CREATIONS.toURI().toString() + currentlyPlaying + ".mp4");
-            playerCreation = new MediaPlayer(video);
-            mvPlayCreation.setMediaPlayer(playerCreation);
-            playerCreation.setAutoPlay(true);
-            mvPlayCreation.fitWidthProperty().bind(mvPane.widthProperty());
-            mvPlayCreation.fitHeightProperty().bind(mvPane.heightProperty());
-            mvPlayCreation.setPreserveRatio(false);
+    private void initialiseCreationsTab() {
+        // Hide and display the appropriate panels
+        vMediaControls.setVisible(false);
+        if (isNonEmptyDirectory(CREATIONS)) {
+            vCreationsEmpty.setVisible(false);
+            paneCreations.setVisible(true);
 
-            vMedia.setVisible(true);
-            progressSlider.progressProperty().bind(sliderProgress.valueProperty().divide(100.0));
-            progressVol.progressProperty().bind(sliderVol.valueProperty().divide(100.0));
+            // Find and list all creations using bash
+            ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "ls");
+            b.directory(CREATIONS);
+            Process p;
+            try {
+                p = b.start();
+                InputStream out = p.getInputStream();
+                BufferedReader stdout = new BufferedReader(new InputStreamReader(out));
 
-            playerCreation.currentTimeProperty().addListener(ov -> updateValues());
-
-            sliderVol.valueProperty().addListener(ov -> {
-                if (sliderVol.isValueChanging()) {
-                    playerCreation.setVolume(sliderVol.getValue() / 100.0);
+                List<String> list = new ArrayList<>();
+                String line;
+                while ((line = stdout.readLine()) != null) {
+                    //list.add(line.substring(0, line.length() - 4));
+                    list.add(line);
                 }
-            });
 
-            playerCreation.setOnReady(() -> {
-                duration = playerCreation.getMedia().getDuration();
-                updateValues();
-            });
-
-            playerCreation.setOnPlaying(() -> {
-                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/pause-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            });
-
-            playerCreation.setOnPaused(() -> {
-                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/play-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            });
-
-            playerCreation.setOnEndOfMedia(() -> {
-                playerCreation.stop();
-                playerCreation.pause();
-            });
+                lblNumberCreations.setText("" + list.size());
+                Collections.sort(list);
+                listCreations.setItems(FXCollections.observableArrayList(list));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            vCreationsEmpty.setVisible(true);
+            paneCreations.setVisible(false);
         }
     }
 
@@ -740,6 +641,54 @@ public class VARpediaController implements Initializable {
             } else {
                 return "";
             }
+        }
+    }
+
+    @FXML
+    void btnPlayCreationClicked(ActionEvent event) {
+        if (listCreations.getSelectionModel().getSelectedItem() != null) {
+            currentlyPlaying = listCreations.getSelectionModel().getSelectedItem();
+            imgVolume.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            mute = false;
+            volume = 100;
+
+            Media video = new Media(CREATIONS.toURI().toString() + currentlyPlaying + "/" + currentlyPlaying + ".mp4");
+            playerCreation = new MediaPlayer(video);
+            mvPlayCreation.setMediaPlayer(playerCreation);
+            playerCreation.setAutoPlay(true);
+            mvPlayCreation.fitWidthProperty().bind(mvPane.widthProperty());
+            mvPlayCreation.fitHeightProperty().bind(mvPane.heightProperty());
+            mvPlayCreation.setPreserveRatio(false);
+
+            vMediaControls.setVisible(true);
+            progressSlider.progressProperty().bind(sliderProgress.valueProperty().divide(100.0));
+            progressVol.progressProperty().bind(sliderVol.valueProperty().divide(100.0));
+
+            playerCreation.currentTimeProperty().addListener(ov -> updateValues());
+
+            sliderVol.valueProperty().addListener(ov -> {
+                if (sliderVol.isValueChanging()) {
+                    playerCreation.setVolume(sliderVol.getValue() / 100.0);
+                }
+            });
+
+            playerCreation.setOnReady(() -> {
+                duration = playerCreation.getMedia().getDuration();
+                updateValues();
+            });
+
+            playerCreation.setOnPlaying(() -> {
+                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/pause-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            });
+
+            playerCreation.setOnPaused(() -> {
+                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/play-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            });
+
+            playerCreation.setOnEndOfMedia(() -> {
+                playerCreation.stop();
+                playerCreation.pause();
+            });
         }
     }
 
@@ -816,25 +765,59 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnPreviewChunkClicked(ActionEvent event) {
-
-    }
-
-    @FXML
-    void btnPreviewCreationClicked(ActionEvent event) {
-
-    }
-
-    @FXML
-    void btnRemoveChunkClicked(ActionEvent event) {
-        //if an item is selected, it will be removed
-        if(listSelectedChunks.getSelectionModel().getSelectedItem() != null){
-            int index = listSelectedChunks.getSelectionModel().getSelectedIndex();
-            listSelectedChunks.getItems().remove(index);
+    void btnDeleteCreationClicked(ActionEvent event) {
+        if (listCreations.getSelectionModel().getSelectedItem() != null) {
+            // Confirm if user wants to delete Creation
+            String vid = listCreations.getSelectionModel().getSelectedItem();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete \"" + vid + "\"?", btnYes, btnNo);
+            alert.setTitle("Delete Creation");
+            alert.getDialogPane().getStylesheets().add(css);
+            alert.setHeaderText("Delete Creation");
+            alert.setGraphic(null);
+            alert.initStyle(StageStyle.UNDECORATED);
+            alert.setResizable(false);
+            if (alert.showAndWait().get() == btnYes) {
+                deleteDirectory(new File(CREATIONS.toString() + "/" + vid));
+                //new File(CREATIONS.toString() + System.getProperty("file.separator") + vid + ".mp4").delete();
+            }
         }
     }
 
+    @FXML
+    void listCreationsClicked(MouseEvent event) {
+        if (event.getClickCount() == 2) {
+            btnPlayCreation.fire();
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------
+
+    // ------------------------------------- SEARCH TAB METHODS ------------------------------------------
+
     private boolean error;
+
+    // This method returns the text content of a chunk as a string
+    private String getChunkText(String chunkName) {
+        ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "cat " + chunkName + "/" + chunkName + ".txt");
+        b.directory(CHUNKS);
+        String chunktxt = "";
+        try {
+            Process p = b.start();
+            InputStream stdout = p.getInputStream();
+            BufferedReader stdoutBuffered = new BufferedReader(new InputStreamReader(stdout));
+
+            //use obtained string to add to textArea
+            String line;
+            while ((line = stdoutBuffered.readLine()) != null ) {
+                chunktxt += line + "\n";
+            }
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return chunktxt;
+    }
+
     @FXML
     void btnSearchClicked(ActionEvent event) {
         // Clean up for new search
@@ -842,7 +825,7 @@ public class VARpediaController implements Initializable {
         deleteDirectory(CHUNKS);
         error = false;
 
-        String query = txtSearch.getText().trim().toLowerCase();
+        query = txtSearch.getText().trim().toLowerCase();
         if (!query.isEmpty()) {
 
             // Multithreading - search Wikit for query
@@ -893,8 +876,81 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnSearchFlickrClicked(ActionEvent event) {
-        fillGridImages(txtSearchFlickr.getText().trim().toLowerCase());
+    void btnVoiceOptionClicked(ActionEvent event) throws IOException {
+        if (btnSearchPreviewChunk.getText() == "Stop") { btnSearchPreviewChunk.fire(); }
+        Parent root = FXMLLoader.load(getClass().getResource("../../resources/view/voiceoptions.fxml"));
+
+        if (stage != null) {stage.close();}
+        stage = new Stage();
+        stage.initStyle(StageStyle.UNDECORATED);
+        stage.setResizable(false);
+
+        root.setOnMousePressed(e -> {
+            xOffset = e.getSceneX();
+            yOffset = e.getSceneY();
+        });
+
+        root.setOnMouseDragged(e -> {
+            stage.setX(e.getScreenX() - xOffset);
+            stage.setY(e.getScreenY() - yOffset);
+        });
+
+        Scene scene = new Scene(root, 500, 240);
+        scene.getStylesheets().add(css);
+        stage.setScene(scene);
+        stage.show();
+
+    }
+
+    @FXML
+    void btnCombineClicked(ActionEvent event) {
+        tabMain.getSelectionModel().select(2);
+    }
+
+    @FXML
+    void listChunksSearchClicked(MouseEvent event) {
+        txaResults.deselect();
+        if (event.getClickCount() == 2) {
+            btnSearchPreviewChunk.fire();
+        }
+    }
+
+    @FXML
+    void txtSearchEnter(ActionEvent event) {
+        btnSearch.fire();
+    }
+
+    @FXML
+    void txtChunkEnter(ActionEvent event) {
+        btnCreateChunk.fire();
+    }
+
+    @FXML
+    void txaResultsDragged(MouseEvent event) {
+        listChunksSearch.getSelectionModel().clearSelection();
+        txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
+        txaPreviewChunk1.setText("");
+    }
+
+    // ----------------------------------------------------------------------------------------------------
+
+    // ---------------------------------------- COMBINE TAB METHODS ----------------------------------------
+
+    private void initialiseCombineTab() {
+        selectedImgs = new ArrayList<String>();
+        gridImageViews = new ArrayList<>();
+        gridToggles = new ArrayList<>();
+        Collections.addAll(gridImageViews, imgGrid1, imgGrid2, imgGrid3, imgGrid4, imgGrid5, imgGrid6, imgGrid7, imgGrid8, imgGrid9, imgGrid10, imgGrid11, imgGrid12);
+        Collections.addAll(gridToggles, toggleGrid1, toggleGrid2, toggleGrid3, toggleGrid4, toggleGrid5, toggleGrid6, toggleGrid7, toggleGrid8, toggleGrid9, toggleGrid10, toggleGrid11, toggleGrid12);
+
+        // Bind list views to lists
+        listAllChunks.setItems(chunksList);
+        listSelectedChunks.setItems(actualChunksList);
+
+        // Hide images and progress rings
+        ringCombine.setVisible(false);
+        ringImages.setVisible(false);
+        vImages.setVisible(false);
     }
 
     private void fillGridImages(String query) {
@@ -906,6 +962,7 @@ public class VARpediaController implements Initializable {
 
             // Lock controls, reveal loading ring
             btnCreateCreation.setDisable(true);
+            btnPreviewCreation.setDisable(true);
             vImages.setVisible(false);
             ringImages.setVisible(true);
 
@@ -917,6 +974,7 @@ public class VARpediaController implements Initializable {
             bgFlickr.setOnSucceeded(e -> {
                 // Unlock controls, hide loading ring
                 btnCreateCreation.setDisable(false);
+                btnPreviewCreation.setDisable(false);
                 btnSearchFlickr.setDisable(false);
                 vImages.setVisible(true);
                 ringImages.setVisible(false);
@@ -950,53 +1008,55 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
+    void btnAddChunkClicked(ActionEvent event) {
+        String chunkToAdd = listAllChunks.getSelectionModel().getSelectedItem();
+        if(chunkToAdd != null){
+            listSelectedChunks.getItems().add(chunkToAdd);
+        }
+    }
+
+    @FXML
+    void btnRemoveChunkClicked(ActionEvent event) {
+        //if an item is selected, it will be removed
+        if(listSelectedChunks.getSelectionModel().getSelectedItem() != null){
+            int index = listSelectedChunks.getSelectionModel().getSelectedIndex();
+            listSelectedChunks.getItems().remove(index);
+        }
+    }
+
+    @FXML
+    void btnClearChunksClicked(ActionEvent event) {
+        //clear all selected items
+        listSelectedChunks.getItems().clear();
+    }
+
+    @FXML
+    void btnDeleteChunkClicked(ActionEvent event) {
+        if(listAllChunks.getSelectionModel().getSelectedItem() != null){
+            int index = listAllChunks.getSelectionModel().getSelectedIndex();
+            listAllChunks.getItems().remove(index);
+        }
+    }
+
+    @FXML
+    void btnSearchFlickrClicked(ActionEvent event) {
+        fillGridImages(txtSearchFlickr.getText().trim().toLowerCase());
+    }
+
+    @FXML
     void listAllChunksClicked(MouseEvent event) {
+        listSelectedChunks.getSelectionModel().clearSelection();
         if (event.getClickCount() == 2) {
             btnAddChunk.fire();
         }
     }
 
     @FXML
-    void listChunksSearchClicked(MouseEvent event) {
-        if (event.getClickCount() == 2) {
-            btnSearchPreviewChunk.fire();
-        }
-    }
-
-    @FXML
-    void listCreationsClicked(MouseEvent event) {
-        if (event.getClickCount() == 2) {
-            btnPlayCreation.fire();
-        }
-    }
-
-    @FXML
     void listSelectedChunksClicked(MouseEvent event) {
+        listAllChunks.getSelectionModel().clearSelection();
         if (event.getClickCount() == 2) {
             btnRemoveChunk.fire();
         }
-    }
-
-    @FXML
-    void tabMainMouseDragged(MouseEvent event) {
-        VARpedia.primaryStage.setX(event.getScreenX() - xOffset);
-        VARpedia.primaryStage.setY(event.getScreenY() - yOffset);
-    }
-
-    @FXML
-    void tabMainMousePressed(MouseEvent event) {
-        xOffset = event.getSceneX();
-        yOffset = event.getSceneY();
-    }
-
-    @FXML
-    void tabMainMouseReleased(MouseEvent event) {
-        txtSearch.requestFocus();
-    }
-
-    @FXML
-    void txtChunkEnter(ActionEvent event) {
-        btnCreateChunk.fire();
     }
 
     @FXML
@@ -1005,19 +1065,19 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void txtSearchEnter(ActionEvent event) {
-        btnSearch.fire();
-    }
-
-    @FXML
     void txtSearchFlickrEnter(ActionEvent event) {
         btnSearchFlickr.fire();
     }
 
-    // QUIZ METHODS
+    // -----------------------------------------------------------------------------------------------------
+
+    // ----------------------------------------- QUIZ TAB METHODS ---------------------------------------------
     private int numQuestions;
     private int currentQuestion;
     private int numCorrect;
+    private boolean quizMute;
+    private double quizVolume;
+
     private void initialiseQuizTab() {
         if (CREATIONS.exists() && CREATIONS.isDirectory()) {
             numQuestions = CREATIONS.listFiles().length;
@@ -1034,7 +1094,7 @@ public class VARpediaController implements Initializable {
         toggleQuizEasy.setSelected(true);
         toggleQuizMedium.setSelected(false);
         toggleQuizHard.setSelected(false);
-        if (!existDirectory(CREATIONS)) {
+        if (!isNonEmptyDirectory(CREATIONS)) {
             hQuizToolbar.setVisible(false);
             vQuizTitle.setVisible(false);
             vQuizError.setVisible(true);
@@ -1071,8 +1131,6 @@ public class VARpediaController implements Initializable {
         }
     }
 
-    private boolean quizMute;
-    private double quizVolume;
     @FXML
     void btnQuizBeginClicked(ActionEvent event) {
         // Hide/reveal appropriate components
@@ -1213,6 +1271,342 @@ public class VARpediaController implements Initializable {
             playerQuiz.setVolume(quizVolume / 100.0);
             quizMute = false;
         }
+    }
+
+    // -----------------------------------------------------------------------------------------------
+
+    // --------------------------------------- OPTIONS TAB METHODS -----------------------------------------
+
+    @FXML
+    void btnLightThemeClicked(ActionEvent event) {
+        if (!btnLightTheme.isSelected()) {
+            btnLightTheme.setSelected(true);
+            btnDarkTheme.setSelected(false);
+        } else {
+            VARpedia.isDark = false;
+            btnDarkTheme.setSelected(false);
+            VARpedia.primaryStage.getScene().getStylesheets().clear();
+            VARpedia.primaryStage.getScene().setUserAgentStylesheet(null);
+            css = getClass().getResource("../../resources/css/light.css").toExternalForm();
+            VARpedia.primaryStage.getScene().getStylesheets().add(css);
+        }
+    }
+
+    @FXML
+    void btnDarkThemeClicked(ActionEvent event) {
+        if (!btnDarkTheme.isSelected()) {
+            btnDarkTheme.setSelected(true);
+            btnLightTheme.setSelected(false);
+        } else {
+            VARpedia.isDark = true;
+            btnLightTheme.setSelected(false);
+            VARpedia.primaryStage.getScene().getStylesheets().clear();
+            VARpedia.primaryStage.getScene().setUserAgentStylesheet(null);
+            css = getClass().getResource("../../resources/css/dark.css").toExternalForm();
+            VARpedia.primaryStage.getScene().getStylesheets().add(css);
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------------------
+
+    Process p1;
+    @FXML
+    void btnPreviewChunkClicked(ActionEvent event) throws IOException, InterruptedException {
+        CHUNKS.mkdirs();
+
+        if(btnSearchPreviewChunk.getText().equals("Preview")) {
+            // Obtain selected text and check num of words
+            String previewText = txaResults.getSelectedText().trim();
+            int numWords = previewText.length() - previewText.replaceAll("\\s", "").length();
+
+            if (listChunksSearch.getSelectionModel().getSelectedItem() != null) {
+                // If a chunk from the list is selected, preview its audio
+                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listChunksSearch.getSelectionModel().getSelectedItem());
+                b1.directory(new File(CHUNKS.toString() + "/" + listChunksSearch.getSelectionModel().getSelectedItem()));
+                p1 = b1.start();
+                // bg thread keeps an eye on the process while it is alive
+                PreviewChunkTask previewTask = new PreviewChunkTask(p1);
+                bg.submit(previewTask);
+                // Once finished, the text is set back
+                previewTask.setOnSucceeded(e ->{
+                    btnSearchPreviewChunk.setText("Preview");
+                });
+
+                // Set text to allowing stopping of audio
+                btnSearchPreviewChunk.setText("Stop");
+            } else if (previewText.length() == 0) {
+                txaPreviewChunk1.setText("Nothing to preview.");
+                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+            } else if (numWords > 40) {
+                txaPreviewChunk1.setText("Please select no more than 40 words per chunk.");
+                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+            } else {
+                // Handle previewing of chunk
+                txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
+                txaPreviewChunk1.setText(previewText);
+
+                // Create preview audio file, this will allow stopping
+                File festChunk = new File(CHUNKS.toString() + System.getProperty("file.separator") + "festivalChunk");
+                CHUNKS.mkdirs();
+                festChunk.createNewFile();
+                BufferedWriter w = new BufferedWriter(new FileWriter(CHUNKS.toString() + System.getProperty("file.separator") + "festivalChunk"));
+
+                String voice = "voice_kal_diphone";
+                if (cboVoice.getValue() == "New Zealand Male") { voice = "voice_akl_nz_jdt_diphone"; }
+                double stretch = 2.0 - voiceSpeed;
+                if (stretch < 0.1) { stretch = 0.1; }
+                int pitch = 60 + (int) (Math.round(voicePitch * 100) / 2);
+
+                // Set voice
+                w.write("(" + voice + ")\n");
+
+                // Set pitch
+                if (voicePitch > 1.1 || voicePitch < 0.9) {
+                    w.write("(set! duffint_params '((start " + pitch + ") (end " + pitch + ")))\n");
+                    w.write("(Parameter.set 'Int_Method 'DuffInt)\n");
+                    w.write("(Parameter.set 'Int_Target_Method Int_Targets_Default)\n");
+                }
+
+                // Set speed
+                w.write("(Parameter.set 'Duration_Stretch " + stretch + ")\n");
+
+                // Save audio to file
+                w.write("(set! utt1 (Utterance Text \"" + previewText + "\"))\n");
+                w.write("(utt.synth utt1)\n");
+                w.write("(utt.save.wave utt1 \"previewChunk\" 'riff)");
+                w.close();
+                ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
+                b.directory(CHUNKS);
+                Process p = b.start();
+                p.waitFor();
+
+                // Second process for actually playing the audio
+                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit previewChunk");
+                b1.directory(CHUNKS);
+                p1 = b1.start();
+
+                // bg thread keeps an eye on the process while it is alive
+                PreviewChunkTask previewTask = new PreviewChunkTask(p1);
+                bg.submit(previewTask);
+                // Once finished, the text is set back
+                previewTask.setOnSucceeded(e ->{
+                    btnSearchPreviewChunk.setText("Preview");
+                });
+
+                // Set text to allowing stopping of audio
+                btnSearchPreviewChunk.setText("Stop");
+
+            }
+        } else {
+            // Handle stopping of preview
+            p1.destroy();
+            btnSearchPreviewChunk.setText("Preview");
+        }
+
+    }
+
+    @FXML
+    void btnPreviewChunkCombineClicked(ActionEvent event) throws IOException, InterruptedException {
+        CHUNKS.mkdirs();
+
+        if(btnPreviewChunkCombine.getText().equals("Preview")) {
+            if (listAllChunks.getSelectionModel().getSelectedItem() != null) {
+                // If a chunk from the list is selected, preview its audio
+                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listAllChunks.getSelectionModel().getSelectedItem());
+                b1.directory(new File(CHUNKS.toString() + "/" + listAllChunks.getSelectionModel().getSelectedItem()));
+                p1 = b1.start();
+                // Set text to allowing stopping of audio
+                btnPreviewChunkCombine.setText("Stop");
+            }
+        } else {
+            // Handle stopping of preview
+            p1.destroy();
+            btnPreviewChunkCombine.setText("Preview");
+        }
+
+    }
+
+    @FXML
+    void btnCreateChunkClicked(ActionEvent event) throws IOException, InterruptedException {
+        CHUNKS.mkdirs();
+
+        String selectedText = txaResults.getSelectedText().trim();
+        int numWords = selectedText.length() - selectedText.replaceAll("\\s", "").length();
+        if (selectedText.length() == 0) {
+            txaPreviewChunk1.setText("No text selected.");
+            txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+        } else if (numWords > 40) {
+            txaPreviewChunk1.setText("Please select no more than 40 words per chunk.");
+            txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+        } else {
+
+            //obtain chunk name
+            String chunkName = txtChunkName.getText();
+
+            if (chunkName.startsWith("-") || !Pattern.matches("^[-_a-zA-Z0-9]*$", chunkName)) {
+                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+                txaPreviewChunk1.setText("Invalid chunk name, please choose another.");
+                txtChunkName.selectAll();
+                txtChunkName.requestFocus();
+            } else if (chunksList.contains(chunkName)) {
+                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+                txaPreviewChunk1.setText("\"" + chunkName + "\" already exists!\n Please choose a unique chunk name.");
+                txtChunkName.selectAll();
+                txtChunkName.requestFocus();
+            } else {
+                txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
+                txaPreviewChunk1.setText(selectedText);
+                txtChunkName.clear();
+
+                //handle default chunk name
+                numChunks++;
+                if (chunkName.isEmpty()) {
+                    chunkName = query + numChunks;
+                }
+
+                //create new chunk's directory
+                File NEWCHUNK = new File(CHUNKS.toString() + "/" + chunkName);
+                NEWCHUNK.mkdirs();
+
+                File festChunk = new File(NEWCHUNK.toString() + System.getProperty("file.separator") + "festivalChunk");
+                festChunk.createNewFile();
+                BufferedWriter w = new BufferedWriter(new FileWriter(NEWCHUNK.toString() + System.getProperty("file.separator") + "festivalChunk"));
+
+                String voice = "voice_kal_diphone";
+                if (cboVoice.getValue() == "New Zealand Male") { voice = "voice_akl_nz_jdt_diphone"; }
+                double stretch = 2.0 - voiceSpeed;
+                if (stretch < 0.1) { stretch = 0.1; }
+                int pitch = 60 + (int) (Math.round(voicePitch * 100) / 2);
+
+                // Set voice
+                w.write("(" + voice + ")\n");
+
+                // Set pitch
+                if (voicePitch > 1.1 || voicePitch < 0.9) {
+                    w.write("(set! duffint_params '((start " + pitch + ") (end " + pitch + ")))\n");
+                    w.write("(Parameter.set 'Int_Method 'DuffInt)\n");
+                    w.write("(Parameter.set 'Int_Target_Method Int_Targets_Default)\n");
+                }
+
+                // Set speed
+                w.write("(Parameter.set 'Duration_Stretch " + stretch + ")\n");
+
+                // Save audio to file
+                w.write("(set! utt1 (Utterance Text \"" + selectedText + "\"))\n");
+                w.write("(utt.synth utt1)\n");
+                w.write("(utt.save.wave utt1 \"" + chunkName + "\" 'riff)");
+                w.close();
+                ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
+                b.directory(NEWCHUNK);
+                Process p = b.start();
+                p.waitFor();
+
+                ProcessBuilder b2 = new ProcessBuilder("/bin/bash", "-c", "echo \"" + txaResults.getSelectedText().trim() + "\" > " + chunkName + ".txt");
+                b2.directory(NEWCHUNK);
+                Process p2 = b2.start();
+                p2.waitFor();
+
+
+                chunksList.add(chunkName);
+                Collections.sort(chunksList);
+
+            }
+        }
+
+        //PLace holder for chunk creation
+        //this list will house the names of all the chunks that will be displayed by the chunk listviews
+        //ideally these following lines will be kept, just swapping the name of the chunk
+
+    }
+
+    @FXML
+    void btnCreateCreationClicked(ActionEvent event) {
+        //add error checks here:
+
+
+        //-------------------
+        //TEMPIMGS.mkdirs();
+        //obtain all selected images
+        ArrayList<String> selectedImgs = new ArrayList<String>();
+        int index = 0;
+        for(ToggleButton imgButton: gridToggles){
+            if (imgButton.isSelected()){
+                String img = this.selectedImgs.get(index);
+                selectedImgs.add(img);
+            }
+            index++;
+        }
+
+        //check if all imgs correct
+        for(String path: selectedImgs){
+            System.out.println(path);
+        }
+
+        String creationName = txtCreationName.getText();
+        if(creationName.isEmpty()) {
+            //PLACEHOLDER
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("No name!");
+            alert.showAndWait();
+
+        }else if (actualChunksList.isEmpty()){
+            //PLACEHOLDER
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("No chunks!");
+            alert.showAndWait();
+        }else if (selectedImgs.isEmpty()) {
+            //PLACEHOLDER
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("No images!");
+            alert.showAndWait();
+
+        }else{
+            CombineTask bgCreate = new CombineTask(creationName, query, actualChunksList, selectedImgs);
+            bg.submit(bgCreate);
+
+            bgCreate.setOnSucceeded(e ->{
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "\"" + creationName + "\" created successfully!");
+                alert.setTitle("New Creation");
+                alert.setHeaderText("Success");
+                alert.showAndWait();
+            });
+        }
+
+    }
+
+    @FXML
+    void btnPreviewCreationClicked(ActionEvent event) {
+        ArrayList<String> selectedImgs = new ArrayList<String>();
+        int index = 0;
+        for(ToggleButton imgButton: gridToggles){
+            if (imgButton.isSelected()){
+                String img = this.selectedImgs.get(index);
+                selectedImgs.add(img);
+            }
+            index++;
+        }
+
+        if(actualChunksList.isEmpty()){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("No chunks!");
+            alert.showAndWait();
+        }else if (selectedImgs.isEmpty()){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("No images!");
+            alert.showAndWait();
+        }else {
+
+            PrevCombineTask bgCreate = new PrevCombineTask(query, actualChunksList, selectedImgs);
+            bg.submit(bgCreate);
+
+            bgCreate.setOnSucceeded(e -> {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "\"preview\" created successfully!");
+                alert.setTitle("New Creation");
+                alert.setHeaderText("Success");
+                alert.showAndWait();
+            });
+        }
+
     }
 
 }

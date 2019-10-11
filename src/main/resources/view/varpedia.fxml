@@ -15,123 +15,140 @@
         <tabs>
           <Tab closable="false" text="Creations">
                <content>
-                  <BorderPane>
-                     <padding>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </padding>
-                     <bottom>
-                        <HBox alignment="CENTER" prefHeight="55.0" spacing="5.0" BorderPane.alignment="CENTER">
-                           <children>
-                              <Region prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
-                            <Button mnemonicParsing="false" onAction="#btnDeleteCreationClicked" prefHeight="50.0" prefWidth="160.0" text="Delete">
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                              </Button>
-                              <Button fx:id="btnPlayCreation" defaultButton="true" mnemonicParsing="false" onAction="#btnPlayCreationClicked" prefHeight="50.0" prefWidth="160.0" text="Play">
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                              </Button>
-                           </children>
-                           <BorderPane.margin>
-                              <Insets />
-                           </BorderPane.margin>
+                  <StackPane>
+                     <children>
+                        <BorderPane fx:id="paneCreations">
                            <padding>
-                              <Insets top="5.0" />
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </padding>
-                        </HBox>
-                     </bottom>
-                     <top>
-                        <HBox alignment="CENTER_LEFT" prefWidth="200.0" spacing="5.0" BorderPane.alignment="CENTER">
-                           <children>
-                              <Label text="Number of creations:">
-                                 <HBox.margin>
-                                    <Insets bottom="5.0" left="5.0" />
-                                 </HBox.margin>
-                              </Label>
-                              <Label fx:id="lblNumberCreations" text="0">
-                                 <HBox.margin>
-                                    <Insets bottom="5.0" />
-                                 </HBox.margin>
-                              </Label>
-                           </children>
-                        </HBox>
-                     </top>
-                     <left>
-                        <ListView fx:id="listCreations" onMouseClicked="#listCreationsClicked" prefHeight="685.0" prefWidth="690.0" BorderPane.alignment="CENTER" />
-                     </left>
-                     <center>
-                        <VBox fx:id="vMedia">
-                           <children>
-                              <Pane fx:id="mvPane" prefHeight="630.0" prefWidth="735.0">
+                           <bottom>
+                              <HBox alignment="CENTER" prefHeight="55.0" spacing="5.0" BorderPane.alignment="CENTER">
                                  <children>
-                                    <MediaView fx:id="mvPlayCreation" fitHeight="630.0" fitWidth="735.0" />
+                                    <Region prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+                                  <Button fx:id="btnDeleteCreation" mnemonicParsing="false" onAction="#btnDeleteCreationClicked" prefHeight="50.0" prefWidth="160.0" text="Delete">
+                                       <HBox.margin>
+                                          <Insets />
+                                       </HBox.margin>
+                                    </Button>
+                                    <Button fx:id="btnPlayCreation" defaultButton="true" mnemonicParsing="false" onAction="#btnPlayCreationClicked" prefHeight="50.0" prefWidth="160.0" text="Play">
+                                       <HBox.margin>
+                                          <Insets />
+                                       </HBox.margin>
+                                    </Button>
                                  </children>
-                                 <VBox.margin>
+                                 <BorderPane.margin>
                                     <Insets />
-                                 </VBox.margin>
-                              </Pane>
-                              <HBox alignment="CENTER_LEFT" prefHeight="55.0" prefWidth="200.0" spacing="5.0">
-                                 <children>
-                                    <Button fx:id="btnReverse" mnemonicParsing="false" onAction="#btnReverseClicked" styleClass="button-media">
-                                       <graphic>
-                                          <ImageView id="image-view-back" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" rotate="180.0" styleClass="image-view-media" />
-                                       </graphic>
-                                    </Button>
-                                    <Button fx:id="btnPlayPause" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnPlayPauseClicked" styleClass="button-media">
-                                       <graphic>
-                                          <ImageView id="image-view-play-pause" fx:id="imgPlayPause" fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media">
-                                             <image>
-                                                <Image url="@../images" />
-                                             </image>
-                                          </ImageView>
-                                       </graphic>
-                                    </Button>
-                                    <Button fx:id="btnForward" layoutX="70.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnForwardClicked" styleClass="button-media">
-                                       <graphic>
-                                          <ImageView id="image-view-forward" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media" />
-                                       </graphic>
-                                    </Button>
-                                    <Label fx:id="lblCurrentTime" alignment="CENTER_RIGHT" prefWidth="85.0">
-                                       <HBox.margin>
-                                          <Insets right="5.0" />
-                                       </HBox.margin>
-                                    </Label>
-                                    <StackPane>
-                                       <children>
-                                          <ProgressBar fx:id="progressSlider" prefWidth="200.0" progress="0.0" styleClass="progress-slider" />
-                                          <Slider fx:id="sliderProgress" onDragDetected="#sliderCreationDragged" styleClass="slider-progress" />
-                                       </children>
-                                    </StackPane>
-                                    <Label fx:id="lblTotalTime" prefWidth="85.0">
-                                       <HBox.margin>
-                                          <Insets left="5.0" />
-                                       </HBox.margin>
-                                    </Label>
-                                    <Button mnemonicParsing="false" onAction="#btnMuteClicked" styleClass="button-media">
-                                       <graphic>
-                                          <ImageView id="image-view-volume" fx:id="imgVolume" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media" />
-                                       </graphic>
-                                    </Button>
-                                    <StackPane prefWidth="100.0">
-                                       <children>
-                                          <ProgressBar fx:id="progressVol" prefWidth="100.0" progress="0.0" styleClass="progress-slider" />
-                                          <Slider fx:id="sliderVol" prefWidth="100.0" styleClass="slider-progress" />
-                                       </children>
-                                    </StackPane>
-                                 </children>
+                                 </BorderPane.margin>
                                  <padding>
                                     <Insets top="5.0" />
                                  </padding>
                               </HBox>
+                           </bottom>
+                           <top>
+                              <HBox alignment="CENTER_LEFT" prefWidth="200.0" spacing="5.0" BorderPane.alignment="CENTER">
+                                 <children>
+                                    <Label text="Number of creations:">
+                                       <HBox.margin>
+                                          <Insets bottom="5.0" left="5.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                    <Label fx:id="lblNumberCreations" text="0">
+                                       <HBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </HBox.margin>
+                                    </Label>
+                                 </children>
+                              </HBox>
+                           </top>
+                           <left>
+                              <ListView fx:id="listCreations" onMouseClicked="#listCreationsClicked" prefHeight="685.0" prefWidth="690.0" BorderPane.alignment="CENTER" />
+                           </left>
+                           <center>
+                              <VBox fx:id="vMediaControls">
+                                 <children>
+                                    <Pane fx:id="mvPane" prefHeight="630.0" prefWidth="735.0">
+                                       <children>
+                                          <MediaView fx:id="mvPlayCreation" fitHeight="630.0" fitWidth="735.0" />
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets />
+                                       </VBox.margin>
+                                    </Pane>
+                                    <HBox alignment="CENTER_LEFT" prefHeight="55.0" prefWidth="200.0" spacing="5.0">
+                                       <children>
+                                          <Button fx:id="btnReverse" mnemonicParsing="false" onAction="#btnReverseClicked" styleClass="button-media">
+                                             <graphic>
+                                                <ImageView id="image-view-back" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" rotate="180.0" styleClass="image-view-media" />
+                                             </graphic>
+                                          </Button>
+                                          <Button fx:id="btnPlayPause" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnPlayPauseClicked" styleClass="button-media">
+                                             <graphic>
+                                                <ImageView id="image-view-play-pause" fx:id="imgPlayPause" fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media">
+                                                   <image>
+                                                      <Image url="@../images" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                          </Button>
+                                          <Button fx:id="btnForward" layoutX="70.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnForwardClicked" styleClass="button-media">
+                                             <graphic>
+                                                <ImageView id="image-view-forward" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media" />
+                                             </graphic>
+                                          </Button>
+                                          <Label fx:id="lblCurrentTime" alignment="CENTER_RIGHT" prefWidth="85.0">
+                                             <HBox.margin>
+                                                <Insets right="5.0" />
+                                             </HBox.margin>
+                                          </Label>
+                                          <StackPane>
+                                             <children>
+                                                <ProgressBar fx:id="progressSlider" prefWidth="200.0" progress="0.0" styleClass="progress-slider" />
+                                                <Slider fx:id="sliderProgress" onDragDetected="#sliderCreationDragged" styleClass="slider-progress" />
+                                             </children>
+                                          </StackPane>
+                                          <Label fx:id="lblTotalTime" prefWidth="85.0">
+                                             <HBox.margin>
+                                                <Insets left="5.0" />
+                                             </HBox.margin>
+                                          </Label>
+                                          <Button mnemonicParsing="false" onAction="#btnMuteClicked" styleClass="button-media">
+                                             <graphic>
+                                                <ImageView id="image-view-volume" fx:id="imgVolume" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media" />
+                                             </graphic>
+                                          </Button>
+                                          <StackPane prefWidth="100.0">
+                                             <children>
+                                                <ProgressBar fx:id="progressVol" prefWidth="100.0" progress="0.0" styleClass="progress-slider" />
+                                                <Slider fx:id="sliderVol" prefWidth="100.0" styleClass="slider-progress" />
+                                             </children>
+                                          </StackPane>
+                                       </children>
+                                       <padding>
+                                          <Insets top="5.0" />
+                                       </padding>
+                                    </HBox>
+                                 </children>
+                                 <BorderPane.margin>
+                                    <Insets left="5.0" />
+                                 </BorderPane.margin>
+                              </VBox>
+                           </center>
+                        </BorderPane>
+                        <VBox fx:id="vCreationsEmpty" alignment="CENTER" spacing="5.0" visible="false">
+                           <children>
+                              <Label text="Nothing to see here.">
+                                 <styleClass>
+                                    <String fx:value="label-title" />
+                                    <String fx:value="label-error" />
+                                 </styleClass>
+                              </Label>
+                              <Label layoutX="629.0" layoutY="325.0" />
+                              <Label layoutX="672.0" layoutY="325.0" text="Go to the next tab to begin." />
+                              <Label layoutX="629.0" layoutY="333.0" text="Come back after you have made some creations!" />
                            </children>
-                           <BorderPane.margin>
-                              <Insets left="5.0" />
-                           </BorderPane.margin>
                         </VBox>
-                     </center>
-                  </BorderPane>
+                     </children>
+                  </StackPane>
                </content>
           </Tab>
           <Tab fx:id="tabSearch" closable="false" text="Search">
@@ -181,7 +198,7 @@
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                               </Label>
-                              <TextArea fx:id="txaResults" VBox.vgrow="ALWAYS" />
+                              <TextArea fx:id="txaResults" onDragDetected="#txaResultsDragged" VBox.vgrow="ALWAYS" />
                            </children>
                            <BorderPane.margin>
                               <Insets right="2.0" />
@@ -227,6 +244,15 @@
                                     <Insets />
                                  </HBox.margin>
                               </TextField>
+                              <Button mnemonicParsing="false" onAction="#btnVoiceOptionClicked" prefHeight="50.0" prefWidth="50.0" styleClass="button-square">
+                                 <graphic>
+                                    <ImageView fitHeight="30.0" fitWidth="30.0" opacity="0.6" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../images/options.png" />
+                                       </image>
+                                    </ImageView>
+                                 </graphic>
+                              </Button>
                               <ComboBox fx:id="cboVoice" prefHeight="50.0" prefWidth="320.0" promptText="Select a voice" styleClass="combo-long" visibleRowCount="5">
                                  <padding>
                                     <Insets left="5.0" />
@@ -252,245 +278,250 @@
           </Tab>
             <Tab text="Combine">
                <content>
-                  <BorderPane prefHeight="200.0" prefWidth="200.0">
-                     <padding>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </padding>
-                     <center>
-                        <HBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
-                           <children>
-                              <VBox spacing="2.0">
+                  <StackPane>
+                     <children>
+                        <BorderPane prefHeight="200.0" prefWidth="200.0">
+                           <padding>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </padding>
+                           <center>
+                              <HBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
                                  <children>
-                                    <Label text="Created chunks">
-                                       <VBox.margin>
-                                          <Insets bottom="5.0" left="5.0" top="5.0" />
-                                       </VBox.margin>
-                                    </Label>
-                                    <ListView fx:id="listAllChunks" onMouseClicked="#listAllChunksClicked" prefWidth="370.0" VBox.vgrow="ALWAYS" />
-                                    <TextArea fx:id="txaPreviewChunk2" editable="false" prefHeight="200.0" prefWidth="200.0" promptText="Preview chunk text" />
-                                    <HBox alignment="CENTER" spacing="1.0">
-                                       <VBox.margin>
-                                          <Insets />
-                                       </VBox.margin>
+                                    <VBox spacing="2.0">
                                        <children>
-                                          <Button fx:id="btnPreviewChunkCombine" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnPreviewChunkClicked" text="Preview" HBox.hgrow="ALWAYS" />
-                                          <Button fx:id="btnDeleteChunk" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnDeleteChunkClicked" text="Delete chunk" HBox.hgrow="ALWAYS" />
-                                       </children>
-                                    </HBox>
-                                 </children>
-                              </VBox>
-                              <VBox alignment="CENTER" prefHeight="200.0" prefWidth="66.0" HBox.hgrow="ALWAYS">
-                                 <children>
-                                    <Button fx:id="btnAddChunk" mnemonicParsing="false" onAction="#btnAddChunkClicked">
-                                       <graphic>
-                                          <ImageView fitHeight="32.0" fitWidth="66.0" pickOnBounds="true" preserveRatio="true" rotate="180.0">
-                                             <image>
-                                                <Image url="@../images/leftarrow.png" />
-                                             </image>
-                                          </ImageView>
-                                       </graphic>
-                                    </Button>
-                                    <Region prefHeight="50.0" prefWidth="100.0" />
-                                    <Button fx:id="btnRemoveChunk" mnemonicParsing="false" onAction="#btnRemoveChunkClicked">
-                                       <graphic>
-                                          <ImageView fitHeight="32.0" fitWidth="66.0" pickOnBounds="true" preserveRatio="true">
-                                             <image>
-                                                <Image url="@../images/leftarrow.png" />
-                                             </image>
-                                          </ImageView>
-                                       </graphic>
-                                    </Button>
-                                 </children>
-                              </VBox>
-                              <VBox spacing="2.0">
-                                 <children>
-                                    <Label text="Selected chunks">
-                                       <VBox.margin>
-                                          <Insets bottom="5.0" left="5.0" top="5.0" />
-                                       </VBox.margin>
-                                    </Label>
-                                    <ListView fx:id="listSelectedChunks" onMouseClicked="#listSelectedChunksClicked" prefWidth="370.0" VBox.vgrow="ALWAYS" />
-                                    <Button fx:id="btnClearChunks" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnClearChunksClicked" text="Clear selected chunks">
-                                       <VBox.margin>
-                                          <Insets />
-                                       </VBox.margin>
-                                    </Button>
-                                 </children>
-                              </VBox>
-                           </children>
-                        </HBox>
-                     </center>
-                     <right>
-                        <VBox maxWidth="600.0" minWidth="600.0" BorderPane.alignment="CENTER">
-                           <children>
-                              <Label text="Images">
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="10.0" top="5.0" />
-                                 </VBox.margin>
-                              </Label>
-                              <StackPane VBox.vgrow="ALWAYS">
-                                 <children>
-                                    <VBox fx:id="vImages" alignment="CENTER">
-                                       <children>
-                                          <HBox alignment="CENTER" prefHeight="55.0" prefWidth="600.0" spacing="5.0">
-                                             <children>
-                                                <TextField fx:id="txtSearchFlickr" onAction="#txtSearchFlickrEnter" prefHeight="50.0" promptText="Not what you were looking for? Search again!" HBox.hgrow="ALWAYS">
-                                                   <HBox.margin>
-                                                      <Insets />
-                                                   </HBox.margin>
-                                                   <padding>
-                                                      <Insets left="30.0" />
-                                                   </padding>
-                                                </TextField>
-                                                <Button id="button-flickr" fx:id="btnSearchFlickr" mnemonicParsing="false" onAction="#btnSearchFlickrClicked" prefHeight="50.0" prefWidth="50.0">
-                                                   <HBox.margin>
-                                                      <Insets />
-                                                   </HBox.margin>
-                                                   <graphic>
-                                                      <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
-                                                         <image>
-                                                            <Image url="@../images/search.png" />
-                                                         </image>
-                                                      </ImageView>
-                                                   </graphic>
-                                                </Button>
-                                             </children>
+                                          <Label text="Created chunks">
                                              <VBox.margin>
-                                                <Insets left="8.0" />
+                                                <Insets bottom="5.0" left="5.0" top="5.0" />
                                              </VBox.margin>
-                                             <padding>
-                                                <Insets bottom="5.0" />
-                                             </padding>
+                                          </Label>
+                                          <ListView fx:id="listAllChunks" onMouseClicked="#listAllChunksClicked" prefWidth="370.0" VBox.vgrow="ALWAYS" />
+                                          <TextArea fx:id="txaPreviewChunk2" editable="false" prefHeight="200.0" prefWidth="200.0" promptText="Preview chunk text" />
+                                          <HBox alignment="CENTER" spacing="2.0">
+                                             <VBox.margin>
+                                                <Insets />
+                                             </VBox.margin>
+                                             <children>
+                                                <Button fx:id="btnPreviewChunkCombine" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnPreviewChunkCombineClicked" text="Preview" HBox.hgrow="ALWAYS" />
+                                                <Button fx:id="btnDeleteChunk" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnDeleteChunkClicked" text="Delete chunk" HBox.hgrow="ALWAYS" />
+                                             </children>
                                           </HBox>
-                                          <GridPane alignment="CENTER" prefWidth="770.0" VBox.vgrow="ALWAYS">
-                                            <columnConstraints>
-                                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                                            </columnConstraints>
-                                            <rowConstraints>
-                                                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                            </rowConstraints>
-                                             <children>
-                                                <ToggleButton fx:id="toggleGrid1" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
-                                                   <graphic>
-                                                      <ImageView fx:id="imgGrid1" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
-                                                   </graphic>
-                                                </ToggleButton>
-                                                <ToggleButton fx:id="toggleGrid2" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
-                                                   <graphic>
-                                                      <ImageView fx:id="imgGrid2" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
-                                                   </graphic>
-                                                </ToggleButton>
-                                                <ToggleButton fx:id="toggleGrid3" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
-                                                   <graphic>
-                                                      <ImageView fx:id="imgGrid3" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
-                                                   </graphic>
-                                                </ToggleButton>
-                                                <ToggleButton fx:id="toggleGrid4" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
-                                                   <graphic>
-                                                      <ImageView fx:id="imgGrid4" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
-                                                   </graphic>
-                                                </ToggleButton>
-                                                <ToggleButton fx:id="toggleGrid5" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
-                                                   <graphic>
-                                                      <ImageView fx:id="imgGrid5" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
-                                                   </graphic>
-                                                </ToggleButton>
-                                                <ToggleButton fx:id="toggleGrid6" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
-                                                   <graphic>
-                                                      <ImageView fx:id="imgGrid6" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
-                                                   </graphic>
-                                                </ToggleButton>
-                                                <ToggleButton fx:id="toggleGrid7" layoutX="10.0" layoutY="19.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
-                                                   <graphic>
-                                                      <ImageView fx:id="imgGrid7" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
-                                                   </graphic>
-                                                </ToggleButton>
-                                                <ToggleButton fx:id="toggleGrid8" layoutX="268.0" layoutY="19.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
-                                                   <graphic>
-                                                      <ImageView fx:id="imgGrid8" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
-                                                   </graphic>
-                                                </ToggleButton>
-                                                <ToggleButton fx:id="toggleGrid9" layoutX="525.0" layoutY="19.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
-                                                   <graphic>
-                                                      <ImageView fx:id="imgGrid9" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
-                                                   </graphic>
-                                                </ToggleButton>
-                                                <ToggleButton fx:id="toggleGrid10" layoutX="10.0" layoutY="239.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
-                                                   <graphic>
-                                                      <ImageView fx:id="imgGrid10" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
-                                                   </graphic>
-                                                </ToggleButton>
-                                                <ToggleButton fx:id="toggleGrid11" layoutX="268.0" layoutY="239.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
-                                                   <graphic>
-                                                      <ImageView fx:id="imgGrid11" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
-                                                   </graphic>
-                                                </ToggleButton>
-                                                <ToggleButton fx:id="toggleGrid12" layoutX="525.0" layoutY="239.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
-                                                   <graphic>
-                                                      <ImageView fx:id="imgGrid12" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
-                                                   </graphic>
-                                                </ToggleButton>
-                                             </children>
-                                             <VBox.margin>
-                                                <Insets left="5.0" />
-                                             </VBox.margin>
-                                          </GridPane>
                                        </children>
                                     </VBox>
-                                    <RingProgressIndicator fx:id="ringImages" maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" prefHeight="50.0" prefWidth="50.0" progress="-1" />
+                                    <VBox alignment="CENTER" prefHeight="200.0" prefWidth="66.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <Button fx:id="btnAddChunk" mnemonicParsing="false" onAction="#btnAddChunkClicked">
+                                             <graphic>
+                                                <ImageView fitHeight="32.0" fitWidth="66.0" pickOnBounds="true" preserveRatio="true" rotate="180.0">
+                                                   <image>
+                                                      <Image url="@../images/leftarrow.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                          </Button>
+                                          <Region prefHeight="50.0" prefWidth="100.0" />
+                                          <Button fx:id="btnRemoveChunk" mnemonicParsing="false" onAction="#btnRemoveChunkClicked">
+                                             <graphic>
+                                                <ImageView fitHeight="32.0" fitWidth="66.0" pickOnBounds="true" preserveRatio="true">
+                                                   <image>
+                                                      <Image url="@../images/leftarrow.png" />
+                                                   </image>
+                                                </ImageView>
+                                             </graphic>
+                                          </Button>
+                                       </children>
+                                    </VBox>
+                                    <VBox spacing="2.0">
+                                       <children>
+                                          <Label text="Selected chunks">
+                                             <VBox.margin>
+                                                <Insets bottom="5.0" left="5.0" top="5.0" />
+                                             </VBox.margin>
+                                          </Label>
+                                          <ListView fx:id="listSelectedChunks" onMouseClicked="#listSelectedChunksClicked" prefWidth="370.0" VBox.vgrow="ALWAYS" />
+                                          <Button fx:id="btnClearChunks" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnClearChunksClicked" text="Clear selected chunks">
+                                             <VBox.margin>
+                                                <Insets />
+                                             </VBox.margin>
+                                          </Button>
+                                       </children>
+                                    </VBox>
                                  </children>
-                              </StackPane>
-                           </children>
-                           <BorderPane.margin>
-                              <Insets left="5.0" />
-                           </BorderPane.margin>
-                        </VBox>
-                     </right>
-                     <bottom>
-                        <HBox alignment="CENTER" spacing="5.0" BorderPane.alignment="CENTER">
-                           <children>
-                              <RingProgressIndicator fx:id="ringCombine" maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" prefHeight="50.0" prefWidth="50.0" progress="-1">
-                                 <HBox.margin>
-                                    <Insets left="5.0" right="5.0" />
-                                 </HBox.margin></RingProgressIndicator>
-                              <Label text="Creation name:">
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                              </Label>
-                              <TextField fx:id="txtCreationName" maxWidth="1.7976931348623157E308" onAction="#txtCreationEnter" prefHeight="50.0" promptText="Name" HBox.hgrow="ALWAYS">
-                                 <padding>
-                                    <Insets left="30.0" />
-                                 </padding>
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                              </TextField>
-                              <ComboBox fx:id="cboMusic" prefHeight="50.0" prefWidth="320.0" promptText="Select music" styleClass="combo-long" visibleRowCount="5">
-                                 <padding>
+                              </HBox>
+                           </center>
+                           <right>
+                              <VBox maxWidth="600.0" minWidth="600.0" BorderPane.alignment="CENTER">
+                                 <children>
+                                    <Label text="Images">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="10.0" top="5.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <StackPane VBox.vgrow="ALWAYS">
+                                       <children>
+                                          <VBox fx:id="vImages" alignment="CENTER">
+                                             <children>
+                                                <HBox alignment="CENTER" prefHeight="55.0" prefWidth="600.0" spacing="5.0">
+                                                   <children>
+                                                      <TextField fx:id="txtSearchFlickr" onAction="#txtSearchFlickrEnter" prefHeight="50.0" promptText="Not what you were looking for? Search again!" HBox.hgrow="ALWAYS">
+                                                         <HBox.margin>
+                                                            <Insets />
+                                                         </HBox.margin>
+                                                         <padding>
+                                                            <Insets left="30.0" />
+                                                         </padding>
+                                                      </TextField>
+                                                      <Button fx:id="btnSearchFlickr" mnemonicParsing="false" onAction="#btnSearchFlickrClicked" prefHeight="50.0" prefWidth="50.0" styleClass="button-square">
+                                                         <HBox.margin>
+                                                            <Insets />
+                                                         </HBox.margin>
+                                                         <graphic>
+                                                            <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true">
+                                                               <image>
+                                                                  <Image url="@../images/search.png" />
+                                                               </image>
+                                                            </ImageView>
+                                                         </graphic>
+                                                      </Button>
+                                                   </children>
+                                                   <VBox.margin>
+                                                      <Insets left="8.0" />
+                                                   </VBox.margin>
+                                                   <padding>
+                                                      <Insets bottom="5.0" />
+                                                   </padding>
+                                                </HBox>
+                                                <GridPane alignment="CENTER" prefWidth="770.0" VBox.vgrow="ALWAYS">
+                                                  <columnConstraints>
+                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                                  </columnConstraints>
+                                                  <rowConstraints>
+                                                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                  </rowConstraints>
+                                                   <children>
+                                                      <ToggleButton fx:id="toggleGrid1" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                                                         <graphic>
+                                                            <ImageView fx:id="imgGrid1" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
+                                                         </graphic>
+                                                      </ToggleButton>
+                                                      <ToggleButton fx:id="toggleGrid2" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                                                         <graphic>
+                                                            <ImageView fx:id="imgGrid2" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
+                                                         </graphic>
+                                                      </ToggleButton>
+                                                      <ToggleButton fx:id="toggleGrid3" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                                                         <graphic>
+                                                            <ImageView fx:id="imgGrid3" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
+                                                         </graphic>
+                                                      </ToggleButton>
+                                                      <ToggleButton fx:id="toggleGrid4" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                                                         <graphic>
+                                                            <ImageView fx:id="imgGrid4" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
+                                                         </graphic>
+                                                      </ToggleButton>
+                                                      <ToggleButton fx:id="toggleGrid5" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                                                         <graphic>
+                                                            <ImageView fx:id="imgGrid5" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
+                                                         </graphic>
+                                                      </ToggleButton>
+                                                      <ToggleButton fx:id="toggleGrid6" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                                                         <graphic>
+                                                            <ImageView fx:id="imgGrid6" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
+                                                         </graphic>
+                                                      </ToggleButton>
+                                                      <ToggleButton fx:id="toggleGrid7" layoutX="10.0" layoutY="19.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
+                                                         <graphic>
+                                                            <ImageView fx:id="imgGrid7" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
+                                                         </graphic>
+                                                      </ToggleButton>
+                                                      <ToggleButton fx:id="toggleGrid8" layoutX="268.0" layoutY="19.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
+                                                         <graphic>
+                                                            <ImageView fx:id="imgGrid8" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
+                                                         </graphic>
+                                                      </ToggleButton>
+                                                      <ToggleButton fx:id="toggleGrid9" layoutX="525.0" layoutY="19.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
+                                                         <graphic>
+                                                            <ImageView fx:id="imgGrid9" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
+                                                         </graphic>
+                                                      </ToggleButton>
+                                                      <ToggleButton fx:id="toggleGrid10" layoutX="10.0" layoutY="239.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
+                                                         <graphic>
+                                                            <ImageView fx:id="imgGrid10" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
+                                                         </graphic>
+                                                      </ToggleButton>
+                                                      <ToggleButton fx:id="toggleGrid11" layoutX="268.0" layoutY="239.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
+                                                         <graphic>
+                                                            <ImageView fx:id="imgGrid11" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
+                                                         </graphic>
+                                                      </ToggleButton>
+                                                      <ToggleButton fx:id="toggleGrid12" layoutX="525.0" layoutY="239.0" mnemonicParsing="false" styleClass="toggle-image" GridPane.columnIndex="2" GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
+                                                         <graphic>
+                                                            <ImageView fx:id="imgGrid12" fitHeight="120.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true" />
+                                                         </graphic>
+                                                      </ToggleButton>
+                                                   </children>
+                                                   <VBox.margin>
+                                                      <Insets left="5.0" />
+                                                   </VBox.margin>
+                                                </GridPane>
+                                             </children>
+                                          </VBox>
+                                          <RingProgressIndicator fx:id="ringImages" maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" prefHeight="50.0" prefWidth="50.0" progress="-1" />
+                                       </children>
+                                    </StackPane>
+                                 </children>
+                                 <BorderPane.margin>
                                     <Insets left="5.0" />
-                                 </padding>
-                                 <HBox.margin>
+                                 </BorderPane.margin>
+                              </VBox>
+                           </right>
+                           <bottom>
+                              <HBox alignment="CENTER" spacing="5.0" BorderPane.alignment="CENTER">
+                                 <children>
+                                    <RingProgressIndicator fx:id="ringCombine" maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" prefHeight="50.0" prefWidth="50.0" progress="-1">
+                                       <HBox.margin>
+                                          <Insets left="5.0" right="5.0" />
+                                       </HBox.margin>
+                                    </RingProgressIndicator>
+                                    <Label text="Creation name:">
+                                       <HBox.margin>
+                                          <Insets />
+                                       </HBox.margin>
+                                    </Label>
+                                    <TextField fx:id="txtCreationName" maxWidth="1.7976931348623157E308" onAction="#txtCreationEnter" prefHeight="50.0" promptText="Name" HBox.hgrow="ALWAYS">
+                                       <padding>
+                                          <Insets left="30.0" />
+                                       </padding>
+                                       <HBox.margin>
+                                          <Insets />
+                                       </HBox.margin>
+                                    </TextField>
+                                    <ComboBox fx:id="cboMusic" prefHeight="50.0" prefWidth="320.0" promptText="Select music" styleClass="combo-long" visibleRowCount="5">
+                                       <padding>
+                                          <Insets left="5.0" />
+                                       </padding>
+                                       <HBox.margin>
+                                          <Insets />
+                                       </HBox.margin>
+                                    </ComboBox>
+                                    <Button fx:id="btnPreviewCreation" mnemonicParsing="false" onAction="#btnPreviewCreationClicked" styleClass="button-long" text="Preview Creation" />
+                                    <Button fx:id="btnCreateCreation" defaultButton="true" mnemonicParsing="false" onAction="#btnCreateCreationClicked" text="Create!" />
+                                 </children>
+                                 <BorderPane.margin>
                                     <Insets />
-                                 </HBox.margin>
-                              </ComboBox>
-                              <Button fx:id="btnPreviewCreation" mnemonicParsing="false" onAction="#btnPreviewCreationClicked" styleClass="button-long" text="Preview Creation" />
-                              <Button fx:id="btnCreateCreation" defaultButton="true" mnemonicParsing="false" onAction="#btnCreateCreationClicked" text="Create!" />
-                           </children>
-                           <BorderPane.margin>
-                              <Insets />
-                           </BorderPane.margin>
-                           <padding>
-                              <Insets top="5.0" />
-                           </padding>
-                        </HBox>
-                     </bottom>
-                  </BorderPane>
+                                 </BorderPane.margin>
+                                 <padding>
+                                    <Insets top="5.0" />
+                                 </padding>
+                              </HBox>
+                           </bottom>
+                        </BorderPane>
+                     </children>
+                  </StackPane>
                </content>
             </Tab>
             <Tab text="Quiz">
