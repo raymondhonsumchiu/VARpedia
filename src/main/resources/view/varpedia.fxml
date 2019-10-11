@@ -23,7 +23,7 @@
                         <HBox alignment="CENTER" prefHeight="55.0" spacing="5.0" BorderPane.alignment="CENTER">
                            <children>
                               <Region prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
-                            <Button mnemonicParsing="false" onAction="#btnDeleteCreationClicked" prefHeight="50.0" prefWidth="160.0" text="Delete">
+                            <Button fx:id="btnDeleteCreation" mnemonicParsing="false" onAction="#btnDeleteCreationClicked" prefHeight="50.0" prefWidth="160.0" text="Delete">
                                  <HBox.margin>
                                     <Insets />
                                  </HBox.margin>
