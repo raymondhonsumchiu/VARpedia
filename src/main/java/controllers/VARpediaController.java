@@ -951,6 +951,9 @@ public class VARpediaController implements Initializable {
         ringCombine.setVisible(false);
         ringImages.setVisible(false);
         vImages.setVisible(false);
+
+        cboMusic.getItems().addAll("No music", "Happy Piano", "Funny Piano", "Groovy Music");
+        cboMusic.getSelectionModel().selectFirst();
     }
 
     private void fillGridImages(String query) {
@@ -1561,7 +1564,8 @@ public class VARpediaController implements Initializable {
             alert.showAndWait();
 
         }else{
-            CombineTask bgCreate = new CombineTask(creationName, query, actualChunksList, selectedImgs);
+            String musicChoice = (String)cboMusic.getValue();
+            CombineTask bgCreate = new CombineTask(creationName, query, actualChunksList, selectedImgs, musicChoice);
             bg.submit(bgCreate);
 
             bgCreate.setOnSucceeded(e ->{
@@ -1596,7 +1600,8 @@ public class VARpediaController implements Initializable {
             alert.showAndWait();
         }else {
 
-            PrevCombineTask bgCreate = new PrevCombineTask(query, actualChunksList, selectedImgs);
+            String musicChoice = (String)cboMusic.getValue();
+            PrevCombineTask bgCreate = new PrevCombineTask(query, actualChunksList, selectedImgs, musicChoice);
             bg.submit(bgCreate);
 
             bgCreate.setOnSucceeded(e -> {
