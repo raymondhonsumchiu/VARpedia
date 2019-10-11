@@ -56,7 +56,6 @@ public class VARpediaController implements Initializable {
     // Search tab fields
     private static Stage stage;
     public static double voicePitch;
-    public static double voicePitchRange;
     public static double voiceSpeed;
     private String query;
 
@@ -255,6 +254,9 @@ public class VARpediaController implements Initializable {
     private Button btnPlayCreation;
 
     @FXML
+    private Button btnDeleteCreation;
+
+    @FXML
     private Button btnPlayPause;
 
     @FXML
@@ -417,6 +419,10 @@ public class VARpediaController implements Initializable {
                         playerCreation.pause();
                     }
                 }
+            } else if (event.getCode() == KeyCode.DELETE && tabMain.getSelectionModel().getSelectedIndex() == 0) {
+                if (listCreations.getSelectionModel().getSelectedItem() != null) {
+                    btnDeleteCreation.fire();
+                }
             }
         });
         btnPlayPause.addEventFilter(KeyEvent.ANY, Event::consume);
@@ -431,7 +437,6 @@ public class VARpediaController implements Initializable {
         cboVoice.getSelectionModel().selectFirst();
 
         voicePitch = 1;
-        voicePitchRange = 1;
         voiceSpeed = 1;
         query = "";
 
@@ -822,6 +827,7 @@ public class VARpediaController implements Initializable {
         if (btnSearchPreviewChunk.getText() == "Stop") { btnSearchPreviewChunk.fire(); }
         Parent root = FXMLLoader.load(getClass().getResource("../../resources/view/voiceoptions.fxml"));
 
+        if (stage != null) {stage.close();}
         stage = new Stage();
         stage.initStyle(StageStyle.UNDECORATED);
         stage.setResizable(false);
@@ -855,7 +861,7 @@ public class VARpediaController implements Initializable {
 
             if (listChunksSearch.getSelectionModel().getSelectedItem() != null) {
                 // If a chunk from the list is selected, preview its audio
-                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit festivalChunk");
+                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listChunksSearch.getSelectionModel().getSelectedItem());
                 b1.directory(new File(CHUNKS.toString() + "/" + listChunksSearch.getSelectionModel().getSelectedItem()));
                 p1 = b1.start();
                 // bg thread keeps an eye on the process while it is alive
@@ -889,9 +895,22 @@ public class VARpediaController implements Initializable {
                 if (cboVoice.getValue() == "New Zealand Male") { voice = "voice_akl_nz_jdt_diphone"; }
                 double stretch = 2.0 - voiceSpeed;
                 if (stretch < 0.1) { stretch = 0.1; }
+                int pitch = 60 + (int) (Math.round(voicePitch * 100) / 2);
 
+                // Set voice
                 w.write("(" + voice + ")\n");
-                w.write("(Parameter.set 'Duration_Stretch " + stretch + ")");
+
+                // Set pitch
+                if (voicePitch > 1.1 || voicePitch < 0.9) {
+                    w.write("(set! duffint_params '((start " + pitch + ") (end " + pitch + ")))\n");
+                    w.write("(Parameter.set 'Int_Method 'DuffInt)\n");
+                    w.write("(Parameter.set 'Int_Target_Method Int_Targets_Default)\n");
+                }
+
+                // Set speed
+                w.write("(Parameter.set 'Duration_Stretch " + stretch + ")\n");
+
+                // Save audio to file
                 w.write("(set! utt1 (Utterance Text \"" + previewText + "\"))\n");
                 w.write("(utt.synth utt1)\n");
                 w.write("(utt.save.wave utt1 \"previewChunk\" 'riff)");
@@ -933,7 +952,7 @@ public class VARpediaController implements Initializable {
         if(btnPreviewChunkCombine.getText().equals("Preview")) {
             if (listAllChunks.getSelectionModel().getSelectedItem() != null) {
                 // If a chunk from the list is selected, preview its audio
-                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit festivalChunk");
+                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listAllChunks.getSelectionModel().getSelectedItem());
                 b1.directory(new File(CHUNKS.toString() + "/" + listAllChunks.getSelectionModel().getSelectedItem()));
                 p1 = b1.start();
                 // Set text to allowing stopping of audio
@@ -978,13 +997,18 @@ public class VARpediaController implements Initializable {
 
             if (chunkName.startsWith("-") || !Pattern.matches("^[-_a-zA-Z0-9]*$", chunkName)) {
                 txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
-                txaPreviewChunk1.setText("Invalid chunk name, please try again.");
+                txaPreviewChunk1.setText("Invalid chunk name, please choose another.");
+                txtChunkName.selectAll();
+                txtChunkName.requestFocus();
             } else if (chunksList.contains(chunkName)) {
                 txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
                 txaPreviewChunk1.setText("\"" + chunkName + "\" already exists!\n Please choose a unique chunk name.");
+                txtChunkName.selectAll();
+                txtChunkName.requestFocus();
             } else {
                 txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
                 txaPreviewChunk1.setText(selectedText);
+                txtChunkName.clear();
 
                 //handle default chunk name
                 numChunks++;
@@ -1004,12 +1028,25 @@ public class VARpediaController implements Initializable {
                 if (cboVoice.getValue() == "New Zealand Male") { voice = "voice_akl_nz_jdt_diphone"; }
                 double stretch = 2.0 - voiceSpeed;
                 if (stretch < 0.1) { stretch = 0.1; }
+                int pitch = 60 + (int) (Math.round(voicePitch * 100) / 2);
 
+                // Set voice
                 w.write("(" + voice + ")\n");
-                w.write("(Parameter.set 'Duration_Stretch " + stretch + ")");
+
+                // Set pitch
+                if (voicePitch > 1.1 || voicePitch < 0.9) {
+                    w.write("(set! duffint_params '((start " + pitch + ") (end " + pitch + ")))\n");
+                    w.write("(Parameter.set 'Int_Method 'DuffInt)\n");
+                    w.write("(Parameter.set 'Int_Target_Method Int_Targets_Default)\n");
+                }
+
+                // Set speed
+                w.write("(Parameter.set 'Duration_Stretch " + stretch + ")\n");
+
+                // Save audio to file
                 w.write("(set! utt1 (Utterance Text \"" + selectedText + "\"))\n");
                 w.write("(utt.synth utt1)\n");
-                w.write("(utt.save.wave utt1 \"festivalChunk\" 'riff)");
+                w.write("(utt.save.wave utt1 \"" + chunkName + "\" 'riff)");
                 w.close();
                 ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
                 b.directory(NEWCHUNK);

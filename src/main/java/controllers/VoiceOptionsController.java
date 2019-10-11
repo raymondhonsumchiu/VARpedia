@@ -10,7 +10,8 @@ import javafx.stage.Stage;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import static main.java.controllers.VARpediaController.*;
+import static main.java.controllers.VARpediaController.voicePitch;
+import static main.java.controllers.VARpediaController.voiceSpeed;
 
 public class VoiceOptionsController implements Initializable {
 
@@ -18,15 +19,11 @@ public class VoiceOptionsController implements Initializable {
     private Slider sliderPitch;
 
     @FXML
-    private Slider sliderPitchRange;
-
-    @FXML
     private Slider sliderSpeed;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         sliderPitch.setValue(voicePitch * 50);
-        sliderPitchRange.setValue(voicePitchRange * 50);
         sliderSpeed.setValue(voiceSpeed * 50);
     }
 
@@ -39,7 +36,6 @@ public class VoiceOptionsController implements Initializable {
     @FXML
     void btnResetClicked(ActionEvent event) {
         voicePitch = 1.0;
-        voicePitchRange = 1.0;
         voiceSpeed = 1.0;
         initialize(null, null);
     }
@@ -47,7 +43,6 @@ public class VoiceOptionsController implements Initializable {
     @FXML
     void btnSaveClicked(ActionEvent event) {
         voicePitch = sliderPitch.getValue() / 50;
-        voicePitchRange = sliderPitchRange.getValue() / 50;
         voiceSpeed = sliderSpeed.getValue() / 50;
 
         Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
