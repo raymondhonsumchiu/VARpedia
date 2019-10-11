@@ -116,6 +116,28 @@ public class CombineTask extends Task<Void> {
         Process p9 = b9.start();
         p9.waitFor();
 
+        //create 20sec audio
+        ProcessBuilder b10 = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -stream_loop -1 -i " + TEMP.toString() + "/temp.wav -vcodec copy -ss 00:00:00.000 -t 00:00:20.000 audio.wav");
+        b10.directory(NEWCREATION);
+        Process p10 = b10.start();
+        p10.waitFor();
+
+        //create 20sec video
+        frameRate =(double)numImages / 20;
+        System.out.println(frameRate);
+        String quizVidCmd = "cat *.jpg | ffmpeg -f image2pipe -framerate " + frameRate + " -i - -t 20 -c:v libx264 -pix_fmt yuv420p -vf \"scale=560:480\" -r 25 -max_muxing_queue_size 1024 -y " + "../../Creations/" + name + "/" + "video.mp4";
+        ProcessBuilder b11 = new ProcessBuilder("/bin/bash", "-c", quizVidCmd);
+        b11.directory(SELIMGS);
+        Process p11 = b11.start();
+        p11.waitFor();
+
+        // Merge to get 20sec both vid
+        ProcessBuilder b12 = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i video.mp4 -i audio.wav -c:v copy -c:a aac -strict experimental both.mp4");
+        b12.directory(NEWCREATION);
+        Process p12 = b12.start();
+        p12.waitFor();
+
+
         return null;
     }
 }
