@@ -17,10 +17,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
@@ -29,6 +26,7 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import main.java.VARpedia;
 import main.java.skins.progressindicator.RingProgressIndicator;
+import main.java.structures.QuizFile;
 import main.java.tasks.*;
 
 import java.io.*;
@@ -63,13 +61,30 @@ public class VARpediaController implements Initializable {
     // Combine tab fields
     private List<ImageView> gridImageViews;
     private List<ToggleButton> gridToggles;
-    private ObservableList<String> chunksList = FXCollections.observableArrayList();
-    private ObservableList<String> actualChunksList = FXCollections.observableArrayList();
+    private ObservableList<String> allChunkList = FXCollections.observableArrayList();
+    private ObservableList<String> selectedChunkList = FXCollections.observableArrayList();
     private ArrayList<String> selectedImgs;
+    private MediaPlayer playerPreview;
+    private Duration durationPreview;
 
     // Quiz tab fields
     private MediaPlayer playerQuiz;
     private Duration durationQuiz;
+
+    @FXML
+    private AnchorPane anchorRoot;
+
+    @FXML
+    private Button btnBack;
+
+    @FXML
+    private Button btnMinimise;
+
+    @FXML
+    private Button btnHelp;
+
+    @FXML
+    private Button btnClose;
 
     @FXML
     private TabPane tabMain;
@@ -127,6 +142,27 @@ public class VARpediaController implements Initializable {
 
     @FXML
     private Button btnClearChunks;
+
+    @FXML
+    private VBox vPreview;
+
+    @FXML
+    private MediaView mvPreview;
+
+    @FXML
+    private Pane mvPreviewPane;
+
+    @FXML
+    private Label lblPreviewTotalTime;
+
+    @FXML
+    private Label lblPreviewCurrentTime;
+
+    @FXML
+    private Slider sliderProgressPreview;
+
+    @FXML
+    private ProgressBar progressSliderPreview;
 
     @FXML
     private VBox vImages;
@@ -303,6 +339,18 @@ public class VARpediaController implements Initializable {
     private VBox vQuizTitle;
 
     @FXML
+    private Label lblQuizTitle;
+
+    @FXML
+    private Label lblQuizTitle1;
+
+    @FXML
+    private Label lblQuizTitle2;
+
+    @FXML
+    private Label lblQuizTitle3;
+
+    @FXML
     private VBox vQuizError;
 
     @FXML
@@ -313,6 +361,9 @@ public class VARpediaController implements Initializable {
 
     @FXML
     private MediaView mvQuiz;
+
+    @FXML
+    private Button btnMuteQuiz;
 
     @FXML
     private Label lblQuizCurrentTime;
@@ -393,58 +444,84 @@ public class VARpediaController implements Initializable {
         tabMain.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
             if (playerCreation != null) { playerCreation.stop();} // Stop media player on tab change
             if (playerQuiz != null) {playerQuiz.stop();} // Stop quiz player on tab change
-            if (btnSearchPreviewChunk.getText() == "Stop") { btnSearchPreviewChunk.fire(); } // Stop chunk preview on tab change
-            if (btnPreviewChunkCombine.getText() == "Stop") { btnPreviewChunkCombine.fire(); } // Stop chunk preview on tab change
+            if (playerPreview != null) { // Stop previewing creation on tab change
+                playerPreview.stop();
+                vPreview.setVisible(false);
+                txaPreviewChunk2.setVisible(true);
+            }
+            if (btnSearchPreviewChunk.getText().equals("Stop")) {
+                btnSearchPreviewChunk.fire();
+            } // Stop chunk preview on tab change
+            if (btnPreviewChunkCombine.getText().equals("Stop")) {
+                btnPreviewChunkCombine.fire();
+            } // Stop chunk preview on tab change
             int tab = tabMain.getSelectionModel().getSelectedIndex();
             if (tab == 0) {
                 // Refresh list of creations, but also resets media player.
                 initialiseCreationsTab();
             } else if (tab == 2) {
                 //initialiseCombineTab();
+/*                if (allChunkList.isEmpty()) {
+                    btnPreviewCreation.setDisable(true);
+                    btnCreateCreation.setDisable(true);
+                }*/
             } else if (tab == 3) {
                 // Reset quiz tab on change (prevents cheating, among other things)
                 initialiseQuizTab();
             }
         });
 
-        // ----------------------------- Initialise "Creations" tab --------------------------------
-        initialiseCreationsTab();
-
-        // Pressing space anywhere on this tab will pause the media if it is playing.
-        tabMain.addEventFilter(KeyEvent.KEY_PRESSED, event->{
-            if (event.getCode() == KeyCode.SPACE && tabMain.getSelectionModel().getSelectedIndex() == 0) {
-                if (playerCreation != null) {
-                    if (playerCreation.getStatus() == MediaPlayer.Status.PAUSED) {
-                        playerCreation.play();
-                    } else {
-                        playerCreation.pause();
+        // ------------------------------------ Listener for key presses ------------------------------
+        anchorRoot.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            int tab = tabMain.getSelectionModel().getSelectedIndex();
+            KeyCode code = event.getCode();
+            if (code == KeyCode.SPACE || code == KeyCode.ENTER) {
+                if (tab == 0) {
+                    // Pause / play media on Space
+                    if (code == KeyCode.SPACE) {
+                        if (playerCreation != null) {
+                            if (playerCreation.getStatus() == MediaPlayer.Status.PAUSED) {
+                                playerCreation.play();
+                            } else {
+                                playerCreation.pause();
+                            }
+                        }
+                        // Play creation on Enter
+                    } else if (listCreations.getSelectionModel().getSelectedItem() != null) {
+                        btnPlayCreation.fire();
+                    }
+                } else if (tab == 3) {
+                    // Go to next question on Space or Enter
+                    if (vQuizCorrect.isVisible() && btnQuizNext.isVisible()) {
+                        btnQuizNext.fire();
                     }
                 }
-            } else if (event.getCode() == KeyCode.DELETE && tabMain.getSelectionModel().getSelectedIndex() == 0) {
+            } else if (code == KeyCode.DELETE && tabMain.getSelectionModel().getSelectedIndex() == 0) {
+                // Delete creation on Del
                 if (listCreations.getSelectionModel().getSelectedItem() != null) {
                     btnDeleteCreation.fire();
                 }
             }
         });
+
+        // ----------------------------- Initialise "Creations" tab --------------------------------
+        initialiseCreationsTab();
+
         btnPlayPause.addEventFilter(KeyEvent.ANY, Event::consume);
         btnForward.addEventFilter(KeyEvent.ANY, Event::consume);
         btnReverse.addEventFilter(KeyEvent.ANY, Event::consume);
+        btnBack.addEventFilter(KeyEvent.ANY, Event::consume);
+        btnMinimise.addEventFilter(KeyEvent.ANY, Event::consume);
+        btnHelp.addEventFilter(KeyEvent.ANY, Event::consume);
+        btnClose.addEventFilter(KeyEvent.ANY, Event::consume);
 
         // ------------------------------ Initialise "Search" tab ----------------------------------------
-        txaResults.setEditable(false);
-        ringSearch.setVisible(false);
-
-        cboVoice.getItems().addAll("US Male", "New Zealand Male");
-        cboVoice.getSelectionModel().selectFirst();
-
-        voicePitch = 1;
-        voiceSpeed = 1;
-        query = "";
+        initialiseSearchTab();
 
         // set listview of chunks to observe the arraylist of chunks
-        listChunksSearch.setItems(chunksList);
+        listChunksSearch.setItems(allChunkList);
         //add listener to listview to allow for previewing of chunk text
-        listChunksSearch.getSelectionModel().selectedItemProperty().addListener(e ->{
+        listChunksSearch.getSelectionModel().selectedItemProperty().addListener(e -> {
             String chunktxt = getChunkText(listChunksSearch.getSelectionModel().getSelectedItem());
             txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
             txaPreviewChunk1.setText(chunktxt);
@@ -454,7 +531,7 @@ public class VARpediaController implements Initializable {
         initialiseCombineTab();
 
         // Add listener to list view to allow previewing chunk text
-        listAllChunks.getSelectionModel().selectedItemProperty().addListener(e ->{
+        listAllChunks.getSelectionModel().selectedItemProperty().addListener(e -> {
             String chunktxt = getChunkText(listAllChunks.getSelectionModel().getSelectedItem());
             txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
             txaPreviewChunk2.setText(chunktxt);
@@ -513,6 +590,7 @@ public class VARpediaController implements Initializable {
     void btnCloseClicked(ActionEvent event) {
         // Clean up on exit
         bg.shutdownNow();
+        if (p1 != null) {p1.destroy();}
         deleteDirectory(TEMP);
         deleteDirectory(CHUNKS);
         VARpedia.primaryStage.close();
@@ -670,6 +748,20 @@ public class VARpediaController implements Initializable {
                 if (sliderVol.isValueChanging()) {
                     playerCreation.setVolume(sliderVol.getValue() / 100.0);
                 }
+                if (sliderVol.getValue() == 0) {
+                    imgVolume.setImage(new Image(new File(ICONS.toString() + "/mute-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+                    mute = true;
+                } else if (mute) {
+                    imgVolume.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+                    mute = false;
+                }
+            });
+
+            sliderProgress.valueProperty().addListener(ov -> {
+                if (sliderProgress.isValueChanging()) {
+                    // multiply duration by percentage calculated by slider position
+                    playerCreation.seek(duration.multiply(sliderProgress.getValue() / 100.0));
+                }
             });
 
             playerCreation.setOnReady(() -> {
@@ -690,16 +782,6 @@ public class VARpediaController implements Initializable {
                 playerCreation.pause();
             });
         }
-    }
-
-    @FXML
-    void sliderCreationDragged(MouseEvent event) {
-        sliderProgress.valueProperty().addListener(ov -> {
-            if (sliderProgress.isValueChanging()) {
-                // multiply duration by percentage calculated by slider position
-                playerCreation.seek(duration.multiply(sliderProgress.getValue() / 100.0));
-            }
-        });
     }
 
     @FXML
@@ -767,6 +849,7 @@ public class VARpediaController implements Initializable {
     @FXML
     void btnDeleteCreationClicked(ActionEvent event) {
         if (listCreations.getSelectionModel().getSelectedItem() != null) {
+            if (playerCreation != null) { playerCreation.pause(); }
             // Confirm if user wants to delete Creation
             String vid = listCreations.getSelectionModel().getSelectedItem();
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete \"" + vid + "\"?", btnYes, btnNo);
@@ -777,8 +860,9 @@ public class VARpediaController implements Initializable {
             alert.initStyle(StageStyle.UNDECORATED);
             alert.setResizable(false);
             if (alert.showAndWait().get() == btnYes) {
+                if (playerCreation != null) { playerCreation.stop(); }
                 deleteDirectory(new File(CREATIONS.toString() + "/" + vid));
-                //new File(CREATIONS.toString() + System.getProperty("file.separator") + vid + ".mp4").delete();
+                initialiseCreationsTab();
             }
         }
     }
@@ -795,6 +879,25 @@ public class VARpediaController implements Initializable {
     // ------------------------------------- SEARCH TAB METHODS ------------------------------------------
 
     private boolean error;
+    Process p1;
+
+    private void initialiseSearchTab() {
+        txaResults.setEditable(false);
+        txaResults.clear();
+        txaPreviewChunk1.clear();
+        txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
+        txtSearch.clear();
+        txtChunkName.clear();
+        listChunksSearch.getItems().clear();
+        ringSearch.setVisible(false);
+
+        cboVoice.getItems().addAll("US Male", "New Zealand Male");
+        cboVoice.getSelectionModel().selectFirst();
+
+        voicePitch = 1;
+        voiceSpeed = 1;
+        query = "";
+    }
 
     // This method returns the text content of a chunk as a string
     private String getChunkText(String chunkName) {
@@ -808,7 +911,7 @@ public class VARpediaController implements Initializable {
 
             //use obtained string to add to textArea
             String line;
-            while ((line = stdoutBuffered.readLine()) != null ) {
+            while ((line = stdoutBuffered.readLine()) != null) {
                 chunktxt += line + "\n";
             }
 
@@ -877,7 +980,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnVoiceOptionClicked(ActionEvent event) throws IOException {
-        if (btnSearchPreviewChunk.getText() == "Stop") { btnSearchPreviewChunk.fire(); }
+        if (btnSearchPreviewChunk.getText().equals("Stop")) { btnSearchPreviewChunk.fire(); }
         Parent root = FXMLLoader.load(getClass().getResource("../../resources/view/voiceoptions.fxml"));
 
         if (stage != null) {stage.close();}
@@ -908,6 +1011,194 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
+    void btnPreviewChunkClicked(ActionEvent event) throws IOException, InterruptedException {
+        CHUNKS.mkdirs();
+
+        if (btnSearchPreviewChunk.getText().equals("Preview")) {
+            // Obtain selected text and check num of words
+            String previewText = txaResults.getSelectedText().trim();
+            int numWords = previewText.length() - previewText.replaceAll("\\s", "").length();
+
+            if (listChunksSearch.getSelectionModel().getSelectedItem() != null) {
+                // If a chunk from the list is selected, preview its audio
+                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listChunksSearch.getSelectionModel().getSelectedItem());
+                b1.directory(new File(CHUNKS.toString() + "/" + listChunksSearch.getSelectionModel().getSelectedItem()));
+                p1 = b1.start();
+                // bg thread keeps an eye on the process while it is alive
+                PreviewChunkTask previewTask = new PreviewChunkTask(p1);
+                bg.submit(previewTask);
+                // Once finished, the text is set back
+                previewTask.setOnSucceeded(e -> {
+                    btnSearchPreviewChunk.setText("Preview");
+                });
+
+                // Set text to allowing stopping of audio
+                btnSearchPreviewChunk.setText("Stop");
+            } else if (previewText.length() == 0) {
+                txaPreviewChunk1.setText("Nothing to preview.");
+                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+            } else if (numWords > 40) {
+                txaPreviewChunk1.setText("Please select no more than 40 words per chunk.");
+                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+            } else {
+                // Handle previewing of chunk
+                txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
+                txaPreviewChunk1.setText(previewText);
+
+                // Create preview audio file, this will allow stopping
+                File festChunk = new File(CHUNKS.toString() + System.getProperty("file.separator") + "festivalChunk");
+                CHUNKS.mkdirs();
+                festChunk.createNewFile();
+                BufferedWriter w = new BufferedWriter(new FileWriter(CHUNKS.toString() + System.getProperty("file.separator") + "festivalChunk"));
+
+                String voice = "voice_kal_diphone";
+                if (cboVoice.getValue().equals("New Zealand Male")) { voice = "voice_akl_nz_jdt_diphone"; }
+
+                double stretch = 2.1 - Math.round(voiceSpeed * 10) * 0.08;
+                int pitch = 60 + (int) (Math.round(voicePitch * 100) / 2);
+
+                // Set voice
+                w.write("(" + voice + ")\n");
+
+                // Set pitch
+                if (voicePitch > 1.1 || voicePitch < 0.9) {
+                    w.write("(set! duffint_params '((start " + pitch + ") (end " + pitch + ")))\n");
+                    w.write("(Parameter.set 'Int_Method 'DuffInt)\n");
+                    w.write("(Parameter.set 'Int_Target_Method Int_Targets_Default)\n");
+                }
+
+                // Set speed
+                w.write("(Parameter.set 'Duration_Stretch " + stretch + ")\n");
+
+                // Save audio to file
+                w.write("(set! utt1 (Utterance Text \"" + previewText + "\"))\n");
+                w.write("(utt.synth utt1)\n");
+                w.write("(utt.save.wave utt1 \"previewChunk\" 'riff)");
+                w.close();
+                ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
+                b.directory(CHUNKS);
+                Process p = b.start();
+                p.waitFor();
+
+                // Second process for actually playing the audio
+                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit previewChunk");
+                b1.directory(CHUNKS);
+                p1 = b1.start();
+
+                // bg thread keeps an eye on the process while it is alive
+                PreviewChunkTask previewTask = new PreviewChunkTask(p1);
+                bg.submit(previewTask);
+                // Once finished, the text is set back
+                previewTask.setOnSucceeded(e -> {
+                    btnSearchPreviewChunk.setText("Preview");
+                });
+
+                // Set text to allowing stopping of audio
+                btnSearchPreviewChunk.setText("Stop");
+
+            }
+        } else {
+            // Handle stopping of preview
+            p1.destroy();
+            btnSearchPreviewChunk.setText("Preview");
+        }
+
+    }
+
+    @FXML
+    void btnCreateChunkClicked(ActionEvent event) throws IOException, InterruptedException {
+        CHUNKS.mkdirs();
+
+        String selectedText = txaResults.getSelectedText().trim();
+        int numWords = selectedText.length() - selectedText.replaceAll("\\s", "").length();
+        if (selectedText.length() == 0) {
+            txaPreviewChunk1.setText("No text selected.");
+            txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+        } else if (numWords > 40) {
+            txaPreviewChunk1.setText("Please select no more than 40 words per chunk.");
+            txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+        } else {
+
+            //obtain chunk name
+            String chunkName = txtChunkName.getText().trim();
+
+            if (chunkName.startsWith("-") || !Pattern.matches("^[-_a-zA-Z0-9]*$", chunkName)) {
+                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+                txaPreviewChunk1.setText("Invalid chunk name, please choose another.");
+                txtChunkName.selectAll();
+                txtChunkName.requestFocus();
+            } else if (allChunkList.contains(chunkName)) {
+                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
+                txaPreviewChunk1.setText("\"" + chunkName + "\" already exists!\n Please choose a unique chunk name.");
+                txtChunkName.selectAll();
+                txtChunkName.requestFocus();
+            } else {
+                txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
+                txaPreviewChunk1.setText(selectedText);
+                txtChunkName.clear();
+
+                //handle default chunk name
+                numChunks++;
+                if (chunkName.isEmpty()) {
+                    chunkName = query + numChunks;
+                }
+
+                //create new chunk's directory
+                File NEWCHUNK = new File(CHUNKS.toString() + "/" + chunkName);
+                NEWCHUNK.mkdirs();
+
+                File festChunk = new File(NEWCHUNK.toString() + System.getProperty("file.separator") + "festivalChunk");
+                festChunk.createNewFile();
+                BufferedWriter w = new BufferedWriter(new FileWriter(NEWCHUNK.toString() + System.getProperty("file.separator") + "festivalChunk"));
+
+                String voice = "voice_kal_diphone";
+                if (cboVoice.getValue().equals("New Zealand Male")) { voice = "voice_akl_nz_jdt_diphone"; }
+
+                double stretch = 2.1 - Math.round(voiceSpeed * 10) * 0.08;
+                int pitch = 60 + (int) (Math.round(voicePitch * 100) / 2);
+
+                // Set voice
+                w.write("(" + voice + ")\n");
+
+                // Set pitch
+                if (voicePitch > 1.1 || voicePitch < 0.9) {
+                    w.write("(set! duffint_params '((start " + pitch + ") (end " + pitch + ")))\n");
+                    w.write("(Parameter.set 'Int_Method 'DuffInt)\n");
+                    w.write("(Parameter.set 'Int_Target_Method Int_Targets_Default)\n");
+                }
+
+                // Set speed
+                w.write("(Parameter.set 'Duration_Stretch " + stretch + ")\n");
+
+                // Save audio to file
+                w.write("(set! utt1 (Utterance Text \"" + selectedText + "\"))\n");
+                w.write("(utt.synth utt1)\n");
+                w.write("(utt.save.wave utt1 \"" + chunkName + "\" 'riff)");
+                w.close();
+                ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
+                b.directory(NEWCHUNK);
+                Process p = b.start();
+                p.waitFor();
+
+                ProcessBuilder b2 = new ProcessBuilder("/bin/bash", "-c", "echo \"" + txaResults.getSelectedText().trim() + "\" > " + chunkName + ".txt");
+                b2.directory(NEWCHUNK);
+                Process p2 = b2.start();
+                p2.waitFor();
+
+
+                allChunkList.add(chunkName);
+                Collections.sort(allChunkList);
+
+            }
+        }
+
+        //PLace holder for chunk creation
+        //this list will house the names of all the chunks that will be displayed by the chunk listviews
+        //ideally these following lines will be kept, just swapping the name of the chunk
+
+    }
+
+    @FXML
     void listChunksSearchClicked(MouseEvent event) {
         txaResults.deselect();
         if (event.getClickCount() == 2) {
@@ -929,7 +1220,7 @@ public class VARpediaController implements Initializable {
     void txaResultsDragged(MouseEvent event) {
         listChunksSearch.getSelectionModel().clearSelection();
         txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
-        txaPreviewChunk1.setText("");
+        txaPreviewChunk1.clear();
     }
 
     // ----------------------------------------------------------------------------------------------------
@@ -944,13 +1235,24 @@ public class VARpediaController implements Initializable {
         Collections.addAll(gridToggles, toggleGrid1, toggleGrid2, toggleGrid3, toggleGrid4, toggleGrid5, toggleGrid6, toggleGrid7, toggleGrid8, toggleGrid9, toggleGrid10, toggleGrid11, toggleGrid12);
 
         // Bind list views to lists
-        listAllChunks.setItems(chunksList);
-        listSelectedChunks.setItems(actualChunksList);
+        allChunkList.clear();
+        selectedChunkList.clear();
+        listAllChunks.setItems(allChunkList);
+        listSelectedChunks.setItems(selectedChunkList);
 
-        // Hide images and progress rings
+        // Hide components and reset text
         ringCombine.setVisible(false);
         ringImages.setVisible(false);
+        vPreview.setVisible(false);
+        txaPreviewChunk2.setVisible(true);
         vImages.setVisible(false);
+        txaPreviewChunk2.clear();
+        txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
+        txtCreationName.clear();
+        txtSearchFlickr.clear();
+
+        cboMusic.getItems().addAll("No music", "Happy Piano", "Funny Piano", "Groovy Music");
+        cboMusic.getSelectionModel().selectFirst();
     }
 
     private void fillGridImages(String query) {
@@ -983,7 +1285,7 @@ public class VARpediaController implements Initializable {
                 int imgCount = 1;
                 for (ImageView imgView : gridImageViews) {
                     //set each image
-                    File file = new File(TEMPIMGS.toString() + "/" + query + "-" + imgCount + ".jpg");
+                    File file = new File(TEMPIMGS.toString() + "/" + imgCount + ".jpg");
                     Image image = new Image(file.toURI().toString());
                     double n = (image.getWidth() < image.getHeight()) ? image.getWidth() : image.getHeight();
                     double x = (image.getWidth() - n) / 2;
@@ -995,7 +1297,7 @@ public class VARpediaController implements Initializable {
                     imgView.setImage(image);
 
                     // Add image path to arraylist so it can be extracted later for creation
-                    selectedImgs.add("/" + query + "-" + imgCount + ".jpg");
+                    selectedImgs.add("/" + imgCount + ".jpg");
                     imgCount++;
                 }
                 if (error) {
@@ -1010,7 +1312,7 @@ public class VARpediaController implements Initializable {
     @FXML
     void btnAddChunkClicked(ActionEvent event) {
         String chunkToAdd = listAllChunks.getSelectionModel().getSelectedItem();
-        if(chunkToAdd != null){
+        if (chunkToAdd != null) {
             listSelectedChunks.getItems().add(chunkToAdd);
         }
     }
@@ -1018,7 +1320,7 @@ public class VARpediaController implements Initializable {
     @FXML
     void btnRemoveChunkClicked(ActionEvent event) {
         //if an item is selected, it will be removed
-        if(listSelectedChunks.getSelectionModel().getSelectedItem() != null){
+        if (listSelectedChunks.getSelectionModel().getSelectedItem() != null) {
             int index = listSelectedChunks.getSelectionModel().getSelectedIndex();
             listSelectedChunks.getItems().remove(index);
         }
@@ -1028,19 +1330,233 @@ public class VARpediaController implements Initializable {
     void btnClearChunksClicked(ActionEvent event) {
         //clear all selected items
         listSelectedChunks.getItems().clear();
+        for (ToggleButton t : gridToggles) {
+            t.setSelected(false);
+        }
     }
 
     @FXML
     void btnDeleteChunkClicked(ActionEvent event) {
-        if(listAllChunks.getSelectionModel().getSelectedItem() != null){
-            int index = listAllChunks.getSelectionModel().getSelectedIndex();
-            listAllChunks.getItems().remove(index);
+        if (listAllChunks.getSelectionModel().getSelectedItem() != null) {
+            selectedChunkList.removeAll(Collections.singleton(listAllChunks.getSelectionModel().getSelectedItem()));
+            listAllChunks.getItems().remove(listAllChunks.getSelectionModel().getSelectedIndex());
         }
+    }
+
+    @FXML
+    void btnPreviewChunkCombineClicked(ActionEvent event) throws IOException, InterruptedException {
+        CHUNKS.mkdirs();
+
+        if (btnPreviewChunkCombine.getText().equals("Preview")) {
+            if (listAllChunks.getSelectionModel().getSelectedItem() != null) {
+                // If a chunk from the list is selected, preview its audio
+                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listAllChunks.getSelectionModel().getSelectedItem());
+                b1.directory(new File(CHUNKS.toString() + "/" + listAllChunks.getSelectionModel().getSelectedItem()));
+                p1 = b1.start();
+                // Set text to allowing stopping of audio
+                btnPreviewChunkCombine.setText("Stop");
+            }
+        } else {
+            // Handle stopping of preview
+            p1.destroy();
+            btnPreviewChunkCombine.setText("Preview");
+        }
+
     }
 
     @FXML
     void btnSearchFlickrClicked(ActionEvent event) {
         fillGridImages(txtSearchFlickr.getText().trim().toLowerCase());
+    }
+
+    @FXML
+    void btnPreviewCreationClicked(ActionEvent event) {
+        if (btnPreviewCreation.getText().equals("Preview Creation")) {
+            //obtain all selected images
+            ArrayList<String> selectedImgs = new ArrayList<String>();
+            int index = 0;
+            for (ToggleButton imgButton : gridToggles) {
+                if (imgButton.isSelected()) {
+                    String img = this.selectedImgs.get(index);
+                    selectedImgs.add(img);
+                }
+                index++;
+            }
+
+            if (selectedChunkList.isEmpty()) {
+                txaPreviewChunk2.setText("Please add some chunks.");
+                txaPreviewChunk2.setStyle("-fx-text-fill: close-color");
+            } else if (selectedImgs.isEmpty()) {
+                txaPreviewChunk2.setText("Please select some images.");
+                txaPreviewChunk2.setStyle("-fx-text-fill: close-color");
+            } else {
+                ringCombine.setVisible(true);
+                btnPreviewCreation.setDisable(true);
+                btnCreateCreation.setDisable(true);
+                txaPreviewChunk2.clear();
+                txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
+
+                String musicChoice = cboMusic.getValue().toString();
+                PrevCombineTask bgCreate = new PrevCombineTask(query, selectedChunkList, selectedImgs, musicChoice);
+                bg.submit(bgCreate);
+
+                bgCreate.setOnSucceeded(e -> {
+                    btnPreviewCreation.setText("Stop");
+                    ringCombine.setVisible(false);
+                    vPreview.setVisible(true);
+                    txaPreviewChunk2.setVisible(false);
+                    btnPreviewCreation.setDisable(false);
+                    btnCreateCreation.setDisable(false);
+
+                    // Play preview in small player
+                    Media video = new Media(TEMP.toURI().toString() + "/prevCreation.mp4");
+                    playerPreview = new MediaPlayer(video);
+                    mvPreview.setMediaPlayer(playerPreview);
+                    playerPreview.setAutoPlay(true);
+                    mvPreview.fitWidthProperty().bind(mvPreviewPane.widthProperty());
+                    mvPreview.fitHeightProperty().bind(mvPreviewPane.heightProperty());
+                    mvPreview.setPreserveRatio(false);
+
+                    progressSliderPreview.progressProperty().bind(sliderProgressPreview.valueProperty().divide(100.0));
+
+                    playerPreview.currentTimeProperty().addListener(ov -> updateValuesPreview());
+
+                    playerPreview.setOnReady(() -> {
+                        durationPreview = playerPreview.getMedia().getDuration();
+                        updateValuesPreview();
+                    });
+
+                    playerPreview.setOnEndOfMedia(() -> {
+                        playerPreview.stop();
+
+                        // Show/hide appropriate panels
+                        vPreview.setVisible(false);
+                        txaPreviewChunk2.setVisible(true);
+                        btnPreviewCreation.setText("Preview Creation");
+                    });
+
+                });
+            }
+        } else {
+            if (playerPreview != null) { playerPreview.stop();}
+            vPreview.setVisible(false);
+            txaPreviewChunk2.setVisible(true);
+            btnPreviewCreation.setText("Preview Creation");
+        }
+    }
+
+    private void updateValuesPreview() {
+        Platform.runLater(() -> {
+            Duration currentTime = playerPreview.getCurrentTime();
+            lblPreviewCurrentTime.setText(formatTime(currentTime, durationPreview, false));
+            lblPreviewTotalTime.setText(formatTime(currentTime, durationPreview, true));
+            sliderProgressPreview.setDisable(durationPreview.isUnknown());
+            progressSliderPreview.setDisable(durationPreview.isUnknown());
+            if (!sliderProgressPreview.isDisabled() && durationPreview.greaterThan(Duration.ZERO) && !sliderProgressPreview.isValueChanging()) {
+                sliderProgressPreview.setValue(currentTime.toMillis() / durationPreview.toMillis() * 100.0);
+            }
+        });
+    }
+
+    private boolean creationExists(String c) {
+        File[] creations = CREATIONS.listFiles();
+        for (File f : creations) {
+            if (f.getName().equalsIgnoreCase(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @FXML
+    void btnCreateCreationClicked(ActionEvent event) {
+        if (btnPreviewCreation.getText().equals("Stop")) {btnPreviewCreation.fire();}
+        //obtain all selected images
+        ArrayList<String> selectedImgs = new ArrayList<String>();
+        int index = 0;
+        for (ToggleButton imgButton : gridToggles) {
+            if (imgButton.isSelected()) {
+                String img = this.selectedImgs.get(index);
+                selectedImgs.add(img);
+            }
+            index++;
+        }
+
+        //check if all imgs correct
+        for (String path : selectedImgs) {
+            System.out.println(path);
+        }
+
+        // Extensive error checking
+        String creationName = txtCreationName.getText().trim();
+        if (selectedChunkList.isEmpty()) {
+            txaPreviewChunk2.setText("Please add some chunks.");
+            txaPreviewChunk2.setStyle("-fx-text-fill: close-color");
+        } else if (selectedImgs.isEmpty()) {
+            txaPreviewChunk2.setText("Please select some images.");
+            txaPreviewChunk2.setStyle("-fx-text-fill: close-color");
+        } else if (creationName.isEmpty()) {
+            txaPreviewChunk2.setText("Please name your creation.");
+            txaPreviewChunk2.setStyle("-fx-text-fill: close-color");
+            txtCreationName.requestFocus();
+        } else if (creationName.startsWith("-") || !Pattern.matches("^[-_a-zA-Z0-9]+$", creationName)) {
+            txaPreviewChunk2.setText("Invalid creation name.\nPlease use only numbers, letters,\nunderscores and hypens.");
+            txaPreviewChunk2.setStyle("-fx-text-fill: close-color");
+        } else if (creationExists(creationName)) {
+            txaPreviewChunk2.clear();
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "A creation with the name \"" + creationName + "\" already exists. Overwrite?", btnYes, btnNo);
+            alert.setTitle("Overwrite Creation");
+            alert.getDialogPane().getStylesheets().add(css);
+            alert.setHeaderText("Existing file.");
+            alert.setGraphic(null);
+            alert.initStyle(StageStyle.UNDECORATED);
+            alert.setResizable(false);
+            if (alert.showAndWait().get() == btnYes) {
+                deleteDirectory(new File(CREATIONS.toString() + "/" + creationName));
+            } else {
+                txtCreationName.selectAll();
+                txtCreationName.requestFocus();
+            }
+        } else {
+            txaPreviewChunk2.clear();
+            txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
+
+            // Create creation in a background thread
+            String musicChoice = cboMusic.getValue().toString();
+            CombineTask bgCreate = new CombineTask(creationName, query, selectedChunkList, selectedImgs, musicChoice);
+            bg.submit(bgCreate);
+
+            // Disable components for safety
+            ringCombine.setVisible(true);
+            btnPreviewCreation.setDisable(true);
+            btnCreateCreation.setDisable(true);
+            btnSearchFlickr.setDisable(true);
+
+            bgCreate.setOnSucceeded(e -> {
+                ringCombine.setVisible(false);
+                btnPreviewCreation.setDisable(false);
+                btnCreateCreation.setDisable(false);
+                btnSearchFlickr.setDisable(false);
+
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "\"" + creationName + "\" has been created.\n Start over?", btnYes, btnNo);
+                alert.setTitle("New Creation");
+                alert.getDialogPane().getStylesheets().add(css);
+                alert.setHeaderText("Success!");
+                alert.setGraphic(null);
+                alert.initStyle(StageStyle.UNDECORATED);
+                alert.setResizable(false);
+                if (alert.showAndWait().get() == btnYes) {
+                    initialiseSearchTab();
+                    initialiseCombineTab();
+                    numChunks = 0;
+                    tabMain.getSelectionModel().select(1);
+                }
+
+                txtCreationName.clear();
+                btnClearChunks.fire();
+            });
+        }
+
     }
 
     @FXML
@@ -1073,17 +1589,25 @@ public class VARpediaController implements Initializable {
 
     // ----------------------------------------- QUIZ TAB METHODS ---------------------------------------------
     private int numQuestions;
+    List<QuizFile> questions;
     private int currentQuestion;
+    private int correctAnswers;
+    private String currentAnswer;
     private int numCorrect;
     private boolean quizMute;
     private double quizVolume;
+    private int difficulty;
 
     private void initialiseQuizTab() {
-        if (CREATIONS.exists() && CREATIONS.isDirectory()) {
+        if (isNonEmptyDirectory(CREATIONS)) {
             numQuestions = CREATIONS.listFiles().length;
         }
+        questions = new ArrayList<>();
         currentQuestion = 0;
+        correctAnswers = 0;
+        currentAnswer = "";
         numCorrect = 0;
+        difficulty = 0;
         hQuizToolbar.setVisible(true);
         hQuizDifficulty.setDisable(false);
         vQuizTitle.setVisible(true);
@@ -1094,11 +1618,94 @@ public class VARpediaController implements Initializable {
         toggleQuizEasy.setSelected(true);
         toggleQuizMedium.setSelected(false);
         toggleQuizHard.setSelected(false);
+        btnMuteQuiz.setDisable(false);
+        sliderVolQuiz.setDisable(false);
+        txtQuizAnswer.clear();
+        lblQuizAnswer.setText("Answer:");
+        lblQuizAnswer.setStyle("-fx-text-fill: font-color");
+        lblQuizTitle.setText("Guess the term!");
+        lblQuizTitle1.setText("Select a difficulty from above");
+        lblQuizTitle2.setText("then try to guess the correct word.");
+        lblQuizTitle3.setText("Switching tabs will reset the game, so no cheating :)");
         if (!isNonEmptyDirectory(CREATIONS)) {
             hQuizToolbar.setVisible(false);
             vQuizTitle.setVisible(false);
             vQuizError.setVisible(true);
         }
+    }
+
+    private void loadNextQuestion() {
+        txtQuizAnswer.clear();
+        txtQuizAnswer.requestFocus();
+        lblQuizAnswer.setText("Answer:");
+        lblQuizAnswer.setStyle("-fx-text-fill: font-color");
+
+        Media video = new Media(questions.get(currentQuestion).getFile().toURI().toString());
+        currentAnswer = questions.get(currentQuestion).getAnswer();
+        currentQuestion++;
+
+        // Play selected file
+        playerQuiz = new MediaPlayer(video);
+        mvQuiz.setMediaPlayer(playerQuiz);
+        playerQuiz.setAutoPlay(true);
+        mvQuiz.fitWidthProperty().bind(mvQuizPane.widthProperty());
+        mvQuiz.fitHeightProperty().bind(mvQuizPane.heightProperty());
+        mvQuiz.setPreserveRatio(false);
+        mvQuizPane.setVisible(true);
+        btnMuteQuiz.setDisable(false);
+        sliderVolQuiz.setDisable(false);
+
+        progressSliderQuiz.progressProperty().bind(sliderProgressQuiz.valueProperty().divide(100.0));
+        progressVolQuiz.progressProperty().bind(sliderVolQuiz.valueProperty().divide(100.0));
+
+        // Different panes shown depending on difficulty
+        if (difficulty == 1) {
+            // Disable volume slider when on medium
+            btnMuteQuizClicked(null);
+            btnMuteQuiz.setDisable(true);
+            sliderVolQuiz.setDisable(true);
+        } else if (difficulty == 2) {
+            // Hide media player when on hard
+            vQuizCorrect.setVisible(true);
+            lblQuizCorrect.setText("Turn your audio on.");
+            btnQuizNext.setVisible(false);
+            btnQuizRetry.setVisible(false);
+            btnQuizFinish.setVisible(false);
+            mvQuizPane.setVisible(false);
+        }
+
+        playerQuiz.currentTimeProperty().addListener(ov -> updateValuesQuiz());
+
+        sliderVolQuiz.valueProperty().addListener(ov -> {
+            if (sliderVolQuiz.isValueChanging()) {
+                playerQuiz.setVolume(sliderVolQuiz.getValue() / 100.0);
+            }
+            if (sliderVolQuiz.getValue() == 0) {
+                imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/mute-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+                quizMute = true;
+            } else if (quizMute) {
+                imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+                quizMute = false;
+            }
+        });
+
+        playerQuiz.setOnReady(() -> {
+            durationQuiz = playerQuiz.getMedia().getDuration();
+            updateValuesQuiz();
+        });
+
+        playerQuiz.setOnEndOfMedia(() -> {
+            playerQuiz.stop();
+
+            // Display "out of time" panel
+            vQuizPlayer.setVisible(false);
+            hQuizAnswer.setVisible(false);
+            vQuizCorrect.setVisible(true);
+            btnQuizNext.setVisible(true);
+            btnQuizRetry.setVisible(true);
+            btnQuizFinish.setVisible(true);
+            lblQuizCorrect.setText("Out of time!");
+        });
     }
 
     @FXML
@@ -1143,63 +1750,60 @@ public class VARpediaController implements Initializable {
         quizMute = false;
         quizVolume = 100;
 
-        //TODO this section: pick quiz files depending on difficulty
-
-        // -------------------------------------------------------------------------------------------------------
-        int difficulty = 0; // 0 = easy, 1 = med, 2 = hard
+        // 0 = easy, 1 = med, 2 = hard
         if (toggleQuizMedium.isSelected()) {
             difficulty = 1;
         } else if (toggleQuizHard.isSelected()) {
             difficulty = 2;
         }
 
-        // Randomise list of files
-        File[] fi = CREATIONS.listFiles(); // change this to the proper directory
-        List<File> files = new ArrayList<>();
+        // Load appropriate files based on difficulty
+        File[] fi = CREATIONS.listFiles();
         for (File f : fi) {
-            files.add(f);
-        }
-        Collections.shuffle(files);
-
-        Media video = new Media(files.get(currentQuestion).toURI().toString());
-        currentQuestion++;
-
-        // -------------------------------------------------------------------------------------------------------
-
-        // Play selected file
-        playerQuiz = new MediaPlayer(video);
-        mvQuiz.setMediaPlayer(playerQuiz);
-        playerQuiz.setAutoPlay(true);
-        mvQuiz.fitWidthProperty().bind(mvQuizPane.widthProperty());
-        mvQuiz.fitHeightProperty().bind(mvQuizPane.heightProperty());
-        mvQuiz.setPreserveRatio(false);
-
-        progressSliderQuiz.progressProperty().bind(sliderProgressQuiz.valueProperty().divide(100.0));
-        progressVolQuiz.progressProperty().bind(sliderVolQuiz.valueProperty().divide(100.0));
-
-        playerQuiz.currentTimeProperty().addListener(ov -> updateValuesQuiz());
-
-        sliderVolQuiz.valueProperty().addListener(ov -> {
-            if (sliderVolQuiz.isValueChanging()) {
-                playerQuiz.setVolume(sliderVolQuiz.getValue() / 100.0);
+            String fileName = "";
+            if (difficulty == 0) {
+                fileName = "both.mp4";
+            } else if (difficulty == 1) {
+                fileName = "video.mp4";
+            } else {
+                fileName = "audio.wav";
             }
-        });
 
-        playerQuiz.setOnReady(() -> {
-            durationQuiz = playerQuiz.getMedia().getDuration();
-            updateValuesQuiz();
-        });
+            // Find the corresponding answer for each creation
+            String answer = "";
+            File[] contents = f.listFiles();
+            if (contents != null) {
+                for (File x : contents) {
+                    String y = x.getName();
+                    if (y.lastIndexOf(".") > 0) {
+                        if ((y.substring(y.lastIndexOf(".") + 1)).equals("txt")) {
+                            answer = y.substring(0, y.lastIndexOf("."));
+                        }
+                    }
+                }
+                questions.add(new QuizFile(new File(f.toString() + "/" + fileName), answer));
+            }
+        }
+        // Randomise list of files
+        Collections.shuffle(questions);
 
-        playerQuiz.setOnEndOfMedia(() -> {
-            playerQuiz.stop();
+        loadNextQuestion();
+    }
 
-            // Display "out of time" panel
-            vQuizPlayer.setVisible(false);
-            hQuizAnswer.setVisible(false);
-            vQuizCorrect.setVisible(true);
-            btnQuizRetry.setVisible(true);
-            lblQuizCorrect.setText("Out of time!");
-        });
+    @FXML
+    void btnMuteQuizClicked(ActionEvent event) {
+        if (!quizMute) {
+            quizVolume = sliderVolQuiz.getValue();
+            sliderVolQuiz.setValue(0);
+            imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/mute-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            playerQuiz.setVolume(0);
+            quizMute = true;
+        } else {
+            sliderVolQuiz.setValue(quizVolume);
+            imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            playerQuiz.setVolume(quizVolume / 100.0);
+            quizMute = false;
+        }
     }
 
     private void updateValuesQuiz() {
@@ -1225,52 +1829,69 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnQuizFinishClicked(ActionEvent event) {
+    void btnQuizSubmitClicked(ActionEvent event) {
+        if (txtQuizAnswer.getText().trim().equalsIgnoreCase(currentAnswer)) {
+            // If the answer is correct, show the "correct" pane
+            lblQuizAnswer.setText("Answer:");
+            lblQuizAnswer.setStyle("-fx-text-fill: font-color");
+            playerQuiz.stop();
+            correctAnswers++;
+            if (currentQuestion < questions.size()) {
+                vQuizPlayer.setVisible(false);
+                hQuizAnswer.setVisible(false);
+                vQuizCorrect.setVisible(true);
+                lblQuizCorrect.setText("Correct!");
+                btnQuizNext.setVisible(true);
+                btnQuizRetry.setVisible(false);
+                btnQuizFinish.setVisible(true);
+            } else {
+                // Or finish if all questions have been played
+                btnQuizFinish.fire();
+            }
+        } else if (!txtQuizAnswer.getText().trim().isEmpty()) {
+            // Otherwise, give an error
+            lblQuizAnswer.setText("Incorrect. Try again:");
+            lblQuizAnswer.setStyle("-fx-text-fill: close-color");
+            txtQuizAnswer.selectAll();
+            txtQuizAnswer.requestFocus();
+        }
+    }
 
+    @FXML
+    void btnQuizFinishClicked(ActionEvent event) {
+        vQuizPlayer.setVisible(false);
+        hQuizAnswer.setVisible(false);
+        vQuizCorrect.setVisible(false);
+        vQuizTitle.setVisible(true);
+        if ((double) correctAnswers / currentQuestion < 0.5) {
+            lblQuizTitle.setText("Good try!");
+            lblQuizTitle1.setText("You answered " + correctAnswers + " out of " + currentQuestion + " questions correctly.");
+        } else {
+            lblQuizTitle.setText("Well done!");
+            lblQuizTitle1.setText("You answered " + correctAnswers + " out of " + currentQuestion + " questions correctly.");
+        }
+        lblQuizTitle2.setText("");
+        lblQuizTitle3.setText("Click reset to start over.");
     }
 
     @FXML
     void btnQuizNextClicked(ActionEvent event) {
+        vQuizPlayer.setVisible(true);
+        hQuizAnswer.setVisible(true);
+        vQuizCorrect.setVisible(false);
 
+        loadNextQuestion();
     }
 
     @FXML
     void btnQuizRetryClicked(ActionEvent event) {
-
-    }
-
-    @FXML
-    void btnQuizSubmitClicked(ActionEvent event) {
-        //TODO logic (use the variable currentQuestion)
-
-        // if correct
-        playerQuiz.stop();
-        vQuizPlayer.setVisible(false);
-        hQuizAnswer.setVisible(false);
-        vQuizCorrect.setVisible(true);
-        lblQuizCorrect.setText("Correct!");
-        btnQuizRetry.setVisible(false);
+        currentQuestion--;
+        btnQuizNext.fire();
     }
 
     @FXML
     void txtQuizAnswerEnter(ActionEvent event) {
         btnQuizSubmit.fire();
-    }
-
-    @FXML
-    void btnMuteQuizClicked(ActionEvent event) {
-        if (!quizMute) {
-            quizVolume = sliderVolQuiz.getValue();
-            sliderVolQuiz.setValue(0);
-            imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/mute-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            playerQuiz.setVolume(0);
-            quizMute = true;
-        } else {
-            sliderVolQuiz.setValue(quizVolume);
-            imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            playerQuiz.setVolume(quizVolume / 100.0);
-            quizMute = false;
-        }
     }
 
     // -----------------------------------------------------------------------------------------------
@@ -1308,305 +1929,4 @@ public class VARpediaController implements Initializable {
     }
 
     // -----------------------------------------------------------------------------------------------------
-
-    Process p1;
-    @FXML
-    void btnPreviewChunkClicked(ActionEvent event) throws IOException, InterruptedException {
-        CHUNKS.mkdirs();
-
-        if(btnSearchPreviewChunk.getText().equals("Preview")) {
-            // Obtain selected text and check num of words
-            String previewText = txaResults.getSelectedText().trim();
-            int numWords = previewText.length() - previewText.replaceAll("\\s", "").length();
-
-            if (listChunksSearch.getSelectionModel().getSelectedItem() != null) {
-                // If a chunk from the list is selected, preview its audio
-                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listChunksSearch.getSelectionModel().getSelectedItem());
-                b1.directory(new File(CHUNKS.toString() + "/" + listChunksSearch.getSelectionModel().getSelectedItem()));
-                p1 = b1.start();
-                // bg thread keeps an eye on the process while it is alive
-                PreviewChunkTask previewTask = new PreviewChunkTask(p1);
-                bg.submit(previewTask);
-                // Once finished, the text is set back
-                previewTask.setOnSucceeded(e ->{
-                    btnSearchPreviewChunk.setText("Preview");
-                });
-
-                // Set text to allowing stopping of audio
-                btnSearchPreviewChunk.setText("Stop");
-            } else if (previewText.length() == 0) {
-                txaPreviewChunk1.setText("Nothing to preview.");
-                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
-            } else if (numWords > 40) {
-                txaPreviewChunk1.setText("Please select no more than 40 words per chunk.");
-                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
-            } else {
-                // Handle previewing of chunk
-                txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
-                txaPreviewChunk1.setText(previewText);
-
-                // Create preview audio file, this will allow stopping
-                File festChunk = new File(CHUNKS.toString() + System.getProperty("file.separator") + "festivalChunk");
-                CHUNKS.mkdirs();
-                festChunk.createNewFile();
-                BufferedWriter w = new BufferedWriter(new FileWriter(CHUNKS.toString() + System.getProperty("file.separator") + "festivalChunk"));
-
-                String voice = "voice_kal_diphone";
-                if (cboVoice.getValue() == "New Zealand Male") { voice = "voice_akl_nz_jdt_diphone"; }
-                double stretch = 2.0 - voiceSpeed;
-                if (stretch < 0.1) { stretch = 0.1; }
-                int pitch = 60 + (int) (Math.round(voicePitch * 100) / 2);
-
-                // Set voice
-                w.write("(" + voice + ")\n");
-
-                // Set pitch
-                if (voicePitch > 1.1 || voicePitch < 0.9) {
-                    w.write("(set! duffint_params '((start " + pitch + ") (end " + pitch + ")))\n");
-                    w.write("(Parameter.set 'Int_Method 'DuffInt)\n");
-                    w.write("(Parameter.set 'Int_Target_Method Int_Targets_Default)\n");
-                }
-
-                // Set speed
-                w.write("(Parameter.set 'Duration_Stretch " + stretch + ")\n");
-
-                // Save audio to file
-                w.write("(set! utt1 (Utterance Text \"" + previewText + "\"))\n");
-                w.write("(utt.synth utt1)\n");
-                w.write("(utt.save.wave utt1 \"previewChunk\" 'riff)");
-                w.close();
-                ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
-                b.directory(CHUNKS);
-                Process p = b.start();
-                p.waitFor();
-
-                // Second process for actually playing the audio
-                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit previewChunk");
-                b1.directory(CHUNKS);
-                p1 = b1.start();
-
-                // bg thread keeps an eye on the process while it is alive
-                PreviewChunkTask previewTask = new PreviewChunkTask(p1);
-                bg.submit(previewTask);
-                // Once finished, the text is set back
-                previewTask.setOnSucceeded(e ->{
-                    btnSearchPreviewChunk.setText("Preview");
-                });
-
-                // Set text to allowing stopping of audio
-                btnSearchPreviewChunk.setText("Stop");
-
-            }
-        } else {
-            // Handle stopping of preview
-            p1.destroy();
-            btnSearchPreviewChunk.setText("Preview");
-        }
-
-    }
-
-    @FXML
-    void btnPreviewChunkCombineClicked(ActionEvent event) throws IOException, InterruptedException {
-        CHUNKS.mkdirs();
-
-        if(btnPreviewChunkCombine.getText().equals("Preview")) {
-            if (listAllChunks.getSelectionModel().getSelectedItem() != null) {
-                // If a chunk from the list is selected, preview its audio
-                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listAllChunks.getSelectionModel().getSelectedItem());
-                b1.directory(new File(CHUNKS.toString() + "/" + listAllChunks.getSelectionModel().getSelectedItem()));
-                p1 = b1.start();
-                // Set text to allowing stopping of audio
-                btnPreviewChunkCombine.setText("Stop");
-            }
-        } else {
-            // Handle stopping of preview
-            p1.destroy();
-            btnPreviewChunkCombine.setText("Preview");
-        }
-
-    }
-
-    @FXML
-    void btnCreateChunkClicked(ActionEvent event) throws IOException, InterruptedException {
-        CHUNKS.mkdirs();
-
-        String selectedText = txaResults.getSelectedText().trim();
-        int numWords = selectedText.length() - selectedText.replaceAll("\\s", "").length();
-        if (selectedText.length() == 0) {
-            txaPreviewChunk1.setText("No text selected.");
-            txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
-        } else if (numWords > 40) {
-            txaPreviewChunk1.setText("Please select no more than 40 words per chunk.");
-            txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
-        } else {
-
-            //obtain chunk name
-            String chunkName = txtChunkName.getText();
-
-            if (chunkName.startsWith("-") || !Pattern.matches("^[-_a-zA-Z0-9]*$", chunkName)) {
-                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
-                txaPreviewChunk1.setText("Invalid chunk name, please choose another.");
-                txtChunkName.selectAll();
-                txtChunkName.requestFocus();
-            } else if (chunksList.contains(chunkName)) {
-                txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
-                txaPreviewChunk1.setText("\"" + chunkName + "\" already exists!\n Please choose a unique chunk name.");
-                txtChunkName.selectAll();
-                txtChunkName.requestFocus();
-            } else {
-                txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
-                txaPreviewChunk1.setText(selectedText);
-                txtChunkName.clear();
-
-                //handle default chunk name
-                numChunks++;
-                if (chunkName.isEmpty()) {
-                    chunkName = query + numChunks;
-                }
-
-                //create new chunk's directory
-                File NEWCHUNK = new File(CHUNKS.toString() + "/" + chunkName);
-                NEWCHUNK.mkdirs();
-
-                File festChunk = new File(NEWCHUNK.toString() + System.getProperty("file.separator") + "festivalChunk");
-                festChunk.createNewFile();
-                BufferedWriter w = new BufferedWriter(new FileWriter(NEWCHUNK.toString() + System.getProperty("file.separator") + "festivalChunk"));
-
-                String voice = "voice_kal_diphone";
-                if (cboVoice.getValue() == "New Zealand Male") { voice = "voice_akl_nz_jdt_diphone"; }
-                double stretch = 2.0 - voiceSpeed;
-                if (stretch < 0.1) { stretch = 0.1; }
-                int pitch = 60 + (int) (Math.round(voicePitch * 100) / 2);
-
-                // Set voice
-                w.write("(" + voice + ")\n");
-
-                // Set pitch
-                if (voicePitch > 1.1 || voicePitch < 0.9) {
-                    w.write("(set! duffint_params '((start " + pitch + ") (end " + pitch + ")))\n");
-                    w.write("(Parameter.set 'Int_Method 'DuffInt)\n");
-                    w.write("(Parameter.set 'Int_Target_Method Int_Targets_Default)\n");
-                }
-
-                // Set speed
-                w.write("(Parameter.set 'Duration_Stretch " + stretch + ")\n");
-
-                // Save audio to file
-                w.write("(set! utt1 (Utterance Text \"" + selectedText + "\"))\n");
-                w.write("(utt.synth utt1)\n");
-                w.write("(utt.save.wave utt1 \"" + chunkName + "\" 'riff)");
-                w.close();
-                ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
-                b.directory(NEWCHUNK);
-                Process p = b.start();
-                p.waitFor();
-
-                ProcessBuilder b2 = new ProcessBuilder("/bin/bash", "-c", "echo \"" + txaResults.getSelectedText().trim() + "\" > " + chunkName + ".txt");
-                b2.directory(NEWCHUNK);
-                Process p2 = b2.start();
-                p2.waitFor();
-
-
-                chunksList.add(chunkName);
-                Collections.sort(chunksList);
-
-            }
-        }
-
-        //PLace holder for chunk creation
-        //this list will house the names of all the chunks that will be displayed by the chunk listviews
-        //ideally these following lines will be kept, just swapping the name of the chunk
-
-    }
-
-    @FXML
-    void btnCreateCreationClicked(ActionEvent event) {
-        //add error checks here:
-
-
-        //-------------------
-        //TEMPIMGS.mkdirs();
-        //obtain all selected images
-        ArrayList<String> selectedImgs = new ArrayList<String>();
-        int index = 0;
-        for(ToggleButton imgButton: gridToggles){
-            if (imgButton.isSelected()){
-                String img = this.selectedImgs.get(index);
-                selectedImgs.add(img);
-            }
-            index++;
-        }
-
-        //check if all imgs correct
-        for(String path: selectedImgs){
-            System.out.println(path);
-        }
-
-        String creationName = txtCreationName.getText();
-        if(creationName.isEmpty()) {
-            //PLACEHOLDER
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("No name!");
-            alert.showAndWait();
-
-        }else if (actualChunksList.isEmpty()){
-            //PLACEHOLDER
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("No chunks!");
-            alert.showAndWait();
-        }else if (selectedImgs.isEmpty()) {
-            //PLACEHOLDER
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("No images!");
-            alert.showAndWait();
-
-        }else{
-            CombineTask bgCreate = new CombineTask(creationName, query, actualChunksList, selectedImgs);
-            bg.submit(bgCreate);
-
-            bgCreate.setOnSucceeded(e ->{
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "\"" + creationName + "\" created successfully!");
-                alert.setTitle("New Creation");
-                alert.setHeaderText("Success");
-                alert.showAndWait();
-            });
-        }
-
-    }
-
-    @FXML
-    void btnPreviewCreationClicked(ActionEvent event) {
-        ArrayList<String> selectedImgs = new ArrayList<String>();
-        int index = 0;
-        for(ToggleButton imgButton: gridToggles){
-            if (imgButton.isSelected()){
-                String img = this.selectedImgs.get(index);
-                selectedImgs.add(img);
-            }
-            index++;
-        }
-
-        if(actualChunksList.isEmpty()){
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("No chunks!");
-            alert.showAndWait();
-        }else if (selectedImgs.isEmpty()){
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("No images!");
-            alert.showAndWait();
-        }else {
-
-            PrevCombineTask bgCreate = new PrevCombineTask(query, actualChunksList, selectedImgs);
-            bg.submit(bgCreate);
-
-            bgCreate.setOnSucceeded(e -> {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "\"preview\" created successfully!");
-                alert.setTitle("New Creation");
-                alert.setHeaderText("Success");
-                alert.showAndWait();
-            });
-        }
-
-    }
-
 }

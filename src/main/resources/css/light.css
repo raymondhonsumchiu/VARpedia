@@ -138,6 +138,9 @@ COMBO BOX
 .combo-long {
     -fx-pref-width: 320px;
 }
+.combo-tall .list-view {
+    -fx-pref-height: 210px;
+}
 
 /**
 DIALOGUE PANE (ALERT)
@@ -193,8 +196,8 @@ LABEL
     -fx-font-size: 16px;
 }
 #label-quiz-answer {
-    -fx-pref-width: 150px;
-    -fx-alignment: center-right;
+    -fx-pref-width: 200px;
+    -fx-alignment: center;
 }
 
 /**
@@ -307,7 +310,8 @@ SLIDER
     -fx-border-color: border-color;
 }
 .slider-progress .track {
-    -fx-background-color: transparent;  /* Hide the track */
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
 }
 
 /**

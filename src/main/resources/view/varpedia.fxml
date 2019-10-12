@@ -8,8 +8,8 @@
 <?import javafx.scene.media.MediaView?>
 <?import javafx.scene.text.Font?>
 <?import main.java.skins.progressindicator.RingProgressIndicator?>
-<?import java.lang.String?>
-<AnchorPane prefHeight="810.0" prefWidth="1440.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.controllers.VARpediaController">
+<?import java.lang.*?>
+<AnchorPane fx:id="anchorRoot" prefHeight="810.0" prefWidth="1440.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.controllers.VARpediaController">
    <children>
       <TabPane fx:id="tabMain" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onMouseDragged="#tabMainMouseDragged" onMousePressed="#tabMainMousePressed" onMouseReleased="#tabMainMouseReleased" prefHeight="810.0" prefWidth="1440.0" tabClosingPolicy="UNAVAILABLE" tabMaxHeight="30.0" tabMaxWidth="160.0" tabMinHeight="30.0" tabMinWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <tabs>
@@ -103,7 +103,7 @@
                                           <StackPane>
                                              <children>
                                                 <ProgressBar fx:id="progressSlider" prefWidth="200.0" progress="0.0" styleClass="progress-slider" />
-                                                <Slider fx:id="sliderProgress" onDragDetected="#sliderCreationDragged" styleClass="slider-progress" />
+                                                <Slider fx:id="sliderProgress" styleClass="slider-progress" />
                                              </children>
                                           </StackPane>
                                           <Label fx:id="lblTotalTime" prefWidth="85.0">
@@ -198,7 +198,7 @@
                                     <Insets bottom="5.0" left="5.0" />
                                  </VBox.margin>
                               </Label>
-                              <TextArea fx:id="txaResults" onDragDetected="#txaResultsDragged" VBox.vgrow="ALWAYS" />
+                              <TextArea fx:id="txaResults" onDragDetected="#txaResultsDragged" onMouseClicked="#txaResultsDragged" VBox.vgrow="ALWAYS" />
                            </children>
                            <BorderPane.margin>
                               <Insets right="2.0" />
@@ -295,7 +295,43 @@
                                              </VBox.margin>
                                           </Label>
                                           <ListView fx:id="listAllChunks" onMouseClicked="#listAllChunksClicked" prefWidth="370.0" VBox.vgrow="ALWAYS" />
-                                          <TextArea fx:id="txaPreviewChunk2" editable="false" prefHeight="200.0" prefWidth="200.0" promptText="Preview chunk text" />
+                                          <StackPane>
+                                             <children>
+                                                <VBox fx:id="vPreview" prefHeight="200.0">
+                                                   <children>
+                                                      <Pane fx:id="mvPreviewPane">
+                                                         <children>
+                                                            <MediaView fx:id="mvPreview" fitHeight="175.0" fitWidth="370.0" />
+                                                         </children>
+                                                      </Pane>
+                                                      <HBox alignment="CENTER_LEFT" maxHeight="25.0" prefHeight="25.0" prefWidth="370.0" spacing="5.0">
+                                                         <children>
+                                                            <Label fx:id="lblPreviewCurrentTime" alignment="CENTER_RIGHT" prefWidth="85.0">
+                                                               <HBox.margin>
+                                                                  <Insets right="5.0" />
+                                                               </HBox.margin>
+                                                            </Label>
+                                                            <StackPane maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                                                               <children>
+                                                                  <ProgressBar fx:id="progressSliderPreview" maxWidth="1.7976931348623157E308" progress="0.0" styleClass="progress-slider" />
+                                                                  <Slider fx:id="sliderProgressPreview" maxWidth="1.7976931348623157E308" styleClass="slider-progress" />
+                                                               </children>
+                                                            </StackPane>
+                                                            <Label fx:id="lblPreviewTotalTime" prefWidth="85.0">
+                                                               <HBox.margin>
+                                                                  <Insets left="5.0" />
+                                                               </HBox.margin>
+                                                            </Label>
+                                                         </children>
+                                                         <padding>
+                                                            <Insets top="5.0" />
+                                                         </padding>
+                                                      </HBox>
+                                                   </children>
+                                                </VBox>
+                                                <TextArea fx:id="txaPreviewChunk2" editable="false" prefHeight="200.0" prefWidth="200.0" promptText="Preview" />
+                                             </children>
+                                          </StackPane>
                                           <HBox alignment="CENTER" spacing="2.0">
                                              <VBox.margin>
                                                 <Insets />
@@ -338,7 +374,7 @@
                                              </VBox.margin>
                                           </Label>
                                           <ListView fx:id="listSelectedChunks" onMouseClicked="#listSelectedChunksClicked" prefWidth="370.0" VBox.vgrow="ALWAYS" />
-                                          <Button fx:id="btnClearChunks" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnClearChunksClicked" text="Clear selected chunks">
+                                          <Button fx:id="btnClearChunks" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnClearChunksClicked" text="Deselect all chunks and images">
                                              <VBox.margin>
                                                 <Insets />
                                              </VBox.margin>
@@ -500,13 +536,17 @@
                                           <Insets />
                                        </HBox.margin>
                                     </TextField>
-                                    <ComboBox fx:id="cboMusic" prefHeight="50.0" prefWidth="320.0" promptText="Select music" styleClass="combo-long" visibleRowCount="5">
+                                    <ComboBox fx:id="cboMusic" prefHeight="50.0" prefWidth="320.0" promptText="Select music" visibleRowCount="5">
                                        <padding>
                                           <Insets left="5.0" />
                                        </padding>
                                        <HBox.margin>
                                           <Insets />
                                        </HBox.margin>
+                                       <styleClass>
+                                          <String fx:value="combo-long" />
+                                          <String fx:value="combo-tall" />
+                                       </styleClass>
                                     </ComboBox>
                                     <Button fx:id="btnPreviewCreation" mnemonicParsing="false" onAction="#btnPreviewCreationClicked" styleClass="button-long" text="Preview Creation" />
                                     <Button fx:id="btnCreateCreation" defaultButton="true" mnemonicParsing="false" onAction="#btnCreateCreationClicked" text="Create!" />
@@ -532,11 +572,11 @@
                            <children>
                               <VBox fx:id="vQuizTitle" alignment="CENTER" spacing="5.0">
                                  <children>
-                                    <Label styleClass="label-title" text="Guess the term!" />
+                                    <Label fx:id="lblQuizTitle" styleClass="label-title" text="Guess the term!" />
                                     <Label layoutX="629.0" layoutY="325.0" />
-                                    <Label layoutX="672.0" layoutY="325.0" text="Select a difficulty from above" />
-                                    <Label layoutX="629.0" layoutY="333.0" text="then try to guess the correct word!" />
-                                    <Label layoutX="611.0" layoutY="357.0" text="Switching tabs will reset the game, so no cheating :)" />
+                                    <Label fx:id="lblQuizTitle1" layoutX="672.0" layoutY="325.0" text="Select a difficulty from above" />
+                                    <Label fx:id="lblQuizTitle2" layoutX="629.0" layoutY="333.0" text="then try to guess the correct word!" />
+                                    <Label fx:id="lblQuizTitle3" layoutX="611.0" layoutY="357.0" text="Switching tabs will reset the game, so no cheating :)" />
                                  </children>
                               </VBox>
                               <VBox fx:id="vQuizError" alignment="CENTER" layoutX="10.0" layoutY="10.0" spacing="5.0" visible="false">
@@ -552,7 +592,7 @@
                                     <Label layoutX="629.0" layoutY="333.0" text="Please create some first, then try again." />
                                  </children>
                               </VBox>
-                              <VBox fx:id="vQuizPlayer" alignment="CENTER" visible="false">
+                              <VBox fx:id="vQuizPlayer" alignment="CENTER">
                                  <children>
                                     <Pane fx:id="mvQuizPane">
                                        <children>
@@ -580,7 +620,7 @@
                                                 <Insets left="5.0" />
                                              </HBox.margin>
                                           </Label>
-                                          <Button mnemonicParsing="false" onAction="#btnMuteQuizClicked" styleClass="button-media">
+                                          <Button fx:id="btnMuteQuiz" mnemonicParsing="false" onAction="#btnMuteQuizClicked" styleClass="button-media">
                                              <graphic>
                                                 <ImageView id="image-view-volume" fx:id="imgVolumeQuiz" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media" />
                                              </graphic>
@@ -598,7 +638,7 @@
                                     </HBox>
                                  </children>
                               </VBox>
-                              <VBox fx:id="vQuizCorrect" alignment="CENTER" spacing="20.0" visible="false">
+                              <VBox fx:id="vQuizCorrect" alignment="CENTER" spacing="60.0">
                                  <children>
                                     <Label fx:id="lblQuizCorrect" styleClass="label-title" text="Out of time!" />
                                     <HBox alignment="CENTER" spacing="10.0">
@@ -694,7 +734,7 @@
       </TabPane>
       <HBox layoutX="1398.0" layoutY="12.0" spacing="10.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="12.0">
          <children>
-            <Button alignment="CENTER" contentDisplay="CENTER" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnMinimiseClicked" prefHeight="30.0" prefWidth="30.0" styleClass="button-window" text="-">
+            <Button fx:id="btnMinimise" alignment="CENTER" contentDisplay="CENTER" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnMinimiseClicked" prefHeight="30.0" prefWidth="30.0" styleClass="button-window" text="-">
                <font>
                   <Font size="6.0" />
                </font>
@@ -702,19 +742,19 @@
                   <Insets />
                </HBox.margin>
             </Button>
-            <Button id="button-help" alignment="CENTER" contentDisplay="CENTER" layoutX="40.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnHelpClicked" prefHeight="30.0" prefWidth="30.0" styleClass="button-window" text="?">
+            <Button id="button-help" fx:id="btnHelp" alignment="CENTER" contentDisplay="CENTER" layoutX="40.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnHelpClicked" prefHeight="30.0" prefWidth="30.0" styleClass="button-window" text="?">
                <font>
                   <Font size="6.0" />
                </font>
             </Button>
-            <Button id="button-close" alignment="CENTER" contentDisplay="CENTER" layoutX="70.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnCloseClicked" prefHeight="30.0" prefWidth="30.0" styleClass="button-window" text="X">
+            <Button id="button-close" fx:id="btnClose" alignment="CENTER" contentDisplay="CENTER" layoutX="70.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnCloseClicked" prefHeight="30.0" prefWidth="30.0" styleClass="button-window" text="X">
                <font>
                   <Font size="6.0" />
                </font>
             </Button>
          </children>
       </HBox>
-      <Button id="button-logo" layoutX="4.0" layoutY="15.0" mnemonicParsing="false" onAction="#btnBackClicked" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0">
+      <Button id="button-logo" fx:id="btnBack" layoutX="4.0" layoutY="15.0" mnemonicParsing="false" onAction="#btnBackClicked" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="4.0">
          <graphic>
             <ImageView fitHeight="35.0" fitWidth="35.0" pickOnBounds="true" preserveRatio="true">
                <image>
