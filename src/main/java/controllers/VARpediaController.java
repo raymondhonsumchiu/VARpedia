@@ -1232,7 +1232,7 @@ public class VARpediaController implements Initializable {
                 int imgCount = 1;
                 for (ImageView imgView : gridImageViews) {
                     //set each image
-                    File file = new File(TEMPIMGS.toString() + "/" + query + "-" + imgCount + ".jpg");
+                    File file = new File(TEMPIMGS.toString() + "/" + imgCount + ".jpg");
                     Image image = new Image(file.toURI().toString());
                     double n = (image.getWidth() < image.getHeight()) ? image.getWidth() : image.getHeight();
                     double x = (image.getWidth() - n) / 2;
@@ -1244,7 +1244,7 @@ public class VARpediaController implements Initializable {
                     imgView.setImage(image);
 
                     // Add image path to arraylist so it can be extracted later for creation
-                    selectedImgs.add("/" + query + "-" + imgCount + ".jpg");
+                    selectedImgs.add("/" + imgCount + ".jpg");
                     imgCount++;
                 }
                 if (error) {
