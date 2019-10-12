@@ -53,7 +53,7 @@ public class CombineTask extends Task<Void> {
         System.out.println("all imgs moved");
 
         //Clean up any leftover files
-        ProcessBuilder b2 = new ProcessBuilder("/bin/bash", "-c", "rm -f prevCreation.mp4 temp.mp4 temp.wav temp1.mp4 temp2.mp4");
+        ProcessBuilder b2 = new ProcessBuilder("/bin/bash", "-c", "rm -f prevCreation.mp4 temp.mp4 temp.wav temp1.mp4 temp1.mp3");
         b2.directory(TEMP);
         Process p2 = b2.start();
         p2.waitFor();
@@ -78,6 +78,18 @@ public class CombineTask extends Task<Void> {
         BufferedReader stdout6 = new BufferedReader(new InputStreamReader(out6));
         double length = Double.parseDouble(stdout6.readLine());
 
+        //add bg music into chunk file
+        String audFile = "temp.wav";
+        if(music != null) {
+            System.out.println("start music add");
+            ProcessBuilder bm = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i temp.wav -i ../src/main/resources/music/" + music + " -filter_complex amerge -ac 2 -c:a libmp3lame -q:a 4 temp1.mp3");
+            bm.directory(TEMP);
+            Process pm = bm.start();
+            pm.waitFor();
+            System.out.println("music added");
+            audFile = "temp1.mp3";
+        }
+
         // Create video slideshow and send output to TEMP
         double frameRate = numImages == 1 ? 1 : numImages / length;
 
@@ -89,29 +101,17 @@ public class CombineTask extends Task<Void> {
         System.out.println("slideshow made");
 
         // Merge video with audio for the final Creation
-        ProcessBuilder b8 = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i temp.mp4 -i temp.wav -c:v copy -c:a aac -strict experimental temp1.mp4");
+        ProcessBuilder b8 = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i temp.mp4 -i " + audFile + " -c:v copy -c:a aac -strict experimental temp1.mp4");
         b8.directory(TEMP);
         Process p8 = b8.start();
         p8.waitFor();
         System.out.println("merged");
 
-        String vidFile = "temp1.mp4";
-        System.out.println(music);
-        if (music != null) {
-            System.out.println("start music add");
-            ProcessBuilder bm = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i temp1.mp4 -filter_complex \"amovie=../src/main/resources/music/" + music + ":loop=0,asetpts=N/SR/TB[aud];[0:a][aud]amix[a]\" -map 0:v -map '[a]' -c:v copy -c:a aac -b:a 256k -shortest temp2.mp4");
-            bm.directory(TEMP);
-            Process pm = bm.start();
-            pm.waitFor();
-            System.out.println("music added");
-            vidFile = "temp2.mp4";
-        }
-
         File NEWCREATION = new File(CREATIONS.toString() + "/" + name);
         NEWCREATION.mkdirs();
 
         // Add text overlay to vid
-        ProcessBuilder b9 = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i ../../temp/" + vidFile + " -vf drawtext=\"fontfile=../../resources/fonts/Questrial-Regular.ttf: text='" + query + "': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2\" -codec:a copy " + name + ".mp4");
+        ProcessBuilder b9 = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i ../../temp/temp1.mp4 -vf drawtext=\"fontfile=../myfont.ttf: text='" + query + "': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2\" -codec:a copy " + name + ".mp4");
         b9.directory(NEWCREATION);
         Process p9 = b9.start();
         p9.waitFor();
