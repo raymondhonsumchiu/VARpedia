@@ -17,10 +17,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
@@ -29,6 +26,7 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import main.java.VARpedia;
 import main.java.skins.progressindicator.RingProgressIndicator;
+import main.java.structures.QuizFile;
 import main.java.tasks.*;
 
 import java.io.*;
@@ -72,6 +70,21 @@ public class VARpediaController implements Initializable {
     // Quiz tab fields
     private MediaPlayer playerQuiz;
     private Duration durationQuiz;
+
+    @FXML
+    private AnchorPane anchorRoot;
+
+    @FXML
+    private Button btnBack;
+
+    @FXML
+    private Button btnMinimise;
+
+    @FXML
+    private Button btnHelp;
+
+    @FXML
+    private Button btnClose;
 
     @FXML
     private TabPane tabMain;
@@ -326,6 +339,18 @@ public class VARpediaController implements Initializable {
     private VBox vQuizTitle;
 
     @FXML
+    private Label lblQuizTitle;
+
+    @FXML
+    private Label lblQuizTitle1;
+
+    @FXML
+    private Label lblQuizTitle2;
+
+    @FXML
+    private Label lblQuizTitle3;
+
+    @FXML
     private VBox vQuizError;
 
     @FXML
@@ -336,6 +361,9 @@ public class VARpediaController implements Initializable {
 
     @FXML
     private MediaView mvQuiz;
+
+    @FXML
+    private Button btnMuteQuiz;
 
     @FXML
     private Label lblQuizCurrentTime;
@@ -421,10 +449,10 @@ public class VARpediaController implements Initializable {
                 vPreview.setVisible(false);
                 txaPreviewChunk2.setVisible(true);
             }
-            if (btnSearchPreviewChunk.getText() == "Stop") {
+            if (btnSearchPreviewChunk.getText().equals("Stop")) {
                 btnSearchPreviewChunk.fire();
             } // Stop chunk preview on tab change
-            if (btnPreviewChunkCombine.getText() == "Stop") {
+            if (btnPreviewChunkCombine.getText().equals("Stop")) {
                 btnPreviewChunkCombine.fire();
             } // Stop chunk preview on tab change
             int tab = tabMain.getSelectionModel().getSelectedIndex();
@@ -443,28 +471,49 @@ public class VARpediaController implements Initializable {
             }
         });
 
-        // ----------------------------- Initialise "Creations" tab --------------------------------
-        initialiseCreationsTab();
-
-        // Pressing space anywhere on this tab will pause the media if it is playing.
-        tabMain.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-            if (event.getCode() == KeyCode.SPACE && tabMain.getSelectionModel().getSelectedIndex() == 0) {
-                if (playerCreation != null) {
-                    if (playerCreation.getStatus() == MediaPlayer.Status.PAUSED) {
-                        playerCreation.play();
-                    } else {
-                        playerCreation.pause();
+        // ------------------------------------ Listener for key presses ------------------------------
+        anchorRoot.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            int tab = tabMain.getSelectionModel().getSelectedIndex();
+            KeyCode code = event.getCode();
+            if (code == KeyCode.SPACE || code == KeyCode.ENTER) {
+                if (tab == 0) {
+                    // Pause / play media on Space
+                    if (code == KeyCode.SPACE) {
+                        if (playerCreation != null) {
+                            if (playerCreation.getStatus() == MediaPlayer.Status.PAUSED) {
+                                playerCreation.play();
+                            } else {
+                                playerCreation.pause();
+                            }
+                        }
+                        // Play creation on Enter
+                    } else if (listCreations.getSelectionModel().getSelectedItem() != null) {
+                        btnPlayCreation.fire();
+                    }
+                } else if (tab == 3) {
+                    // Go to next question on Space or Enter
+                    if (vQuizCorrect.isVisible() && btnQuizNext.isVisible()) {
+                        btnQuizNext.fire();
                     }
                 }
-            } else if (event.getCode() == KeyCode.DELETE && tabMain.getSelectionModel().getSelectedIndex() == 0) {
+            } else if (code == KeyCode.DELETE && tabMain.getSelectionModel().getSelectedIndex() == 0) {
+                // Delete creation on Del
                 if (listCreations.getSelectionModel().getSelectedItem() != null) {
                     btnDeleteCreation.fire();
                 }
             }
         });
+
+        // ----------------------------- Initialise "Creations" tab --------------------------------
+        initialiseCreationsTab();
+
         btnPlayPause.addEventFilter(KeyEvent.ANY, Event::consume);
         btnForward.addEventFilter(KeyEvent.ANY, Event::consume);
         btnReverse.addEventFilter(KeyEvent.ANY, Event::consume);
+        btnBack.addEventFilter(KeyEvent.ANY, Event::consume);
+        btnMinimise.addEventFilter(KeyEvent.ANY, Event::consume);
+        btnHelp.addEventFilter(KeyEvent.ANY, Event::consume);
+        btnClose.addEventFilter(KeyEvent.ANY, Event::consume);
 
         // ------------------------------ Initialise "Search" tab ----------------------------------------
         initialiseSearchTab();
@@ -699,6 +748,20 @@ public class VARpediaController implements Initializable {
                 if (sliderVol.isValueChanging()) {
                     playerCreation.setVolume(sliderVol.getValue() / 100.0);
                 }
+                if (sliderVol.getValue() == 0) {
+                    imgVolume.setImage(new Image(new File(ICONS.toString() + "/mute-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+                    mute = true;
+                } else if (mute) {
+                    imgVolume.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+                    mute = false;
+                }
+            });
+
+            sliderProgress.valueProperty().addListener(ov -> {
+                if (sliderProgress.isValueChanging()) {
+                    // multiply duration by percentage calculated by slider position
+                    playerCreation.seek(duration.multiply(sliderProgress.getValue() / 100.0));
+                }
             });
 
             playerCreation.setOnReady(() -> {
@@ -719,16 +782,6 @@ public class VARpediaController implements Initializable {
                 playerCreation.pause();
             });
         }
-    }
-
-    @FXML
-    void sliderCreationDragged(MouseEvent event) {
-        sliderProgress.valueProperty().addListener(ov -> {
-            if (sliderProgress.isValueChanging()) {
-                // multiply duration by percentage calculated by slider position
-                playerCreation.seek(duration.multiply(sliderProgress.getValue() / 100.0));
-            }
-        });
     }
 
     @FXML
@@ -927,7 +980,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnVoiceOptionClicked(ActionEvent event) throws IOException {
-        if (btnSearchPreviewChunk.getText() == "Stop") { btnSearchPreviewChunk.fire(); }
+        if (btnSearchPreviewChunk.getText().equals("Stop")) { btnSearchPreviewChunk.fire(); }
         Parent root = FXMLLoader.load(getClass().getResource("../../resources/view/voiceoptions.fxml"));
 
         if (stage != null) {stage.close();}
@@ -999,7 +1052,7 @@ public class VARpediaController implements Initializable {
                 BufferedWriter w = new BufferedWriter(new FileWriter(CHUNKS.toString() + System.getProperty("file.separator") + "festivalChunk"));
 
                 String voice = "voice_kal_diphone";
-                if (cboVoice.getValue() == "New Zealand Male") { voice = "voice_akl_nz_jdt_diphone"; }
+                if (cboVoice.getValue().equals("New Zealand Male")) { voice = "voice_akl_nz_jdt_diphone"; }
 
                 double stretch = 2.1 - Math.round(voiceSpeed * 10) * 0.08;
                 int pitch = 60 + (int) (Math.round(voicePitch * 100) / 2);
@@ -1099,7 +1152,7 @@ public class VARpediaController implements Initializable {
                 BufferedWriter w = new BufferedWriter(new FileWriter(NEWCHUNK.toString() + System.getProperty("file.separator") + "festivalChunk"));
 
                 String voice = "voice_kal_diphone";
-                if (cboVoice.getValue() == "New Zealand Male") { voice = "voice_akl_nz_jdt_diphone"; }
+                if (cboVoice.getValue().equals("New Zealand Male")) { voice = "voice_akl_nz_jdt_diphone"; }
 
                 double stretch = 2.1 - Math.round(voiceSpeed * 10) * 0.08;
                 int pitch = 60 + (int) (Math.round(voicePitch * 100) / 2);
@@ -1405,6 +1458,16 @@ public class VARpediaController implements Initializable {
         });
     }
 
+    private boolean creationExists(String c) {
+        File[] creations = CREATIONS.listFiles();
+        for (File f : creations) {
+            if (f.getName().equalsIgnoreCase(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @FXML
     void btnCreateCreationClicked(ActionEvent event) {
         if (btnPreviewCreation.getText().equals("Stop")) {btnPreviewCreation.fire();}
@@ -1439,12 +1502,12 @@ public class VARpediaController implements Initializable {
         } else if (creationName.startsWith("-") || !Pattern.matches("^[-_a-zA-Z0-9]+$", creationName)) {
             txaPreviewChunk2.setText("Invalid creation name.\nPlease use only numbers, letters,\nunderscores and hypens.");
             txaPreviewChunk2.setStyle("-fx-text-fill: close-color");
-        } else if (isNonEmptyDirectory(new File(CREATIONS.toString() + "/" + creationName))) {
+        } else if (creationExists(creationName)) {
             txaPreviewChunk2.clear();
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "A creation with the name \"" + creationName + "\" already exists. Overwrite?", btnYes, btnNo);
             alert.setTitle("Overwrite Creation");
             alert.getDialogPane().getStylesheets().add(css);
-            alert.setHeaderText("Overwrite?");
+            alert.setHeaderText("Existing file.");
             alert.setGraphic(null);
             alert.initStyle(StageStyle.UNDECORATED);
             alert.setResizable(false);
@@ -1455,7 +1518,6 @@ public class VARpediaController implements Initializable {
                 txtCreationName.requestFocus();
             }
         } else {
-            ringCombine.setVisible(true);
             txaPreviewChunk2.clear();
             txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
 
@@ -1464,8 +1526,17 @@ public class VARpediaController implements Initializable {
             CombineTask bgCreate = new CombineTask(creationName, query, selectedChunkList, selectedImgs, musicChoice);
             bg.submit(bgCreate);
 
+            // Disable components for safety
+            ringCombine.setVisible(true);
+            btnPreviewCreation.setDisable(true);
+            btnCreateCreation.setDisable(true);
+            btnSearchFlickr.setDisable(true);
+
             bgCreate.setOnSucceeded(e -> {
                 ringCombine.setVisible(false);
+                btnPreviewCreation.setDisable(false);
+                btnCreateCreation.setDisable(false);
+                btnSearchFlickr.setDisable(false);
 
                 Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "\"" + creationName + "\" has been created.\n Start over?", btnYes, btnNo);
                 alert.setTitle("New Creation");
@@ -1478,6 +1549,7 @@ public class VARpediaController implements Initializable {
                     initialiseSearchTab();
                     initialiseCombineTab();
                     numChunks = 0;
+                    tabMain.getSelectionModel().select(1);
                 }
 
                 txtCreationName.clear();
@@ -1517,17 +1589,25 @@ public class VARpediaController implements Initializable {
 
     // ----------------------------------------- QUIZ TAB METHODS ---------------------------------------------
     private int numQuestions;
+    List<QuizFile> questions;
     private int currentQuestion;
+    private int correctAnswers;
+    private String currentAnswer;
     private int numCorrect;
     private boolean quizMute;
     private double quizVolume;
+    private int difficulty;
 
     private void initialiseQuizTab() {
-        if (CREATIONS.exists() && CREATIONS.isDirectory()) {
+        if (isNonEmptyDirectory(CREATIONS)) {
             numQuestions = CREATIONS.listFiles().length;
         }
+        questions = new ArrayList<>();
         currentQuestion = 0;
+        correctAnswers = 0;
+        currentAnswer = "";
         numCorrect = 0;
+        difficulty = 0;
         hQuizToolbar.setVisible(true);
         hQuizDifficulty.setDisable(false);
         vQuizTitle.setVisible(true);
@@ -1538,11 +1618,94 @@ public class VARpediaController implements Initializable {
         toggleQuizEasy.setSelected(true);
         toggleQuizMedium.setSelected(false);
         toggleQuizHard.setSelected(false);
+        btnMuteQuiz.setDisable(false);
+        sliderVolQuiz.setDisable(false);
+        txtQuizAnswer.clear();
+        lblQuizAnswer.setText("Answer:");
+        lblQuizAnswer.setStyle("-fx-text-fill: font-color");
+        lblQuizTitle.setText("Guess the term!");
+        lblQuizTitle1.setText("Select a difficulty from above");
+        lblQuizTitle2.setText("then try to guess the correct word.");
+        lblQuizTitle3.setText("Switching tabs will reset the game, so no cheating :)");
         if (!isNonEmptyDirectory(CREATIONS)) {
             hQuizToolbar.setVisible(false);
             vQuizTitle.setVisible(false);
             vQuizError.setVisible(true);
         }
+    }
+
+    private void loadNextQuestion() {
+        txtQuizAnswer.clear();
+        txtQuizAnswer.requestFocus();
+        lblQuizAnswer.setText("Answer:");
+        lblQuizAnswer.setStyle("-fx-text-fill: font-color");
+
+        Media video = new Media(questions.get(currentQuestion).getFile().toURI().toString());
+        currentAnswer = questions.get(currentQuestion).getAnswer();
+        currentQuestion++;
+
+        // Play selected file
+        playerQuiz = new MediaPlayer(video);
+        mvQuiz.setMediaPlayer(playerQuiz);
+        playerQuiz.setAutoPlay(true);
+        mvQuiz.fitWidthProperty().bind(mvQuizPane.widthProperty());
+        mvQuiz.fitHeightProperty().bind(mvQuizPane.heightProperty());
+        mvQuiz.setPreserveRatio(false);
+        mvQuizPane.setVisible(true);
+        btnMuteQuiz.setDisable(false);
+        sliderVolQuiz.setDisable(false);
+
+        progressSliderQuiz.progressProperty().bind(sliderProgressQuiz.valueProperty().divide(100.0));
+        progressVolQuiz.progressProperty().bind(sliderVolQuiz.valueProperty().divide(100.0));
+
+        // Different panes shown depending on difficulty
+        if (difficulty == 1) {
+            // Disable volume slider when on medium
+            btnMuteQuizClicked(null);
+            btnMuteQuiz.setDisable(true);
+            sliderVolQuiz.setDisable(true);
+        } else if (difficulty == 2) {
+            // Hide media player when on hard
+            vQuizCorrect.setVisible(true);
+            lblQuizCorrect.setText("Turn your audio on.");
+            btnQuizNext.setVisible(false);
+            btnQuizRetry.setVisible(false);
+            btnQuizFinish.setVisible(false);
+            mvQuizPane.setVisible(false);
+        }
+
+        playerQuiz.currentTimeProperty().addListener(ov -> updateValuesQuiz());
+
+        sliderVolQuiz.valueProperty().addListener(ov -> {
+            if (sliderVolQuiz.isValueChanging()) {
+                playerQuiz.setVolume(sliderVolQuiz.getValue() / 100.0);
+            }
+            if (sliderVolQuiz.getValue() == 0) {
+                imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/mute-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+                quizMute = true;
+            } else if (quizMute) {
+                imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+                quizMute = false;
+            }
+        });
+
+        playerQuiz.setOnReady(() -> {
+            durationQuiz = playerQuiz.getMedia().getDuration();
+            updateValuesQuiz();
+        });
+
+        playerQuiz.setOnEndOfMedia(() -> {
+            playerQuiz.stop();
+
+            // Display "out of time" panel
+            vQuizPlayer.setVisible(false);
+            hQuizAnswer.setVisible(false);
+            vQuizCorrect.setVisible(true);
+            btnQuizNext.setVisible(true);
+            btnQuizRetry.setVisible(true);
+            btnQuizFinish.setVisible(true);
+            lblQuizCorrect.setText("Out of time!");
+        });
     }
 
     @FXML
@@ -1587,63 +1750,60 @@ public class VARpediaController implements Initializable {
         quizMute = false;
         quizVolume = 100;
 
-        //TODO this section: pick quiz files depending on difficulty
-
-        // -------------------------------------------------------------------------------------------------------
-        int difficulty = 0; // 0 = easy, 1 = med, 2 = hard
+        // 0 = easy, 1 = med, 2 = hard
         if (toggleQuizMedium.isSelected()) {
             difficulty = 1;
         } else if (toggleQuizHard.isSelected()) {
             difficulty = 2;
         }
 
-        // Randomise list of files
-        File[] fi = CREATIONS.listFiles(); // change this to the proper directory
-        List<File> files = new ArrayList<>();
+        // Load appropriate files based on difficulty
+        File[] fi = CREATIONS.listFiles();
         for (File f : fi) {
-            files.add(f);
-        }
-        Collections.shuffle(files);
-
-        Media video = new Media(files.get(currentQuestion).toURI().toString());
-        currentQuestion++;
-
-        // -------------------------------------------------------------------------------------------------------
-
-        // Play selected file
-        playerQuiz = new MediaPlayer(video);
-        mvQuiz.setMediaPlayer(playerQuiz);
-        playerQuiz.setAutoPlay(true);
-        mvQuiz.fitWidthProperty().bind(mvQuizPane.widthProperty());
-        mvQuiz.fitHeightProperty().bind(mvQuizPane.heightProperty());
-        mvQuiz.setPreserveRatio(false);
-
-        progressSliderQuiz.progressProperty().bind(sliderProgressQuiz.valueProperty().divide(100.0));
-        progressVolQuiz.progressProperty().bind(sliderVolQuiz.valueProperty().divide(100.0));
-
-        playerQuiz.currentTimeProperty().addListener(ov -> updateValuesQuiz());
-
-        sliderVolQuiz.valueProperty().addListener(ov -> {
-            if (sliderVolQuiz.isValueChanging()) {
-                playerQuiz.setVolume(sliderVolQuiz.getValue() / 100.0);
+            String fileName = "";
+            if (difficulty == 0) {
+                fileName = "both.mp4";
+            } else if (difficulty == 1) {
+                fileName = "video.mp4";
+            } else {
+                fileName = "audio.wav";
             }
-        });
 
-        playerQuiz.setOnReady(() -> {
-            durationQuiz = playerQuiz.getMedia().getDuration();
-            updateValuesQuiz();
-        });
+            // Find the corresponding answer for each creation
+            String answer = "";
+            File[] contents = f.listFiles();
+            if (contents != null) {
+                for (File x : contents) {
+                    String y = x.getName();
+                    if (y.lastIndexOf(".") > 0) {
+                        if ((y.substring(y.lastIndexOf(".") + 1)).equals("txt")) {
+                            answer = y.substring(0, y.lastIndexOf("."));
+                        }
+                    }
+                }
+                questions.add(new QuizFile(new File(f.toString() + "/" + fileName), answer));
+            }
+        }
+        // Randomise list of files
+        Collections.shuffle(questions);
 
-        playerQuiz.setOnEndOfMedia(() -> {
-            playerQuiz.stop();
+        loadNextQuestion();
+    }
 
-            // Display "out of time" panel
-            vQuizPlayer.setVisible(false);
-            hQuizAnswer.setVisible(false);
-            vQuizCorrect.setVisible(true);
-            btnQuizRetry.setVisible(true);
-            lblQuizCorrect.setText("Out of time!");
-        });
+    @FXML
+    void btnMuteQuizClicked(ActionEvent event) {
+        if (!quizMute) {
+            quizVolume = sliderVolQuiz.getValue();
+            sliderVolQuiz.setValue(0);
+            imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/mute-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            playerQuiz.setVolume(0);
+            quizMute = true;
+        } else {
+            sliderVolQuiz.setValue(quizVolume);
+            imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            playerQuiz.setVolume(quizVolume / 100.0);
+            quizMute = false;
+        }
     }
 
     private void updateValuesQuiz() {
@@ -1669,52 +1829,69 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnQuizFinishClicked(ActionEvent event) {
+    void btnQuizSubmitClicked(ActionEvent event) {
+        if (txtQuizAnswer.getText().trim().equalsIgnoreCase(currentAnswer)) {
+            // If the answer is correct, show the "correct" pane
+            lblQuizAnswer.setText("Answer:");
+            lblQuizAnswer.setStyle("-fx-text-fill: font-color");
+            playerQuiz.stop();
+            correctAnswers++;
+            if (currentQuestion < questions.size()) {
+                vQuizPlayer.setVisible(false);
+                hQuizAnswer.setVisible(false);
+                vQuizCorrect.setVisible(true);
+                lblQuizCorrect.setText("Correct!");
+                btnQuizNext.setVisible(true);
+                btnQuizRetry.setVisible(false);
+                btnQuizFinish.setVisible(true);
+            } else {
+                // Or finish if all questions have been played
+                btnQuizFinish.fire();
+            }
+        } else if (!txtQuizAnswer.getText().trim().isEmpty()) {
+            // Otherwise, give an error
+            lblQuizAnswer.setText("Incorrect. Try again:");
+            lblQuizAnswer.setStyle("-fx-text-fill: close-color");
+            txtQuizAnswer.selectAll();
+            txtQuizAnswer.requestFocus();
+        }
+    }
 
+    @FXML
+    void btnQuizFinishClicked(ActionEvent event) {
+        vQuizPlayer.setVisible(false);
+        hQuizAnswer.setVisible(false);
+        vQuizCorrect.setVisible(false);
+        vQuizTitle.setVisible(true);
+        if ((double) correctAnswers / currentQuestion < 0.5) {
+            lblQuizTitle.setText("Good try!");
+            lblQuizTitle1.setText("You answered " + correctAnswers + " out of " + currentQuestion + " questions correctly.");
+        } else {
+            lblQuizTitle.setText("Well done!");
+            lblQuizTitle1.setText("You answered " + correctAnswers + " out of " + currentQuestion + " questions correctly.");
+        }
+        lblQuizTitle2.setText("");
+        lblQuizTitle3.setText("Click reset to start over.");
     }
 
     @FXML
     void btnQuizNextClicked(ActionEvent event) {
+        vQuizPlayer.setVisible(true);
+        hQuizAnswer.setVisible(true);
+        vQuizCorrect.setVisible(false);
 
+        loadNextQuestion();
     }
 
     @FXML
     void btnQuizRetryClicked(ActionEvent event) {
-
-    }
-
-    @FXML
-    void btnQuizSubmitClicked(ActionEvent event) {
-        //TODO logic (use the variable currentQuestion)
-
-        // if correct
-        playerQuiz.stop();
-        vQuizPlayer.setVisible(false);
-        hQuizAnswer.setVisible(false);
-        vQuizCorrect.setVisible(true);
-        lblQuizCorrect.setText("Correct!");
-        btnQuizRetry.setVisible(false);
+        currentQuestion--;
+        btnQuizNext.fire();
     }
 
     @FXML
     void txtQuizAnswerEnter(ActionEvent event) {
         btnQuizSubmit.fire();
-    }
-
-    @FXML
-    void btnMuteQuizClicked(ActionEvent event) {
-        if (!quizMute) {
-            quizVolume = sliderVolQuiz.getValue();
-            sliderVolQuiz.setValue(0);
-            imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/mute-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            playerQuiz.setVolume(0);
-            quizMute = true;
-        } else {
-            sliderVolQuiz.setValue(quizVolume);
-            imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
-            playerQuiz.setVolume(quizVolume / 100.0);
-            quizMute = false;
-        }
     }
 
     // -----------------------------------------------------------------------------------------------

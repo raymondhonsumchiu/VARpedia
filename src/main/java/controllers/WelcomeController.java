@@ -3,15 +3,35 @@ package main.java.controllers;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.HBox;
 import main.java.VARpedia;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 
-public class WelcomeController {
+public class WelcomeController implements Initializable {
     private double xOffset = 0;
     private double yOffset = 0;
+
+    @FXML
+    private HBox hRoot;
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        // Allow pressing space to begin
+        hRoot.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            try {
+                btnBeginClick(null);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
     @FXML
     void btnBeginClick(ActionEvent event) throws IOException {
@@ -36,5 +56,4 @@ public class WelcomeController {
         VARpedia.primaryStage.setScene(scene);
         VARpedia.primaryStage.show();
     }
-
 }
