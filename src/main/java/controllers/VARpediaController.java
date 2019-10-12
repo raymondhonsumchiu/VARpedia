@@ -1477,6 +1477,7 @@ public class VARpediaController implements Initializable {
                 if (alert.showAndWait().get() == btnYes) {
                     initialiseSearchTab();
                     initialiseCombineTab();
+                    numChunks = 0;
                 }
 
                 txtCreationName.clear();
