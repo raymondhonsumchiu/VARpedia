@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 import static main.java.VARpedia.*;
@@ -480,7 +481,7 @@ public class VARpediaController implements Initializable {
                     // Pause / play media on Space
                     if (code == KeyCode.SPACE) {
                         if (playerCreation != null) {
-                            if (playerCreation.getStatus() == MediaPlayer.Status.PAUSED) {
+                            if (playerCreation.getStatus() != MediaPlayer.Status.PLAYING) {
                                 playerCreation.play();
                             } else {
                                 playerCreation.pause();
@@ -627,6 +628,7 @@ public class VARpediaController implements Initializable {
     private void initialiseCreationsTab() {
         // Hide and display the appropriate panels
         vMediaControls.setVisible(false);
+        listCreations.getSelectionModel().clearSelection();
         if (isNonEmptyDirectory(CREATIONS)) {
             vCreationsEmpty.setVisible(false);
             paneCreations.setVisible(true);
@@ -871,6 +873,12 @@ public class VARpediaController implements Initializable {
     void listCreationsClicked(MouseEvent event) {
         if (event.getClickCount() == 2) {
             btnPlayCreation.fire();
+        } else if (playerCreation == null || (playerCreation != null && playerCreation.getStatus() != MediaPlayer.Status.PLAYING)) {
+            if (listCreations.getSelectionModel().getSelectedItem() != null) {
+                btnPlayCreation.fire();
+                playerCreation.stop();
+                imgPlayPause.setImage(new Image(new File(ICONS.toString() + "/play-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
+            }
         }
     }
 
@@ -930,6 +938,9 @@ public class VARpediaController implements Initializable {
 
         query = txtSearch.getText().trim().toLowerCase();
         if (!query.isEmpty()) {
+
+            // Cancel current image search if necessary
+            if (flickrFuture != null) {flickrFuture.cancel(true);}
 
             // Multithreading - search Wikit for query
             WikitTask bgWikit = new WikitTask(query);
@@ -1227,6 +1238,8 @@ public class VARpediaController implements Initializable {
 
     // ---------------------------------------- COMBINE TAB METHODS ----------------------------------------
 
+    Future flickrFuture;
+
     private void initialiseCombineTab() {
         selectedImgs = new ArrayList<String>();
         gridImageViews = new ArrayList<>();
@@ -1260,7 +1273,7 @@ public class VARpediaController implements Initializable {
 
             // Multithreading - search Flickr API for images
             FlickrTask bgFlickr = new FlickrTask(query);
-            bg.submit(bgFlickr);
+            flickrFuture = bg.submit(bgFlickr);
 
             // Lock controls, reveal loading ring
             btnCreateCreation.setDisable(true);
@@ -1274,37 +1287,39 @@ public class VARpediaController implements Initializable {
             }
 
             bgFlickr.setOnSucceeded(e -> {
-                // Unlock controls, hide loading ring
-                btnCreateCreation.setDisable(false);
-                btnPreviewCreation.setDisable(false);
-                btnSearchFlickr.setDisable(false);
-                vImages.setVisible(true);
-                ringImages.setVisible(false);
+                if (bgFlickr.getValue()) {
+                    // Unlock controls, hide loading ring
+                    btnCreateCreation.setDisable(false);
+                    btnPreviewCreation.setDisable(false);
+                    btnSearchFlickr.setDisable(false);
+                    vImages.setVisible(true);
+                    ringImages.setVisible(false);
 
-                // Once all images are downloaded, we place each into the image grid
-                int imgCount = 1;
-                for (ImageView imgView : gridImageViews) {
-                    //set each image
-                    File file = new File(TEMPIMGS.toString() + "/" + imgCount + ".jpg");
-                    Image image = new Image(file.toURI().toString());
-                    double n = (image.getWidth() < image.getHeight()) ? image.getWidth() : image.getHeight();
-                    double x = (image.getWidth() - n) / 2;
-                    double y = (image.getHeight() - n) / 2;
-                    Rectangle2D rect = new Rectangle2D(x, y, n, n);
+                    // Once all images are downloaded, we place each into the image grid
+                    int imgCount = 1;
+                    for (ImageView imgView : gridImageViews) {
+                        //set each image
+                        File file = new File(TEMPIMGS.toString() + "/" + imgCount + ".jpg");
+                        Image image = new Image(file.toURI().toString());
+                        double n = (image.getWidth() < image.getHeight()) ? image.getWidth() : image.getHeight();
+                        double x = (image.getWidth() - n) / 2;
+                        double y = (image.getHeight() - n) / 2;
+                        Rectangle2D rect = new Rectangle2D(x, y, n, n);
 
-                    imgView.setViewport(rect);
-                    imgView.setSmooth(true);
-                    imgView.setImage(image);
+                        imgView.setViewport(rect);
+                        imgView.setSmooth(true);
+                        imgView.setImage(image);
 
-                    // Add image path to arraylist so it can be extracted later for creation
-                    selectedImgs.add("/" + imgCount + ".jpg");
-                    imgCount++;
+                        // Add image path to arraylist so it can be extracted later for creation
+                        selectedImgs.add("/" + imgCount + ".jpg");
+                        imgCount++;
+                    }
+                    if (error) {
+                        deleteDirectory(TEMPIMGS);
+                        vImages.setVisible(false);
+                    }
+                    txtSearchFlickr.clear();
                 }
-                if (error) {
-                    deleteDirectory(TEMPIMGS);
-                    vImages.setVisible(false);
-                }
-                txtSearchFlickr.clear();
             });
         }
     }
@@ -1366,6 +1381,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnSearchFlickrClicked(ActionEvent event) {
+        if (flickrFuture != null) {flickrFuture.cancel(true);}
         fillGridImages(txtSearchFlickr.getText().trim().toLowerCase());
     }
 

@@ -3,7 +3,6 @@ package main.java.tasks;
 import javafx.concurrent.Task;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
@@ -107,7 +106,7 @@ public class PrevCombineTask extends Task<Void> {
         }
 
         // Add text overlay to vid
-        ProcessBuilder b9 = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i ../temp/" + vidFile + " -vf drawtext=\"fontfile=../myfont.ttf: text='" + query + "': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2\" -codec:a copy " + name + ".mp4");
+        ProcessBuilder b9 = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i ../temp/" + vidFile + " -vf drawtext=\"fontfile=../../resources/fonts/Questrial-Regular.ttf: text='" + query + "': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2\" -codec:a copy " + name + ".mp4");
         b9.directory(TEMP);
         Process p9 = b9.start();
         p9.waitFor();
