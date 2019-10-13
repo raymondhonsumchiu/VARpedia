@@ -15,7 +15,7 @@ import java.io.FileReader;
 import static main.java.VARpedia.TEMPIMGS;
 import static main.java.VARpedia.deleteDirectory;
 
-public class FlickrTask extends Task<Void> {
+public class FlickrTask extends Task<Boolean> {
     private String query;
 
     public FlickrTask(String query) {
@@ -23,7 +23,7 @@ public class FlickrTask extends Task<Void> {
     }
 
     @Override
-    protected Void call() throws Exception {
+    protected Boolean call() {
 
         deleteDirectory(TEMPIMGS);
         TEMPIMGS.mkdirs();
@@ -49,6 +49,7 @@ public class FlickrTask extends Task<Void> {
 
             int i = 1;
             for (Photo photo: results) {
+                if (Thread.currentThread().isInterrupted()) { return false; }
                 try {
                     BufferedImage image = photos.getImage(photo, Size.LARGE);
                     String filename = i + ".jpg";
@@ -65,7 +66,7 @@ public class FlickrTask extends Task<Void> {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return true;
     }
 
     /**
