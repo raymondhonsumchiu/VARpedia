@@ -1368,6 +1368,15 @@ public class VARpediaController implements Initializable {
                 ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listAllChunks.getSelectionModel().getSelectedItem());
                 b1.directory(new File(CHUNKS.toString() + "/" + listAllChunks.getSelectionModel().getSelectedItem()));
                 p1 = b1.start();
+
+                // bg thread keeps an eye on the process while it is alive
+                PreviewChunkTask previewTask = new PreviewChunkTask(p1);
+                bg.submit(previewTask);
+                // Once finished, the text is set back
+                previewTask.setOnSucceeded(e -> {
+                    btnPreviewChunkCombine.setText("Preview");
+                });
+
                 // Set text to allowing stopping of audio
                 btnPreviewChunkCombine.setText("Stop");
             }
