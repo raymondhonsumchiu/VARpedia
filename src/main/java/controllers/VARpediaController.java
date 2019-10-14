@@ -26,7 +26,6 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import main.java.VARpedia;
 import main.java.skins.progressindicator.RingProgressIndicator;
-import main.java.structures.QuizFile;
 import main.java.tasks.*;
 
 import java.io.*;
@@ -460,12 +459,6 @@ public class VARpediaController implements Initializable {
             if (tab == 0) {
                 // Refresh list of creations, but also resets media player.
                 initialiseCreationsTab();
-            } else if (tab == 2) {
-                //initialiseCombineTab();
-/*                if (allChunkList.isEmpty()) {
-                    btnPreviewCreation.setDisable(true);
-                    btnCreateCreation.setDisable(true);
-                }*/
             } else if (tab == 3) {
                 // Reset quiz tab on change (prevents cheating, among other things)
                 initialiseQuizTab();
@@ -662,6 +655,7 @@ public class VARpediaController implements Initializable {
     }
 
     private void updateValues() {
+        // Update the media player controls
         Platform.runLater(() -> {
             Duration currentTime = playerCreation.getCurrentTime();
             lblCurrentTime.setText(formatTime(currentTime, duration, false));
@@ -677,6 +671,7 @@ public class VARpediaController implements Initializable {
         });
     }
 
+    // Helper method to correctly format the time for the media player progress slider
     private static String formatTime(Duration elapsed, Duration duration, boolean totalTime) {
         int intElapsed = (int) Math.floor(elapsed.toSeconds());
         int elapsedHours = intElapsed / (60 * 60);
@@ -732,6 +727,7 @@ public class VARpediaController implements Initializable {
             mute = false;
             volume = 100;
 
+            // Load the media player
             Media video = new Media(CREATIONS.toURI().toString() + currentlyPlaying + "/" + currentlyPlaying + ".mp4");
             playerCreation = new MediaPlayer(video);
             mvPlayCreation.setMediaPlayer(playerCreation);
@@ -746,6 +742,7 @@ public class VARpediaController implements Initializable {
 
             playerCreation.currentTimeProperty().addListener(ov -> updateValues());
 
+            // Listeners for events related to the media player
             sliderVol.valueProperty().addListener(ov -> {
                 if (sliderVol.isValueChanging()) {
                     playerCreation.setVolume(sliderVol.getValue() / 100.0);
@@ -852,6 +849,7 @@ public class VARpediaController implements Initializable {
     void btnDeleteCreationClicked(ActionEvent event) {
         if (listCreations.getSelectionModel().getSelectedItem() != null) {
             if (playerCreation != null) { playerCreation.pause(); }
+
             // Confirm if user wants to delete Creation
             String vid = listCreations.getSelectionModel().getSelectedItem();
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete \"" + vid + "\"?", btnYes, btnNo);
@@ -874,6 +872,7 @@ public class VARpediaController implements Initializable {
         if (event.getClickCount() == 2) {
             btnPlayCreation.fire();
         } else if (playerCreation == null || (playerCreation != null && playerCreation.getStatus() != MediaPlayer.Status.PLAYING)) {
+            // Load the media when clicking through creations, but don't auto-play
             if (listCreations.getSelectionModel().getSelectedItem() != null) {
                 btnPlayCreation.fire();
                 playerCreation.stop();
@@ -991,6 +990,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnVoiceOptionClicked(ActionEvent event) throws IOException {
+        // Load a separate pop-up stage for the pitch/speed options
         if (btnSearchPreviewChunk.getText().equals("Stop")) { btnSearchPreviewChunk.fire(); }
         Parent root = FXMLLoader.load(getClass().getResource("../../resources/view/voiceoptions.fxml"));
 
@@ -1130,9 +1130,10 @@ public class VARpediaController implements Initializable {
             txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
         } else {
 
-            //obtain chunk name
+            // Obtain chunk name
             String chunkName = txtChunkName.getText().trim();
 
+            // Comprehensive error checks
             if (chunkName.startsWith("-") || !Pattern.matches("^[-_a-zA-Z0-9]*$", chunkName)) {
                 txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
                 txaPreviewChunk1.setText("Invalid chunk name, please choose another.");
@@ -1148,13 +1149,13 @@ public class VARpediaController implements Initializable {
                 txaPreviewChunk1.setText(selectedText);
                 txtChunkName.clear();
 
-                //handle default chunk name
+                // Handle default chunk name
                 numChunks++;
                 if (chunkName.isEmpty()) {
                     chunkName = query + numChunks;
                 }
 
-                //create new chunk's directory
+                // Create new chunk's directory
                 File NEWCHUNK = new File(CHUNKS.toString() + "/" + chunkName);
                 NEWCHUNK.mkdirs();
 
@@ -1202,11 +1203,6 @@ public class VARpediaController implements Initializable {
 
             }
         }
-
-        //PLace holder for chunk creation
-        //this list will house the names of all the chunks that will be displayed by the chunk listviews
-        //ideally these following lines will be kept, just swapping the name of the chunk
-
     }
 
     @FXML
@@ -1229,6 +1225,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void txaResultsDragged(MouseEvent event) {
+        // This is needed for previewing chunks correctly
         listChunksSearch.getSelectionModel().clearSelection();
         txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
         txaPreviewChunk1.clear();
@@ -1264,6 +1261,7 @@ public class VARpediaController implements Initializable {
         txtCreationName.clear();
         txtSearchFlickr.clear();
 
+        // Set up drop down list
         cboMusic.getItems().addAll("No music", "Happy Piano", "Funny Piano", "Groovy Music");
         cboMusic.getSelectionModel().selectFirst();
     }
@@ -1326,6 +1324,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnAddChunkClicked(ActionEvent event) {
+        // Add a chunk if it is selected
         String chunkToAdd = listAllChunks.getSelectionModel().getSelectedItem();
         if (chunkToAdd != null) {
             listSelectedChunks.getItems().add(chunkToAdd);
@@ -1334,7 +1333,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnRemoveChunkClicked(ActionEvent event) {
-        //if an item is selected, it will be removed
+        // If a chunk is selected, it will be removed
         if (listSelectedChunks.getSelectionModel().getSelectedItem() != null) {
             int index = listSelectedChunks.getSelectionModel().getSelectedIndex();
             listSelectedChunks.getItems().remove(index);
@@ -1342,8 +1341,8 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnClearChunksClicked(ActionEvent event) {
-        //clear all selected items
+    void btnClearSelectedClicked(ActionEvent event) {
+        // Clear all selected chunks and images
         listSelectedChunks.getItems().clear();
         for (ToggleButton t : gridToggles) {
             t.setSelected(false);
@@ -1352,6 +1351,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnDeleteChunkClicked(ActionEvent event) {
+        // Delete all instances of a chunk when deleted
         if (listAllChunks.getSelectionModel().getSelectedItem() != null) {
             selectedChunkList.removeAll(Collections.singleton(listAllChunks.getSelectionModel().getSelectedItem()));
             listAllChunks.getItems().remove(listAllChunks.getSelectionModel().getSelectedIndex());
@@ -1381,6 +1381,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnSearchFlickrClicked(ActionEvent event) {
+        // Stop current Flickr download if still in progress
         if (flickrFuture != null) {flickrFuture.cancel(true);}
         fillGridImages(txtSearchFlickr.getText().trim().toLowerCase());
     }
@@ -1388,7 +1389,7 @@ public class VARpediaController implements Initializable {
     @FXML
     void btnPreviewCreationClicked(ActionEvent event) {
         if (btnPreviewCreation.getText().equals("Preview Creation")) {
-            //obtain all selected images
+            // Obtain all selected images
             ArrayList<String> selectedImgs = new ArrayList<String>();
             int index = 0;
             for (ToggleButton imgButton : gridToggles) {
@@ -1399,6 +1400,7 @@ public class VARpediaController implements Initializable {
                 index++;
             }
 
+            // Error checking
             if (selectedChunkList.isEmpty()) {
                 txaPreviewChunk2.setText("Please add some chunks.");
                 txaPreviewChunk2.setStyle("-fx-text-fill: close-color");
@@ -1435,6 +1437,7 @@ public class VARpediaController implements Initializable {
 
                     progressSliderPreview.progressProperty().bind(sliderProgressPreview.valueProperty().divide(100.0));
 
+                    // Preview media player listeners
                     playerPreview.currentTimeProperty().addListener(ov -> updateValuesPreview());
 
                     playerPreview.setOnReady(() -> {
@@ -1461,6 +1464,7 @@ public class VARpediaController implements Initializable {
         }
     }
 
+    // Update progress slider for preview media player
     private void updateValuesPreview() {
         Platform.runLater(() -> {
             Duration currentTime = playerPreview.getCurrentTime();
@@ -1474,7 +1478,9 @@ public class VARpediaController implements Initializable {
         });
     }
 
+    // Helper method to check if a creation name exists (ignore case)
     private boolean creationExists(String c) {
+        CREATIONS.mkdirs();
         File[] creations = CREATIONS.listFiles();
         for (File f : creations) {
             if (f.getName().equalsIgnoreCase(c)) {
@@ -1487,7 +1493,7 @@ public class VARpediaController implements Initializable {
     @FXML
     void btnCreateCreationClicked(ActionEvent event) {
         if (btnPreviewCreation.getText().equals("Stop")) {btnPreviewCreation.fire();}
-        //obtain all selected images
+        // Obtain all selected images
         ArrayList<String> selectedImgs = new ArrayList<String>();
         int index = 0;
         for (ToggleButton imgButton : gridToggles) {
@@ -1498,7 +1504,7 @@ public class VARpediaController implements Initializable {
             index++;
         }
 
-        //check if all imgs correct
+        // Check if all imgs correct
         for (String path : selectedImgs) {
             System.out.println(path);
         }
@@ -1575,6 +1581,7 @@ public class VARpediaController implements Initializable {
 
     }
 
+    // Allow double clicking for actions
     @FXML
     void listAllChunksClicked(MouseEvent event) {
         listSelectedChunks.getSelectionModel().clearSelection();
@@ -1591,6 +1598,7 @@ public class VARpediaController implements Initializable {
         }
     }
 
+    // Allow pressing Enter for actions
     @FXML
     void txtCreationEnter(ActionEvent event) {
         btnCreateCreation.fire();
@@ -1690,6 +1698,7 @@ public class VARpediaController implements Initializable {
             mvQuizPane.setVisible(false);
         }
 
+        // Listeners for the quiz media player
         playerQuiz.currentTimeProperty().addListener(ov -> updateValuesQuiz());
 
         sliderVolQuiz.valueProperty().addListener(ov -> {
@@ -1822,6 +1831,7 @@ public class VARpediaController implements Initializable {
         }
     }
 
+    // Update progress slider for quiz media player
     private void updateValuesQuiz() {
         Platform.runLater(() -> {
             Duration currentTime = playerQuiz.getCurrentTime();
@@ -1840,8 +1850,8 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnQuizResetClicked(ActionEvent event) {
-        initialiseQuizTab();
         if (playerQuiz != null) {playerQuiz.stop();}
+        initialiseQuizTab();
     }
 
     @FXML
@@ -1905,6 +1915,7 @@ public class VARpediaController implements Initializable {
         btnQuizNext.fire();
     }
 
+    // Allow pressing Enter for actions
     @FXML
     void txtQuizAnswerEnter(ActionEvent event) {
         btnQuizSubmit.fire();
@@ -1945,4 +1956,38 @@ public class VARpediaController implements Initializable {
     }
 
     // -----------------------------------------------------------------------------------------------------
+}
+
+/**
+ * Custom data structure for use in the Quiz component of VARpedia.
+ * Simply stores an associated String "answer" with each file.
+ */
+class QuizFile {
+    private File file;
+    private String answer;
+
+    /**
+     * @param file   File to play in the quiz tab
+     * @param answer Answer associated with the file
+     */
+    public QuizFile(File file, String answer) {
+        this.file = file;
+        this.answer = answer;
+    }
+
+    public File getFile() {
+        return file;
+    }
+
+    public void setFile(File file) {
+        this.file = file;
+    }
+
+    public String getAnswer() {
+        return answer;
+    }
+
+    public void setAnswer(String answer) {
+        this.answer = answer;
+    }
 }
