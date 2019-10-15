@@ -40,25 +40,66 @@ import java.util.regex.Pattern;
 import static main.java.VARpedia.*;
 
 public class VARpediaController implements Initializable {
-    //num of chunks
-    int numChunks = 0;
-
-    // General window fields
+    // ---------------------------------- General window fields ----------------------------------------------
     private double xOffset = 0;
     private double yOffset = 0;
     private String css;
 
-    // Creations tab fields
+    @FXML private AnchorPane anchorRoot;
+    @FXML private Button btnBack;
+    @FXML private Button btnMinimise;
+    @FXML private Button btnHelp;
+    @FXML private Button btnClose;
+    @FXML private TabPane tabMain;
+
+    // ---------------------------------------- Creations tab fields ------------------------------------------
     private MediaPlayer playerCreation;
     private Duration duration;
 
-    // Search tab fields
+    @FXML private Button btnPlayCreation;
+    @FXML private Button btnDeleteCreation;
+    @FXML private VBox vCreationsEmpty;
+    @FXML private BorderPane paneCreations;
+    @FXML private Label lblNumberCreations;
+    @FXML private ListView<String> listCreations;
+
+    // Media player
+    @FXML private MediaView mvPlayCreation;
+    @FXML private Pane mvPane;
+    @FXML private VBox vMediaControls;
+    @FXML private Button btnPlayPause;
+    @FXML private Button btnForward;
+    @FXML private Button btnReverse;
+    @FXML private Label lblCurrentTime;
+    @FXML private Label lblTotalTime;
+    @FXML private Slider sliderProgress;
+    @FXML private ProgressBar progressSlider;
+    @FXML private Slider sliderVol;
+    @FXML private ProgressBar progressVol;
+    @FXML private ImageView imgPlayPause;
+    @FXML private ImageView imgVolume;
+
+    // ------------------------------------ Search tab fields ---------------------------------------------------
     private static Stage stage;
     public static double voicePitch;
     public static double voiceSpeed;
     private String query;
+    private int numChunks = 0;
 
-    // Combine tab fields
+    @FXML private Button btnSearch;
+    @FXML private Label lblNumWords;
+    @FXML private Button btnSearchFlickr;
+    @FXML private ListView<String> listChunksSearch;
+    @FXML private Button btnSearchPreviewChunk;
+    @FXML private Button btnCreateChunk;
+    @FXML private ComboBox cboVoice;
+    @FXML private TextField txtSearch;
+    @FXML private TextArea txaPreviewChunk1;
+    @FXML private TextField txtChunkName;
+    @FXML private TextArea txaResults;
+    @FXML private RingProgressIndicator ringSearch;
+
+    // --------------------------------------- Combine tab fields ----------------------------------------------
     private List<ImageView> gridImageViews;
     private List<ToggleButton> gridToggles;
     private ObservableList<String> allChunkList = FXCollections.observableArrayList();
@@ -67,375 +108,101 @@ public class VARpediaController implements Initializable {
     private MediaPlayer playerPreview;
     private Duration durationPreview;
 
-    // Quiz tab fields
+    @FXML private Button btnClearSelected;
+    @FXML private ListView<String> listAllChunks;
+    @FXML private Button btnPreviewChunkCombine;
+    @FXML private Button btnAddChunk;
+    @FXML private Button btnRemoveChunk;
+    @FXML private ListView<String> listSelectedChunks;
+    @FXML private Button btnPreviewCreation;
+    @FXML private Button btnCreateCreation;
+    @FXML private ComboBox cboMusic;
+    @FXML private TextField txtSearchFlickr;
+    @FXML private TextField txtCreationName;
+    @FXML private TextArea txaPreviewChunk2;
+    @FXML private RingProgressIndicator ringCombine;
+    @FXML private RingProgressIndicator ringImages;
+
+    // Media player
+    @FXML private VBox vPreview;
+    @FXML private MediaView mvPreview;
+    @FXML private Pane mvPreviewPane;
+    @FXML private Label lblPreviewTotalTime;
+    @FXML private Label lblPreviewCurrentTime;
+    @FXML private Slider sliderProgressPreview;
+    @FXML private ProgressBar progressSliderPreview;
+
+    // Image pane
+    @FXML private VBox vNoImages;
+    @FXML private VBox vImages;
+    @FXML private HBox hFlickrSearch;
+    @FXML private ToggleButton toggleGrid1;
+    @FXML private ImageView imgGrid1;
+    @FXML private ToggleButton toggleGrid2;
+    @FXML private ImageView imgGrid2;
+    @FXML private ToggleButton toggleGrid3;
+    @FXML private ImageView imgGrid3;
+    @FXML private ToggleButton toggleGrid4;
+    @FXML private ImageView imgGrid4;
+    @FXML private ToggleButton toggleGrid5;
+    @FXML private ImageView imgGrid5;
+    @FXML private ToggleButton toggleGrid6;
+    @FXML private ImageView imgGrid6;
+    @FXML private ToggleButton toggleGrid7;
+    @FXML private ImageView imgGrid7;
+    @FXML private ToggleButton toggleGrid8;
+    @FXML private ImageView imgGrid8;
+    @FXML private ToggleButton toggleGrid9;
+    @FXML private ImageView imgGrid9;
+    @FXML private ToggleButton toggleGrid10;
+    @FXML private ImageView imgGrid10;
+    @FXML private ToggleButton toggleGrid11;
+    @FXML private ImageView imgGrid11;
+    @FXML private ToggleButton toggleGrid12;
+    @FXML private ImageView imgGrid12;
+
+    // ------------------------------------------ Quiz tab fields ---------------------------------------------
     private MediaPlayer playerQuiz;
     private Duration durationQuiz;
 
-    @FXML
-    private AnchorPane anchorRoot;
-
-    @FXML
-    private Button btnBack;
-
-    @FXML
-    private Button btnMinimise;
-
-    @FXML
-    private Button btnHelp;
-
-    @FXML
-    private Button btnClose;
-
-    @FXML
-    private TabPane tabMain;
-
-    @FXML
-    private Tab tabSearch;
-
-    @FXML
-    private VBox vCreationsEmpty;
-
-    @FXML
-    private BorderPane paneCreations;
-
-    @FXML
-    private Label lblNumberCreations;
-
-    @FXML
-    private ListView<String> listCreations;
-
-    @FXML
-    private Button btnSearch;
-
-    @FXML
-    private Label lblNumWords;
-
-    @FXML
-    private Button btnSearchFlickr;
-
-    @FXML
-    private ListView<String> listChunksSearch;
-
-    @FXML
-    private Button btnSearchPreviewChunk;
-
-    @FXML
-    private Button btnCreateChunk;
-
-    @FXML
-    private Button btnCombine;
-
-    @FXML
-    private ListView<String> listAllChunks;
-
-    @FXML
-    private Button btnPreviewChunkCombine;
-
-    @FXML
-    private Button btnDeleteChunk;
-
-    @FXML
-    private Button btnAddChunk;
-
-    @FXML
-    private Button btnRemoveChunk;
-
-    @FXML
-    private ListView<String> listSelectedChunks;
-
-    @FXML
-    private Button btnClearSelected;
-
-    @FXML
-    private VBox vPreview;
-
-    @FXML
-    private MediaView mvPreview;
-
-    @FXML
-    private Pane mvPreviewPane;
-
-    @FXML
-    private Label lblPreviewTotalTime;
-
-    @FXML
-    private Label lblPreviewCurrentTime;
-
-    @FXML
-    private Slider sliderProgressPreview;
-
-    @FXML
-    private ProgressBar progressSliderPreview;
-
-    @FXML
-    private VBox vImages;
-
-    @FXML
-    private ToggleButton toggleGrid1;
-
-    @FXML
-    private ImageView imgGrid1;
-
-    @FXML
-    private ToggleButton toggleGrid2;
-
-    @FXML
-    private ImageView imgGrid2;
-
-    @FXML
-    private ToggleButton toggleGrid3;
-
-    @FXML
-    private ImageView imgGrid3;
-
-    @FXML
-    private ToggleButton toggleGrid4;
-
-    @FXML
-    private ImageView imgGrid4;
-
-    @FXML
-    private ToggleButton toggleGrid5;
-
-    @FXML
-    private ImageView imgGrid5;
-
-    @FXML
-    private ToggleButton toggleGrid6;
-
-    @FXML
-    private ImageView imgGrid6;
-
-    @FXML
-    private ToggleButton toggleGrid7;
-
-    @FXML
-    private ImageView imgGrid7;
-
-    @FXML
-    private ToggleButton toggleGrid8;
-
-    @FXML
-    private ImageView imgGrid8;
-
-    @FXML
-    private ToggleButton toggleGrid9;
-
-    @FXML
-    private ImageView imgGrid9;
-
-    @FXML
-    private ToggleButton toggleGrid10;
-
-    @FXML
-    private ImageView imgGrid10;
-
-    @FXML
-    private ToggleButton toggleGrid11;
-
-    @FXML
-    private ImageView imgGrid11;
-
-    @FXML
-    private ToggleButton toggleGrid12;
-
-    @FXML
-    private ImageView imgGrid12;
-
-    @FXML
-    private ImageView imgPlayPause;
-
-    @FXML
-    private ImageView imgVolume;
-
-    @FXML
-    private Button btnPreviewCreation;
-
-    @FXML
-    private Button btnCreateCreation;
-
-    @FXML
-    private ComboBox cboVoice;
-
-    @FXML
-    private ComboBox cboMusic;
-
-    @FXML
-    private ToggleButton btnDarkTheme;
-
-    @FXML
-    private ToggleButton btnLightTheme;
-
-    @FXML
-    private TextField txtSearch;
-
-    @FXML
-    private TextField txtSearchFlickr;
-
-    @FXML
-    private TextField txtCreationName;
-
-    @FXML
-    private TextField txtChunkName;
-
-    @FXML
-    private TextArea txaPreviewChunk1;
-
-    @FXML
-    private TextArea txaPreviewChunk2;
-
-    @FXML
-    private TextArea txaResults;
-
-    @FXML
-    private MediaView mvPlayCreation;
-
-    @FXML
-    private Pane mvPane;
-
-    @FXML
-    private VBox vMediaControls;
-
-    @FXML
-    private Button btnPlayCreation;
-
-    @FXML
-    private Button btnDeleteCreation;
-
-    @FXML
-    private Button btnPlayPause;
-
-    @FXML
-    private Button btnForward;
-
-    @FXML
-    private Button btnReverse;
-
-    @FXML
-    private Label lblCurrentTime;
-
-    @FXML
-    private Label lblTotalTime;
-
-    @FXML
-    private Slider sliderProgress;
-
-    @FXML
-    private ProgressBar progressSlider;
-
-    @FXML
-    private Slider sliderVol;
-
-    @FXML
-    private ProgressBar progressVol;
-
-    @FXML
-    private RingProgressIndicator ringSearch;
-
-    @FXML
-    private RingProgressIndicator ringCombine;
-
-    @FXML
-    private RingProgressIndicator ringImages;
-
-    @FXML
-    private VBox vQuizTitle;
-
-    @FXML
-    private Label lblQuizTitle;
-
-    @FXML
-    private Label lblQuizTitle1;
-
-    @FXML
-    private Label lblQuizTitle2;
-
-    @FXML
-    private Label lblQuizTitle3;
-
-    @FXML
-    private VBox vQuizError;
-
-    @FXML
-    private VBox vQuizPlayer;
-
-    @FXML
-    private Pane mvQuizPane;
-
-    @FXML
-    private MediaView mvQuiz;
-
-    @FXML
-    private Button btnMuteQuiz;
-
-    @FXML
-    private Label lblQuizCurrentTime;
-
-    @FXML
-    private ProgressBar progressSliderQuiz;
-
-    @FXML
-    private Slider sliderProgressQuiz;
-
-    @FXML
-    private Label lblQuizTotalTime;
-
-    @FXML
-    private ImageView imgVolumeQuiz;
-
-    @FXML
-    private ProgressBar progressVolQuiz;
-
-    @FXML
-    private Slider sliderVolQuiz;
-
-    @FXML
-    private VBox vQuizCorrect;
-
-    @FXML
-    private Label lblQuizCorrect;
-
-    @FXML
-    private Button btnQuizNext;
-
-    @FXML
-    private Button btnQuizRetry;
-
-    @FXML
-    private Button btnQuizFinish;
-
-    @FXML
-    private HBox hQuizDifficulty;
-
-    @FXML
-    private HBox hQuizToolbar;
-
-    @FXML
-    private ToggleButton toggleQuizEasy;
-
-    @FXML
-    private ToggleButton toggleQuizMedium;
-
-    @FXML
-    private ToggleButton toggleQuizHard;
-
-    @FXML
-    private Button btnQuizBegin;
-
-    @FXML
-    private Button btnQuizReset;
-
-    @FXML
-    private HBox hQuizAnswer;
-
-    @FXML
-    private Label lblQuizAnswer;
-
-    @FXML
-    private TextField txtQuizAnswer;
-
-    @FXML
-    private Button btnQuizSubmit;
+    @FXML private VBox vQuizTitle;
+    @FXML private Label lblQuizTitle;
+    @FXML private Label lblQuizTitle1;
+    @FXML private Label lblQuizTitle2;
+    @FXML private Label lblQuizTitle3;
+    @FXML private VBox vQuizError;
+    @FXML private VBox vQuizPlayer;
+    @FXML private VBox vQuizCorrect;
+    @FXML private Label lblQuizCorrect;
+    @FXML private Button btnQuizNext;
+    @FXML private Button btnQuizRetry;
+    @FXML private Button btnQuizFinish;
+    @FXML private HBox hQuizDifficulty;
+    @FXML private HBox hQuizToolbar;
+    @FXML private ToggleButton toggleQuizEasy;
+    @FXML private ToggleButton toggleQuizMedium;
+    @FXML private ToggleButton toggleQuizHard;
+    @FXML private HBox hQuizAnswer;
+    @FXML private Label lblQuizAnswer;
+    @FXML private TextField txtQuizAnswer;
+    @FXML private Button btnQuizSubmit;
+
+    // Media player
+    @FXML private Pane mvQuizPane;
+    @FXML private MediaView mvQuiz;
+    @FXML private Button btnMuteQuiz;
+    @FXML private Label lblQuizCurrentTime;
+    @FXML private ProgressBar progressSliderQuiz;
+    @FXML private Slider sliderProgressQuiz;
+    @FXML private Label lblQuizTotalTime;
+    @FXML private ImageView imgVolumeQuiz;
+    @FXML private ProgressBar progressVolQuiz;
+    @FXML private Slider sliderVolQuiz;
+
+    // ------------------------------------------ Options tab fields ------------------------------------------
+
+    @FXML private ToggleButton btnDarkTheme;
+    @FXML private ToggleButton btnLightTheme;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -924,6 +691,7 @@ public class VARpediaController implements Initializable {
         cboVoice.getItems().addAll("US Male", "New Zealand Male");
         cboVoice.getSelectionModel().selectFirst();
 
+        error = false;
         voicePitch = 1;
         voiceSpeed = 1;
         query = "";
@@ -1280,6 +1048,8 @@ public class VARpediaController implements Initializable {
         vPreview.setVisible(false);
         txaPreviewChunk2.setVisible(true);
         vImages.setVisible(false);
+        hFlickrSearch.setDisable(true);
+        vNoImages.setVisible(false);
         txaPreviewChunk2.clear();
         txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
         txtCreationName.clear();
@@ -1301,6 +1071,8 @@ public class VARpediaController implements Initializable {
             btnCreateCreation.setDisable(true);
             btnPreviewCreation.setDisable(true);
             vImages.setVisible(false);
+            hFlickrSearch.setDisable(true);
+            vNoImages.setVisible(false);
             ringImages.setVisible(true);
 
             // Reset selection
@@ -1309,38 +1081,52 @@ public class VARpediaController implements Initializable {
             }
 
             bgFlickr.setOnSucceeded(e -> {
-                if (bgFlickr.getValue()) {
-                    // Unlock controls, hide loading ring
+                if (bgFlickr.getValue() == 0) {
+                    // Unlock controls, hide loading ring if finished successfully
                     btnCreateCreation.setDisable(false);
                     btnPreviewCreation.setDisable(false);
                     btnSearchFlickr.setDisable(false);
                     vImages.setVisible(true);
+                    hFlickrSearch.setDisable(false);
+                    vNoImages.setVisible(false);
                     ringImages.setVisible(false);
 
-                    // Once all images are downloaded, we place each into the image grid
-                    int imgCount = 1;
-                    for (ImageView imgView : gridImageViews) {
-                        //set each image
-                        File file = new File(TEMPIMGS.toString() + "/" + imgCount + ".jpg");
-                        Image image = new Image(file.toURI().toString());
-                        double n = (image.getWidth() < image.getHeight()) ? image.getWidth() : image.getHeight();
-                        double x = (image.getWidth() - n) / 2;
-                        double y = (image.getHeight() - n) / 2;
-                        Rectangle2D rect = new Rectangle2D(x, y, n, n);
-
-                        imgView.setViewport(rect);
-                        imgView.setSmooth(true);
-                        imgView.setImage(image);
-
-                        // Add image path to arraylist so it can be extracted later for creation
-                        selectedImgs.add("/" + imgCount + ".jpg");
-                        imgCount++;
-                    }
                     if (error) {
+                        // Cancel image download if the term is invalid.
+                        flickrFuture.cancel(true);
                         deleteDirectory(TEMPIMGS);
                         vImages.setVisible(false);
+                        hFlickrSearch.setDisable(true);
+                    } else {
+
+                        // Once all images are downloaded, we place each into the image grid
+                        int imgCount = 1;
+                        for (ImageView imgView : gridImageViews) {
+                            //set each image
+                            File file = new File(TEMPIMGS.toString() + "/" + imgCount + ".jpg");
+                            Image image = new Image(file.toURI().toString());
+                            double n = (image.getWidth() < image.getHeight()) ? image.getWidth() : image.getHeight();
+                            double x = (image.getWidth() - n) / 2;
+                            double y = (image.getHeight() - n) / 2;
+                            Rectangle2D rect = new Rectangle2D(x, y, n, n);
+
+                            imgView.setViewport(rect);
+                            imgView.setSmooth(true);
+                            imgView.setImage(image);
+
+                            // Add image path to arraylist so it can be extracted later for creation
+                            selectedImgs.add("/" + imgCount + ".jpg");
+                            imgCount++;
+                        }
                     }
                     txtSearchFlickr.clear();
+                } else if (bgFlickr.getValue() == 2) {
+                    // If an exception is thrown or no images are found
+                    vImages.setVisible(false);
+                    hFlickrSearch.setDisable(false);
+                    ringImages.setVisible(false);
+                    vNoImages.setVisible(true);
+                    deleteDirectory(TEMPIMGS);
                 }
             });
         }
