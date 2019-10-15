@@ -199,6 +199,14 @@
                                  </VBox.margin>
                               </Label>
                               <TextArea fx:id="txaResults" onDragDetected="#txaResultsDragged" onMouseClicked="#txaResultsDragged" VBox.vgrow="ALWAYS" />
+                              <HBox alignment="CENTER_LEFT" prefHeight="35.0" prefWidth="200.0">
+                                 <children>
+                                    <Label fx:id="lblNumWords" text="Select some text from above." />
+                                 </children>
+                                 <padding>
+                                    <Insets bottom="5.0" left="5.0" top="5.0" />
+                                 </padding>
+                              </HBox>
                            </children>
                            <BorderPane.margin>
                               <Insets right="2.0" />
@@ -374,7 +382,7 @@
                                              </VBox.margin>
                                           </Label>
                                           <ListView fx:id="listSelectedChunks" onMouseClicked="#listSelectedChunksClicked" prefWidth="370.0" VBox.vgrow="ALWAYS" />
-                                          <Button fx:id="btnClearChunks" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnClearSelectedClicked" text="Deselect all chunks and images">
+                                          <Button fx:id="btnClearSelected" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnClearSelectedClicked" text="Deselect all chunks and images">
                                              <VBox.margin>
                                                 <Insets />
                                              </VBox.margin>

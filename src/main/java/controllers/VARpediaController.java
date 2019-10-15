@@ -108,6 +108,9 @@ public class VARpediaController implements Initializable {
     private Button btnSearch;
 
     @FXML
+    private Label lblNumWords;
+
+    @FXML
     private Button btnSearchFlickr;
 
     @FXML
@@ -141,7 +144,7 @@ public class VARpediaController implements Initializable {
     private ListView<String> listSelectedChunks;
 
     @FXML
-    private Button btnClearChunks;
+    private Button btnClearSelected;
 
     @FXML
     private VBox vPreview;
@@ -512,13 +515,33 @@ public class VARpediaController implements Initializable {
         // ------------------------------ Initialise "Search" tab ----------------------------------------
         initialiseSearchTab();
 
-        // set listview of chunks to observe the arraylist of chunks
+        // Set listview of chunks to observe the arraylist of chunks
         listChunksSearch.setItems(allChunkList);
-        //add listener to listview to allow for previewing of chunk text
+        // Add listener to listview to allow for previewing of chunk text
         listChunksSearch.getSelectionModel().selectedItemProperty().addListener(e -> {
             String chunktxt = getChunkText(listChunksSearch.getSelectionModel().getSelectedItem());
             txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
             txaPreviewChunk1.setText(chunktxt);
+        });
+
+        // Add listener to results text area to display number of words selected
+        txaResults.selectedTextProperty().addListener((t, ov, nv) -> {
+            String text = txaResults.getSelectedText().trim();
+            int numWords = text.length() - text.replaceAll("\\s", "").length();
+            numWords = text.length() == 0 ? 0 : numWords + 1;
+            if (numWords == 0) {
+                lblNumWords.setText("Select some words from above.");
+                lblNumWords.setStyle("-fx-text-fill: font-color");
+            } else if (numWords > 40) {
+                lblNumWords.setText("You have selected " + numWords + " words. Please select no more than 40.");
+                lblNumWords.setStyle("-fx-text-fill: close-color");
+            } else if (numWords == 1) {
+                lblNumWords.setText("You have selected 1 word.");
+                lblNumWords.setStyle("-fx-text-fill: font-color");
+            } else {
+                lblNumWords.setText("You have selected " + numWords + " words.");
+                lblNumWords.setStyle("-fx-text-fill: font-color");
+            }
         });
 
         // ------------------------------------ Initialise "Combine" tab ----------------------------------
@@ -1122,6 +1145,7 @@ public class VARpediaController implements Initializable {
 
         String selectedText = txaResults.getSelectedText().trim();
         int numWords = selectedText.length() - selectedText.replaceAll("\\s", "").length();
+        numWords = selectedText.length() == 0 ? 0 : numWords + 1;
         if (selectedText.length() == 0) {
             txaPreviewChunk1.setText("No text selected.");
             txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
@@ -1499,6 +1523,47 @@ public class VARpediaController implements Initializable {
         return false;
     }
 
+    // Helper method for actually making the creation
+    private void makeCreation(String creationName) {
+        txaPreviewChunk2.clear();
+        txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
+
+        // Create creation in a background thread
+        String musicChoice = cboMusic.getValue().toString();
+        CombineTask bgCreate = new CombineTask(creationName, query, selectedChunkList, selectedImgs, musicChoice);
+        bg.submit(bgCreate);
+
+        // Disable components for safety
+        ringCombine.setVisible(true);
+        btnPreviewCreation.setDisable(true);
+        btnCreateCreation.setDisable(true);
+        btnSearchFlickr.setDisable(true);
+
+        bgCreate.setOnSucceeded(e -> {
+            ringCombine.setVisible(false);
+            btnPreviewCreation.setDisable(false);
+            btnCreateCreation.setDisable(false);
+            btnSearchFlickr.setDisable(false);
+
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "\"" + creationName + "\" has been created.\n Start over?", btnYes, btnNo);
+            alert.setTitle("New Creation");
+            alert.getDialogPane().getStylesheets().add(css);
+            alert.setHeaderText("Success!");
+            alert.setGraphic(null);
+            alert.initStyle(StageStyle.UNDECORATED);
+            alert.setResizable(false);
+            if (alert.showAndWait().get() == btnYes) {
+                initialiseSearchTab();
+                initialiseCombineTab();
+                numChunks = 0;
+                tabMain.getSelectionModel().select(1);
+            }
+
+            txtCreationName.clear();
+            btnClearSelected.fire();
+        });
+    }
+
     @FXML
     void btnCreateCreationClicked(ActionEvent event) {
         if (btnPreviewCreation.getText().equals("Stop")) {btnPreviewCreation.fire();}
@@ -1544,48 +1609,13 @@ public class VARpediaController implements Initializable {
             alert.setResizable(false);
             if (alert.showAndWait().get() == btnYes) {
                 deleteDirectory(new File(CREATIONS.toString() + "/" + creationName));
+                makeCreation(creationName);
             } else {
                 txtCreationName.selectAll();
                 txtCreationName.requestFocus();
             }
         } else {
-            txaPreviewChunk2.clear();
-            txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
-
-            // Create creation in a background thread
-            String musicChoice = cboMusic.getValue().toString();
-            CombineTask bgCreate = new CombineTask(creationName, query, selectedChunkList, selectedImgs, musicChoice);
-            bg.submit(bgCreate);
-
-            // Disable components for safety
-            ringCombine.setVisible(true);
-            btnPreviewCreation.setDisable(true);
-            btnCreateCreation.setDisable(true);
-            btnSearchFlickr.setDisable(true);
-
-            bgCreate.setOnSucceeded(e -> {
-                ringCombine.setVisible(false);
-                btnPreviewCreation.setDisable(false);
-                btnCreateCreation.setDisable(false);
-                btnSearchFlickr.setDisable(false);
-
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "\"" + creationName + "\" has been created.\n Start over?", btnYes, btnNo);
-                alert.setTitle("New Creation");
-                alert.getDialogPane().getStylesheets().add(css);
-                alert.setHeaderText("Success!");
-                alert.setGraphic(null);
-                alert.initStyle(StageStyle.UNDECORATED);
-                alert.setResizable(false);
-                if (alert.showAndWait().get() == btnYes) {
-                    initialiseSearchTab();
-                    initialiseCombineTab();
-                    numChunks = 0;
-                    tabMain.getSelectionModel().select(1);
-                }
-
-                txtCreationName.clear();
-                btnClearChunks.fire();
-            });
+            makeCreation(creationName);
         }
 
     }
@@ -1988,15 +2018,7 @@ class QuizFile {
         return file;
     }
 
-    public void setFile(File file) {
-        this.file = file;
-    }
-
     public String getAnswer() {
         return answer;
-    }
-
-    public void setAnswer(String answer) {
-        this.answer = answer;
     }
 }
