@@ -1484,6 +1484,7 @@ public class VARpediaController implements Initializable {
     }
 
     private boolean creationExists(String c) {
+        CREATIONS.mkdirs();
         File[] creations = CREATIONS.listFiles();
         for (File f : creations) {
             if (f.getName().equalsIgnoreCase(c)) {
