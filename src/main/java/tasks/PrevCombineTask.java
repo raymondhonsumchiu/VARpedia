@@ -89,7 +89,7 @@ public class PrevCombineTask extends Task<Void> {
         }
 
         // Create video slideshow and send output to TEMP
-        double frameRate = numImages == 1 ? 1 : numImages / length;
+        double frameRate = (double) numImages / 20;
 
         String vidCmd = "cat *.jpg | ffmpeg -f image2pipe -framerate " + frameRate + " -i - -t " + length + " -c:v libx264 -pix_fmt yuv420p -vf \"scale=560:480\" -r 25 -max_muxing_queue_size 1024 -y " + TEMP.toString() + "/" + "temp.mp4";
         ProcessBuilder b7 = new ProcessBuilder("/bin/bash", "-c", vidCmd);
