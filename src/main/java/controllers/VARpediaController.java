@@ -26,7 +26,6 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import main.java.VARpedia;
 import main.java.skins.progressindicator.RingProgressIndicator;
-import main.java.structures.QuizFile;
 import main.java.tasks.*;
 
 import java.io.*;
@@ -41,25 +40,66 @@ import java.util.regex.Pattern;
 import static main.java.VARpedia.*;
 
 public class VARpediaController implements Initializable {
-    //num of chunks
-    int numChunks = 0;
-
-    // General window fields
+    // ---------------------------------- General window fields ----------------------------------------------
     private double xOffset = 0;
     private double yOffset = 0;
     private String css;
 
-    // Creations tab fields
+    @FXML private AnchorPane anchorRoot;
+    @FXML private Button btnBack;
+    @FXML private Button btnMinimise;
+    @FXML private Button btnHelp;
+    @FXML private Button btnClose;
+    @FXML private TabPane tabMain;
+
+    // ---------------------------------------- Creations tab fields ------------------------------------------
     private MediaPlayer playerCreation;
     private Duration duration;
 
-    // Search tab fields
+    @FXML private Button btnPlayCreation;
+    @FXML private Button btnDeleteCreation;
+    @FXML private VBox vCreationsEmpty;
+    @FXML private BorderPane paneCreations;
+    @FXML private Label lblNumberCreations;
+    @FXML private ListView<String> listCreations;
+
+    // Media player
+    @FXML private MediaView mvPlayCreation;
+    @FXML private Pane mvPane;
+    @FXML private VBox vMediaControls;
+    @FXML private Button btnPlayPause;
+    @FXML private Button btnForward;
+    @FXML private Button btnReverse;
+    @FXML private Label lblCurrentTime;
+    @FXML private Label lblTotalTime;
+    @FXML private Slider sliderProgress;
+    @FXML private ProgressBar progressSlider;
+    @FXML private Slider sliderVol;
+    @FXML private ProgressBar progressVol;
+    @FXML private ImageView imgPlayPause;
+    @FXML private ImageView imgVolume;
+
+    // ------------------------------------ Search tab fields ---------------------------------------------------
     private static Stage stage;
     public static double voicePitch;
     public static double voiceSpeed;
     private String query;
+    private int numChunks = 0;
 
-    // Combine tab fields
+    @FXML private Button btnSearch;
+    @FXML private Label lblNumWords;
+    @FXML private Button btnSearchFlickr;
+    @FXML private ListView<String> listChunksSearch;
+    @FXML private Button btnSearchPreviewChunk;
+    @FXML private Button btnCreateChunk;
+    @FXML private ComboBox cboVoice;
+    @FXML private TextField txtSearch;
+    @FXML private TextArea txaPreviewChunk1;
+    @FXML private TextField txtChunkName;
+    @FXML private TextArea txaResults;
+    @FXML private RingProgressIndicator ringSearch;
+
+    // --------------------------------------- Combine tab fields ----------------------------------------------
     private List<ImageView> gridImageViews;
     private List<ToggleButton> gridToggles;
     private ObservableList<String> allChunkList = FXCollections.observableArrayList();
@@ -68,372 +108,101 @@ public class VARpediaController implements Initializable {
     private MediaPlayer playerPreview;
     private Duration durationPreview;
 
-    // Quiz tab fields
+    @FXML private Button btnClearSelected;
+    @FXML private ListView<String> listAllChunks;
+    @FXML private Button btnPreviewChunkCombine;
+    @FXML private Button btnAddChunk;
+    @FXML private Button btnRemoveChunk;
+    @FXML private ListView<String> listSelectedChunks;
+    @FXML private Button btnPreviewCreation;
+    @FXML private Button btnCreateCreation;
+    @FXML private ComboBox cboMusic;
+    @FXML private TextField txtSearchFlickr;
+    @FXML private TextField txtCreationName;
+    @FXML private TextArea txaPreviewChunk2;
+    @FXML private RingProgressIndicator ringCombine;
+    @FXML private RingProgressIndicator ringImages;
+
+    // Media player
+    @FXML private VBox vPreview;
+    @FXML private MediaView mvPreview;
+    @FXML private Pane mvPreviewPane;
+    @FXML private Label lblPreviewTotalTime;
+    @FXML private Label lblPreviewCurrentTime;
+    @FXML private Slider sliderProgressPreview;
+    @FXML private ProgressBar progressSliderPreview;
+
+    // Image pane
+    @FXML private VBox vNoImages;
+    @FXML private VBox vImages;
+    @FXML private HBox hFlickrSearch;
+    @FXML private ToggleButton toggleGrid1;
+    @FXML private ImageView imgGrid1;
+    @FXML private ToggleButton toggleGrid2;
+    @FXML private ImageView imgGrid2;
+    @FXML private ToggleButton toggleGrid3;
+    @FXML private ImageView imgGrid3;
+    @FXML private ToggleButton toggleGrid4;
+    @FXML private ImageView imgGrid4;
+    @FXML private ToggleButton toggleGrid5;
+    @FXML private ImageView imgGrid5;
+    @FXML private ToggleButton toggleGrid6;
+    @FXML private ImageView imgGrid6;
+    @FXML private ToggleButton toggleGrid7;
+    @FXML private ImageView imgGrid7;
+    @FXML private ToggleButton toggleGrid8;
+    @FXML private ImageView imgGrid8;
+    @FXML private ToggleButton toggleGrid9;
+    @FXML private ImageView imgGrid9;
+    @FXML private ToggleButton toggleGrid10;
+    @FXML private ImageView imgGrid10;
+    @FXML private ToggleButton toggleGrid11;
+    @FXML private ImageView imgGrid11;
+    @FXML private ToggleButton toggleGrid12;
+    @FXML private ImageView imgGrid12;
+
+    // ------------------------------------------ Quiz tab fields ---------------------------------------------
     private MediaPlayer playerQuiz;
     private Duration durationQuiz;
 
-    @FXML
-    private AnchorPane anchorRoot;
-
-    @FXML
-    private Button btnBack;
-
-    @FXML
-    private Button btnMinimise;
-
-    @FXML
-    private Button btnHelp;
-
-    @FXML
-    private Button btnClose;
-
-    @FXML
-    private TabPane tabMain;
-
-    @FXML
-    private Tab tabSearch;
-
-    @FXML
-    private VBox vCreationsEmpty;
-
-    @FXML
-    private BorderPane paneCreations;
-
-    @FXML
-    private Label lblNumberCreations;
-
-    @FXML
-    private ListView<String> listCreations;
-
-    @FXML
-    private Button btnSearch;
-
-    @FXML
-    private Button btnSearchFlickr;
-
-    @FXML
-    private ListView<String> listChunksSearch;
-
-    @FXML
-    private Button btnSearchPreviewChunk;
-
-    @FXML
-    private Button btnCreateChunk;
-
-    @FXML
-    private Button btnCombine;
-
-    @FXML
-    private ListView<String> listAllChunks;
-
-    @FXML
-    private Button btnPreviewChunkCombine;
-
-    @FXML
-    private Button btnDeleteChunk;
-
-    @FXML
-    private Button btnAddChunk;
-
-    @FXML
-    private Button btnRemoveChunk;
-
-    @FXML
-    private ListView<String> listSelectedChunks;
-
-    @FXML
-    private Button btnClearChunks;
-
-    @FXML
-    private VBox vPreview;
-
-    @FXML
-    private MediaView mvPreview;
-
-    @FXML
-    private Pane mvPreviewPane;
-
-    @FXML
-    private Label lblPreviewTotalTime;
-
-    @FXML
-    private Label lblPreviewCurrentTime;
-
-    @FXML
-    private Slider sliderProgressPreview;
-
-    @FXML
-    private ProgressBar progressSliderPreview;
-
-    @FXML
-    private VBox vImages;
-
-    @FXML
-    private ToggleButton toggleGrid1;
-
-    @FXML
-    private ImageView imgGrid1;
-
-    @FXML
-    private ToggleButton toggleGrid2;
-
-    @FXML
-    private ImageView imgGrid2;
-
-    @FXML
-    private ToggleButton toggleGrid3;
-
-    @FXML
-    private ImageView imgGrid3;
-
-    @FXML
-    private ToggleButton toggleGrid4;
-
-    @FXML
-    private ImageView imgGrid4;
-
-    @FXML
-    private ToggleButton toggleGrid5;
-
-    @FXML
-    private ImageView imgGrid5;
-
-    @FXML
-    private ToggleButton toggleGrid6;
-
-    @FXML
-    private ImageView imgGrid6;
-
-    @FXML
-    private ToggleButton toggleGrid7;
-
-    @FXML
-    private ImageView imgGrid7;
-
-    @FXML
-    private ToggleButton toggleGrid8;
-
-    @FXML
-    private ImageView imgGrid8;
-
-    @FXML
-    private ToggleButton toggleGrid9;
-
-    @FXML
-    private ImageView imgGrid9;
-
-    @FXML
-    private ToggleButton toggleGrid10;
-
-    @FXML
-    private ImageView imgGrid10;
-
-    @FXML
-    private ToggleButton toggleGrid11;
-
-    @FXML
-    private ImageView imgGrid11;
-
-    @FXML
-    private ToggleButton toggleGrid12;
-
-    @FXML
-    private ImageView imgGrid12;
-
-    @FXML
-    private ImageView imgPlayPause;
-
-    @FXML
-    private ImageView imgVolume;
-
-    @FXML
-    private Button btnPreviewCreation;
-
-    @FXML
-    private Button btnCreateCreation;
-
-    @FXML
-    private ComboBox cboVoice;
-
-    @FXML
-    private ComboBox cboMusic;
-
-    @FXML
-    private ToggleButton btnDarkTheme;
-
-    @FXML
-    private ToggleButton btnLightTheme;
-
-    @FXML
-    private TextField txtSearch;
-
-    @FXML
-    private TextField txtSearchFlickr;
-
-    @FXML
-    private TextField txtCreationName;
-
-    @FXML
-    private TextField txtChunkName;
-
-    @FXML
-    private TextArea txaPreviewChunk1;
-
-    @FXML
-    private TextArea txaPreviewChunk2;
-
-    @FXML
-    private TextArea txaResults;
-
-    @FXML
-    private MediaView mvPlayCreation;
-
-    @FXML
-    private Pane mvPane;
-
-    @FXML
-    private VBox vMediaControls;
-
-    @FXML
-    private Button btnPlayCreation;
-
-    @FXML
-    private Button btnDeleteCreation;
-
-    @FXML
-    private Button btnPlayPause;
-
-    @FXML
-    private Button btnForward;
-
-    @FXML
-    private Button btnReverse;
-
-    @FXML
-    private Label lblCurrentTime;
-
-    @FXML
-    private Label lblTotalTime;
-
-    @FXML
-    private Slider sliderProgress;
-
-    @FXML
-    private ProgressBar progressSlider;
-
-    @FXML
-    private Slider sliderVol;
-
-    @FXML
-    private ProgressBar progressVol;
-
-    @FXML
-    private RingProgressIndicator ringSearch;
-
-    @FXML
-    private RingProgressIndicator ringCombine;
-
-    @FXML
-    private RingProgressIndicator ringImages;
-
-    @FXML
-    private VBox vQuizTitle;
-
-    @FXML
-    private Label lblQuizTitle;
-
-    @FXML
-    private Label lblQuizTitle1;
-
-    @FXML
-    private Label lblQuizTitle2;
-
-    @FXML
-    private Label lblQuizTitle3;
-
-    @FXML
-    private VBox vQuizError;
-
-    @FXML
-    private VBox vQuizPlayer;
-
-    @FXML
-    private Pane mvQuizPane;
-
-    @FXML
-    private MediaView mvQuiz;
-
-    @FXML
-    private Button btnMuteQuiz;
-
-    @FXML
-    private Label lblQuizCurrentTime;
-
-    @FXML
-    private ProgressBar progressSliderQuiz;
-
-    @FXML
-    private Slider sliderProgressQuiz;
-
-    @FXML
-    private Label lblQuizTotalTime;
-
-    @FXML
-    private ImageView imgVolumeQuiz;
-
-    @FXML
-    private ProgressBar progressVolQuiz;
-
-    @FXML
-    private Slider sliderVolQuiz;
-
-    @FXML
-    private VBox vQuizCorrect;
-
-    @FXML
-    private Label lblQuizCorrect;
-
-    @FXML
-    private Button btnQuizNext;
-
-    @FXML
-    private Button btnQuizRetry;
-
-    @FXML
-    private Button btnQuizFinish;
-
-    @FXML
-    private HBox hQuizDifficulty;
-
-    @FXML
-    private HBox hQuizToolbar;
-
-    @FXML
-    private ToggleButton toggleQuizEasy;
-
-    @FXML
-    private ToggleButton toggleQuizMedium;
-
-    @FXML
-    private ToggleButton toggleQuizHard;
-
-    @FXML
-    private Button btnQuizBegin;
-
-    @FXML
-    private Button btnQuizReset;
-
-    @FXML
-    private HBox hQuizAnswer;
-
-    @FXML
-    private Label lblQuizAnswer;
-
-    @FXML
-    private TextField txtQuizAnswer;
-
-    @FXML
-    private Button btnQuizSubmit;
+    @FXML private VBox vQuizTitle;
+    @FXML private Label lblQuizTitle;
+    @FXML private Label lblQuizTitle1;
+    @FXML private Label lblQuizTitle2;
+    @FXML private Label lblQuizTitle3;
+    @FXML private VBox vQuizError;
+    @FXML private VBox vQuizPlayer;
+    @FXML private VBox vQuizCorrect;
+    @FXML private Label lblQuizCorrect;
+    @FXML private Button btnQuizNext;
+    @FXML private Button btnQuizRetry;
+    @FXML private Button btnQuizFinish;
+    @FXML private HBox hQuizDifficulty;
+    @FXML private HBox hQuizToolbar;
+    @FXML private ToggleButton toggleQuizEasy;
+    @FXML private ToggleButton toggleQuizMedium;
+    @FXML private ToggleButton toggleQuizHard;
+    @FXML private HBox hQuizAnswer;
+    @FXML private Label lblQuizAnswer;
+    @FXML private TextField txtQuizAnswer;
+    @FXML private Button btnQuizSubmit;
+
+    // Media player
+    @FXML private Pane mvQuizPane;
+    @FXML private MediaView mvQuiz;
+    @FXML private Button btnMuteQuiz;
+    @FXML private Label lblQuizCurrentTime;
+    @FXML private ProgressBar progressSliderQuiz;
+    @FXML private Slider sliderProgressQuiz;
+    @FXML private Label lblQuizTotalTime;
+    @FXML private ImageView imgVolumeQuiz;
+    @FXML private ProgressBar progressVolQuiz;
+    @FXML private Slider sliderVolQuiz;
+
+    // ------------------------------------------ Options tab fields ------------------------------------------
+
+    @FXML private ToggleButton btnDarkTheme;
+    @FXML private ToggleButton btnLightTheme;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -460,12 +229,6 @@ public class VARpediaController implements Initializable {
             if (tab == 0) {
                 // Refresh list of creations, but also resets media player.
                 initialiseCreationsTab();
-            } else if (tab == 2) {
-                //initialiseCombineTab();
-/*                if (allChunkList.isEmpty()) {
-                    btnPreviewCreation.setDisable(true);
-                    btnCreateCreation.setDisable(true);
-                }*/
             } else if (tab == 3) {
                 // Reset quiz tab on change (prevents cheating, among other things)
                 initialiseQuizTab();
@@ -519,13 +282,33 @@ public class VARpediaController implements Initializable {
         // ------------------------------ Initialise "Search" tab ----------------------------------------
         initialiseSearchTab();
 
-        // set listview of chunks to observe the arraylist of chunks
+        // Set listview of chunks to observe the arraylist of chunks
         listChunksSearch.setItems(allChunkList);
-        //add listener to listview to allow for previewing of chunk text
+        // Add listener to listview to allow for previewing of chunk text
         listChunksSearch.getSelectionModel().selectedItemProperty().addListener(e -> {
             String chunktxt = getChunkText(listChunksSearch.getSelectionModel().getSelectedItem());
             txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
             txaPreviewChunk1.setText(chunktxt);
+        });
+
+        // Add listener to results text area to display number of words selected
+        txaResults.selectedTextProperty().addListener((t, ov, nv) -> {
+            String text = txaResults.getSelectedText().trim();
+            int numWords = text.length() - text.replaceAll("\\s", "").length();
+            numWords = text.length() == 0 ? 0 : numWords + 1;
+            if (numWords == 0) {
+                lblNumWords.setText("Select some words from above.");
+                lblNumWords.setStyle("-fx-text-fill: font-color");
+            } else if (numWords > 40) {
+                lblNumWords.setText("You have selected " + numWords + " words. Please select no more than 40.");
+                lblNumWords.setStyle("-fx-text-fill: close-color");
+            } else if (numWords == 1) {
+                lblNumWords.setText("You have selected 1 word.");
+                lblNumWords.setStyle("-fx-text-fill: font-color");
+            } else {
+                lblNumWords.setText("You have selected " + numWords + " words.");
+                lblNumWords.setStyle("-fx-text-fill: font-color");
+            }
         });
 
         // ------------------------------------ Initialise "Combine" tab ----------------------------------
@@ -662,6 +445,7 @@ public class VARpediaController implements Initializable {
     }
 
     private void updateValues() {
+        // Update the media player controls
         Platform.runLater(() -> {
             Duration currentTime = playerCreation.getCurrentTime();
             lblCurrentTime.setText(formatTime(currentTime, duration, false));
@@ -677,6 +461,7 @@ public class VARpediaController implements Initializable {
         });
     }
 
+    // Helper method to correctly format the time for the media player progress slider
     private static String formatTime(Duration elapsed, Duration duration, boolean totalTime) {
         int intElapsed = (int) Math.floor(elapsed.toSeconds());
         int elapsedHours = intElapsed / (60 * 60);
@@ -732,6 +517,7 @@ public class VARpediaController implements Initializable {
             mute = false;
             volume = 100;
 
+            // Load the media player
             Media video = new Media(CREATIONS.toURI().toString() + currentlyPlaying + "/" + currentlyPlaying + ".mp4");
             playerCreation = new MediaPlayer(video);
             mvPlayCreation.setMediaPlayer(playerCreation);
@@ -746,6 +532,7 @@ public class VARpediaController implements Initializable {
 
             playerCreation.currentTimeProperty().addListener(ov -> updateValues());
 
+            // Listeners for events related to the media player
             sliderVol.valueProperty().addListener(ov -> {
                 if (sliderVol.isValueChanging()) {
                     playerCreation.setVolume(sliderVol.getValue() / 100.0);
@@ -852,6 +639,7 @@ public class VARpediaController implements Initializable {
     void btnDeleteCreationClicked(ActionEvent event) {
         if (listCreations.getSelectionModel().getSelectedItem() != null) {
             if (playerCreation != null) { playerCreation.pause(); }
+
             // Confirm if user wants to delete Creation
             String vid = listCreations.getSelectionModel().getSelectedItem();
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete \"" + vid + "\"?", btnYes, btnNo);
@@ -874,6 +662,7 @@ public class VARpediaController implements Initializable {
         if (event.getClickCount() == 2) {
             btnPlayCreation.fire();
         } else if (playerCreation == null || (playerCreation != null && playerCreation.getStatus() != MediaPlayer.Status.PLAYING)) {
+            // Load the media when clicking through creations, but don't auto-play
             if (listCreations.getSelectionModel().getSelectedItem() != null) {
                 btnPlayCreation.fire();
                 playerCreation.stop();
@@ -902,6 +691,7 @@ public class VARpediaController implements Initializable {
         cboVoice.getItems().addAll("US Male", "New Zealand Male");
         cboVoice.getSelectionModel().selectFirst();
 
+        error = false;
         voicePitch = 1;
         voiceSpeed = 1;
         query = "";
@@ -991,6 +781,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnVoiceOptionClicked(ActionEvent event) throws IOException {
+        // Load a separate pop-up stage for the pitch/speed options
         if (btnSearchPreviewChunk.getText().equals("Stop")) { btnSearchPreviewChunk.fire(); }
         Parent root = FXMLLoader.load(getClass().getResource("../../resources/view/voiceoptions.fxml"));
 
@@ -1122,6 +913,7 @@ public class VARpediaController implements Initializable {
 
         String selectedText = txaResults.getSelectedText().trim();
         int numWords = selectedText.length() - selectedText.replaceAll("\\s", "").length();
+        numWords = selectedText.length() == 0 ? 0 : numWords + 1;
         if (selectedText.length() == 0) {
             txaPreviewChunk1.setText("No text selected.");
             txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
@@ -1130,9 +922,10 @@ public class VARpediaController implements Initializable {
             txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
         } else {
 
-            //obtain chunk name
+            // Obtain chunk name
             String chunkName = txtChunkName.getText().trim();
 
+            // Comprehensive error checks
             if (chunkName.startsWith("-") || !Pattern.matches("^[-_a-zA-Z0-9]*$", chunkName)) {
                 txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
                 txaPreviewChunk1.setText("Invalid chunk name, please choose another.");
@@ -1148,13 +941,13 @@ public class VARpediaController implements Initializable {
                 txaPreviewChunk1.setText(selectedText);
                 txtChunkName.clear();
 
-                //handle default chunk name
+                // Handle default chunk name
                 numChunks++;
                 if (chunkName.isEmpty()) {
                     chunkName = query + numChunks;
                 }
 
-                //create new chunk's directory
+                // Create new chunk's directory
                 File NEWCHUNK = new File(CHUNKS.toString() + "/" + chunkName);
                 NEWCHUNK.mkdirs();
 
@@ -1202,11 +995,6 @@ public class VARpediaController implements Initializable {
 
             }
         }
-
-        //PLace holder for chunk creation
-        //this list will house the names of all the chunks that will be displayed by the chunk listviews
-        //ideally these following lines will be kept, just swapping the name of the chunk
-
     }
 
     @FXML
@@ -1229,6 +1017,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void txaResultsDragged(MouseEvent event) {
+        // This is needed for previewing chunks correctly
         listChunksSearch.getSelectionModel().clearSelection();
         txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
         txaPreviewChunk1.clear();
@@ -1259,11 +1048,14 @@ public class VARpediaController implements Initializable {
         vPreview.setVisible(false);
         txaPreviewChunk2.setVisible(true);
         vImages.setVisible(false);
+        hFlickrSearch.setDisable(true);
+        vNoImages.setVisible(false);
         txaPreviewChunk2.clear();
         txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
         txtCreationName.clear();
         txtSearchFlickr.clear();
 
+        // Set up drop down list
         cboMusic.getItems().addAll("No music", "Happy Piano", "Funny Piano", "Groovy Music");
         cboMusic.getSelectionModel().selectFirst();
     }
@@ -1279,6 +1071,8 @@ public class VARpediaController implements Initializable {
             btnCreateCreation.setDisable(true);
             btnPreviewCreation.setDisable(true);
             vImages.setVisible(false);
+            hFlickrSearch.setDisable(true);
+            vNoImages.setVisible(false);
             ringImages.setVisible(true);
 
             // Reset selection
@@ -1287,38 +1081,52 @@ public class VARpediaController implements Initializable {
             }
 
             bgFlickr.setOnSucceeded(e -> {
-                if (bgFlickr.getValue()) {
-                    // Unlock controls, hide loading ring
+                if (bgFlickr.getValue() == 0) {
+                    // Unlock controls, hide loading ring if finished successfully
                     btnCreateCreation.setDisable(false);
                     btnPreviewCreation.setDisable(false);
                     btnSearchFlickr.setDisable(false);
                     vImages.setVisible(true);
+                    hFlickrSearch.setDisable(false);
+                    vNoImages.setVisible(false);
                     ringImages.setVisible(false);
 
-                    // Once all images are downloaded, we place each into the image grid
-                    int imgCount = 1;
-                    for (ImageView imgView : gridImageViews) {
-                        //set each image
-                        File file = new File(TEMPIMGS.toString() + "/" + imgCount + ".jpg");
-                        Image image = new Image(file.toURI().toString());
-                        double n = (image.getWidth() < image.getHeight()) ? image.getWidth() : image.getHeight();
-                        double x = (image.getWidth() - n) / 2;
-                        double y = (image.getHeight() - n) / 2;
-                        Rectangle2D rect = new Rectangle2D(x, y, n, n);
-
-                        imgView.setViewport(rect);
-                        imgView.setSmooth(true);
-                        imgView.setImage(image);
-
-                        // Add image path to arraylist so it can be extracted later for creation
-                        selectedImgs.add("/" + imgCount + ".jpg");
-                        imgCount++;
-                    }
                     if (error) {
+                        // Cancel image download if the term is invalid.
+                        flickrFuture.cancel(true);
                         deleteDirectory(TEMPIMGS);
                         vImages.setVisible(false);
+                        hFlickrSearch.setDisable(true);
+                    } else {
+
+                        // Once all images are downloaded, we place each into the image grid
+                        int imgCount = 1;
+                        for (ImageView imgView : gridImageViews) {
+                            //set each image
+                            File file = new File(TEMPIMGS.toString() + "/" + imgCount + ".jpg");
+                            Image image = new Image(file.toURI().toString());
+                            double n = (image.getWidth() < image.getHeight()) ? image.getWidth() : image.getHeight();
+                            double x = (image.getWidth() - n) / 2;
+                            double y = (image.getHeight() - n) / 2;
+                            Rectangle2D rect = new Rectangle2D(x, y, n, n);
+
+                            imgView.setViewport(rect);
+                            imgView.setSmooth(true);
+                            imgView.setImage(image);
+
+                            // Add image path to arraylist so it can be extracted later for creation
+                            selectedImgs.add("/" + imgCount + ".jpg");
+                            imgCount++;
+                        }
                     }
                     txtSearchFlickr.clear();
+                } else if (bgFlickr.getValue() == 2) {
+                    // If an exception is thrown or no images are found
+                    vImages.setVisible(false);
+                    hFlickrSearch.setDisable(false);
+                    ringImages.setVisible(false);
+                    vNoImages.setVisible(true);
+                    deleteDirectory(TEMPIMGS);
                 }
             });
         }
@@ -1326,6 +1134,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnAddChunkClicked(ActionEvent event) {
+        // Add a chunk if it is selected
         String chunkToAdd = listAllChunks.getSelectionModel().getSelectedItem();
         if (chunkToAdd != null) {
             listSelectedChunks.getItems().add(chunkToAdd);
@@ -1334,7 +1143,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnRemoveChunkClicked(ActionEvent event) {
-        //if an item is selected, it will be removed
+        // If a chunk is selected, it will be removed
         if (listSelectedChunks.getSelectionModel().getSelectedItem() != null) {
             int index = listSelectedChunks.getSelectionModel().getSelectedIndex();
             listSelectedChunks.getItems().remove(index);
@@ -1342,8 +1151,8 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnClearChunksClicked(ActionEvent event) {
-        //clear all selected items
+    void btnClearSelectedClicked(ActionEvent event) {
+        // Clear all selected chunks and images
         listSelectedChunks.getItems().clear();
         for (ToggleButton t : gridToggles) {
             t.setSelected(false);
@@ -1352,6 +1161,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnDeleteChunkClicked(ActionEvent event) {
+        // Delete all instances of a chunk when deleted
         if (listAllChunks.getSelectionModel().getSelectedItem() != null) {
             selectedChunkList.removeAll(Collections.singleton(listAllChunks.getSelectionModel().getSelectedItem()));
             listAllChunks.getItems().remove(listAllChunks.getSelectionModel().getSelectedIndex());
@@ -1390,6 +1200,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnSearchFlickrClicked(ActionEvent event) {
+        // Stop current Flickr download if still in progress
         if (flickrFuture != null) {flickrFuture.cancel(true);}
         fillGridImages(txtSearchFlickr.getText().trim().toLowerCase());
     }
@@ -1397,7 +1208,7 @@ public class VARpediaController implements Initializable {
     @FXML
     void btnPreviewCreationClicked(ActionEvent event) {
         if (btnPreviewCreation.getText().equals("Preview Creation")) {
-            //obtain all selected images
+            // Obtain all selected images
             ArrayList<String> selectedImgs = new ArrayList<String>();
             int index = 0;
             for (ToggleButton imgButton : gridToggles) {
@@ -1408,6 +1219,7 @@ public class VARpediaController implements Initializable {
                 index++;
             }
 
+            // Error checking
             if (selectedChunkList.isEmpty()) {
                 txaPreviewChunk2.setText("Please add some chunks.");
                 txaPreviewChunk2.setStyle("-fx-text-fill: close-color");
@@ -1444,6 +1256,7 @@ public class VARpediaController implements Initializable {
 
                     progressSliderPreview.progressProperty().bind(sliderProgressPreview.valueProperty().divide(100.0));
 
+                    // Preview media player listeners
                     playerPreview.currentTimeProperty().addListener(ov -> updateValuesPreview());
 
                     playerPreview.setOnReady(() -> {
@@ -1470,6 +1283,7 @@ public class VARpediaController implements Initializable {
         }
     }
 
+    // Update progress slider for preview media player
     private void updateValuesPreview() {
         Platform.runLater(() -> {
             Duration currentTime = playerPreview.getCurrentTime();
@@ -1483,6 +1297,7 @@ public class VARpediaController implements Initializable {
         });
     }
 
+    // Helper method to check if a creation name exists (ignore case)
     private boolean creationExists(String c) {
         CREATIONS.mkdirs();
         File[] creations = CREATIONS.listFiles();
@@ -1494,10 +1309,51 @@ public class VARpediaController implements Initializable {
         return false;
     }
 
+    // Helper method for actually making the creation
+    private void makeCreation(String creationName) {
+        txaPreviewChunk2.clear();
+        txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
+
+        // Create creation in a background thread
+        String musicChoice = cboMusic.getValue().toString();
+        CombineTask bgCreate = new CombineTask(creationName, query, selectedChunkList, selectedImgs, musicChoice);
+        bg.submit(bgCreate);
+
+        // Disable components for safety
+        ringCombine.setVisible(true);
+        btnPreviewCreation.setDisable(true);
+        btnCreateCreation.setDisable(true);
+        btnSearchFlickr.setDisable(true);
+
+        bgCreate.setOnSucceeded(e -> {
+            ringCombine.setVisible(false);
+            btnPreviewCreation.setDisable(false);
+            btnCreateCreation.setDisable(false);
+            btnSearchFlickr.setDisable(false);
+
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "\"" + creationName + "\" has been created.\n Start over?", btnYes, btnNo);
+            alert.setTitle("New Creation");
+            alert.getDialogPane().getStylesheets().add(css);
+            alert.setHeaderText("Success!");
+            alert.setGraphic(null);
+            alert.initStyle(StageStyle.UNDECORATED);
+            alert.setResizable(false);
+            if (alert.showAndWait().get() == btnYes) {
+                initialiseSearchTab();
+                initialiseCombineTab();
+                numChunks = 0;
+                tabMain.getSelectionModel().select(1);
+            }
+
+            txtCreationName.clear();
+            btnClearSelected.fire();
+        });
+    }
+
     @FXML
     void btnCreateCreationClicked(ActionEvent event) {
         if (btnPreviewCreation.getText().equals("Stop")) {btnPreviewCreation.fire();}
-        //obtain all selected images
+        // Obtain all selected images
         ArrayList<String> selectedImgs = new ArrayList<String>();
         int index = 0;
         for (ToggleButton imgButton : gridToggles) {
@@ -1508,7 +1364,7 @@ public class VARpediaController implements Initializable {
             index++;
         }
 
-        //check if all imgs correct
+        // Check if all imgs correct
         for (String path : selectedImgs) {
             System.out.println(path);
         }
@@ -1539,52 +1395,18 @@ public class VARpediaController implements Initializable {
             alert.setResizable(false);
             if (alert.showAndWait().get() == btnYes) {
                 deleteDirectory(new File(CREATIONS.toString() + "/" + creationName));
+                makeCreation(creationName);
             } else {
                 txtCreationName.selectAll();
                 txtCreationName.requestFocus();
             }
         } else {
-            txaPreviewChunk2.clear();
-            txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
-
-            // Create creation in a background thread
-            String musicChoice = cboMusic.getValue().toString();
-            CombineTask bgCreate = new CombineTask(creationName, query, selectedChunkList, selectedImgs, musicChoice);
-            bg.submit(bgCreate);
-
-            // Disable components for safety
-            ringCombine.setVisible(true);
-            btnPreviewCreation.setDisable(true);
-            btnCreateCreation.setDisable(true);
-            btnSearchFlickr.setDisable(true);
-
-            bgCreate.setOnSucceeded(e -> {
-                ringCombine.setVisible(false);
-                btnPreviewCreation.setDisable(false);
-                btnCreateCreation.setDisable(false);
-                btnSearchFlickr.setDisable(false);
-
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "\"" + creationName + "\" has been created.\n Start over?", btnYes, btnNo);
-                alert.setTitle("New Creation");
-                alert.getDialogPane().getStylesheets().add(css);
-                alert.setHeaderText("Success!");
-                alert.setGraphic(null);
-                alert.initStyle(StageStyle.UNDECORATED);
-                alert.setResizable(false);
-                if (alert.showAndWait().get() == btnYes) {
-                    initialiseSearchTab();
-                    initialiseCombineTab();
-                    numChunks = 0;
-                    tabMain.getSelectionModel().select(1);
-                }
-
-                txtCreationName.clear();
-                btnClearChunks.fire();
-            });
+            makeCreation(creationName);
         }
 
     }
 
+    // Allow double clicking for actions
     @FXML
     void listAllChunksClicked(MouseEvent event) {
         listSelectedChunks.getSelectionModel().clearSelection();
@@ -1601,6 +1423,7 @@ public class VARpediaController implements Initializable {
         }
     }
 
+    // Allow pressing Enter for actions
     @FXML
     void txtCreationEnter(ActionEvent event) {
         btnCreateCreation.fire();
@@ -1700,6 +1523,7 @@ public class VARpediaController implements Initializable {
             mvQuizPane.setVisible(false);
         }
 
+        // Listeners for the quiz media player
         playerQuiz.currentTimeProperty().addListener(ov -> updateValuesQuiz());
 
         sliderVolQuiz.valueProperty().addListener(ov -> {
@@ -1832,6 +1656,7 @@ public class VARpediaController implements Initializable {
         }
     }
 
+    // Update progress slider for quiz media player
     private void updateValuesQuiz() {
         Platform.runLater(() -> {
             Duration currentTime = playerQuiz.getCurrentTime();
@@ -1850,8 +1675,8 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnQuizResetClicked(ActionEvent event) {
-        initialiseQuizTab();
         if (playerQuiz != null) {playerQuiz.stop();}
+        initialiseQuizTab();
     }
 
     @FXML
@@ -1915,6 +1740,7 @@ public class VARpediaController implements Initializable {
         btnQuizNext.fire();
     }
 
+    // Allow pressing Enter for actions
     @FXML
     void txtQuizAnswerEnter(ActionEvent event) {
         btnQuizSubmit.fire();
@@ -1955,4 +1781,30 @@ public class VARpediaController implements Initializable {
     }
 
     // -----------------------------------------------------------------------------------------------------
+}
+
+/**
+ * Custom data structure for use in the Quiz component of VARpedia.
+ * Simply stores an associated String "answer" with each file.
+ */
+class QuizFile {
+    private File file;
+    private String answer;
+
+    /**
+     * @param file   File to play in the quiz tab
+     * @param answer Answer associated with the file
+     */
+    public QuizFile(File file, String answer) {
+        this.file = file;
+        this.answer = answer;
+    }
+
+    public File getFile() {
+        return file;
+    }
+
+    public String getAnswer() {
+        return answer;
+    }
 }
