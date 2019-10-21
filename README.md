@@ -3,30 +3,26 @@ SE206 2019 Design Project
 
 Beta version of VARPedia - a multimedia interface to Wikipedia.
 
-Easy-to-run method (WORKS ON BETA LAB IMAGE WITH JAVA 8)
+Easy-to-run method (WORKS ON VIRTUAL BOX WITH JAVA 13 / JAVAFX 13)
 
-1. Ensure VARpedia_VM.sh, bin, src, flickr-api-keys.txt are on the same "level" in the directory hierarchy
-2. Enter your own Flickr API key into flick-api-keys.txt
+1. Ensure VARpedia.sh, bin, src, flickr-api-keys.txt are on the same "level" in the directory hierarchy
+2. Enter your own Flickr API keys into flick-api-keys.txt
 3. In the terminal, cd to the directory of files
 4. Execute the script: ./VARpedia.sh
-5. If this doesn't work, refer to step 7 of the IDE method
 
-Run in IDE method (best way to test in both image and lab beta image)
+Run in IDE method (WORKS ON JAVA 11+)
 
 1. Add project source to IDE
-2. Ensure use of Java 8
-3. Ensure Javafx is added/in jre or as a library
-4. Add the libs folder as a library, it is the library for the flickr API
-5. Enter your own Flickr API key into the txt file flick-api-keys.txt
-6. Now that all these are checked off, the program should now be runnable
-7. If in the case you are using Java 11 or above, please go to the files RingProgressIndicator.java and ProgressCircleIndicator.java, and change import com.sun.javafx.css.converters.* to import javafx.css.converter.SizeConverter;
+2. Ensure use of Java 11 or above
+3. Ensure JavaFX is added as a library
+4. Add the libs folder as a library, for the Flickr API
+5. Enter your own Flickr API keys into the txt file flick-api-keys.txt
+6. Run the program
 
 Bugs we are aware of:
 
-* previewing certain sentences with the NZ Male voice won't work
-* Creations with only 1 image only work properly when used with 1 chunk
-* short creations (e.g. 1 second) may not contain over 8-9 images
-* Application freezes slightly when beginning from title page, this is due to the next scene being very large
+* The NZ Male voice does not work with all sentences
+* Very short creations (e.g. 1 second) may not contain over 8-9 images
 
 __ATTRIBUTIONS:__
 
@@ -54,4 +50,6 @@ Cold Pimp Man by Martijn de Boer (NiGiD) (c) copyright 2017 Licensed under a Cre
 _CODE_
 
 skins.progressindicator - "fx-progress-circle" made by torakiki from https://github.com/torakiki/fx-progress-circle
-Licensed under an Apache 2.0 license
+Licensed under an Apache 2.0 license, and adapted for this project.
+
+This product uses the Flickr API but is not endorsed or certified by SmugMug, Inc.
