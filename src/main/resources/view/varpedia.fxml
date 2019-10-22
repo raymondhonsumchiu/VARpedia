@@ -598,7 +598,7 @@
                      <center>
                         <StackPane BorderPane.alignment="CENTER">
                            <children>
-                              <VBox fx:id="vQuizTitle" alignment="CENTER" spacing="5.0">
+                              <VBox fx:id="vQuizTitle" alignment="CENTER" spacing="5.0" visible="false">
                                  <children>
                                     <Label fx:id="lblQuizTitle" styleClass="label-title" text="Guess the term!" />
                                     <Label layoutX="629.0" layoutY="325.0" />
@@ -666,9 +666,10 @@
                                     </HBox>
                                  </children>
                               </VBox>
-                              <VBox fx:id="vQuizCorrect" alignment="CENTER" spacing="60.0">
+                              <VBox fx:id="vQuizCorrect" alignment="CENTER" spacing="40.0">
                                  <children>
                                     <Label fx:id="lblQuizCorrect" styleClass="label-title" text="Out of time!" />
+                                    <Label fx:id="lblQuestionNumber" text="Question 1 of 1" />
                                     <HBox alignment="CENTER" spacing="10.0">
                                        <children>
                                           <Button fx:id="btnQuizFinish" mnemonicParsing="false" onAction="#btnQuizFinishClicked" prefHeight="50.0" prefWidth="131.0" text="Finish" />

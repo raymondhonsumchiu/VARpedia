@@ -175,6 +175,7 @@ public class VARpediaController implements Initializable {
     @FXML private VBox vQuizPlayer;
     @FXML private VBox vQuizCorrect;
     @FXML private Label lblQuizCorrect;
+    @FXML private Label lblQuestionNumber;
     @FXML private Button btnQuizNext;
     @FXML private Button btnQuizRetry;
     @FXML private Button btnQuizFinish;
@@ -1226,6 +1227,8 @@ public class VARpediaController implements Initializable {
     @FXML
     void btnPreviewCreationClicked(ActionEvent event) {
         if (btnPreviewCreation.getText().equals("Preview Creation")) {
+            btnPreviewChunkCombine.setDisable(true);
+
             // Obtain all selected images
             ArrayList<String> selectedImgs = new ArrayList<String>();
             int index = 0;
@@ -1288,6 +1291,7 @@ public class VARpediaController implements Initializable {
                         // Show/hide appropriate panels
                         vPreview.setVisible(false);
                         txaPreviewChunk2.setVisible(true);
+                        btnPreviewChunkCombine.setDisable(false);
                         btnPreviewCreation.setText("Preview Creation");
                     });
 
@@ -1297,6 +1301,7 @@ public class VARpediaController implements Initializable {
             if (playerPreview != null) { playerPreview.stop();}
             vPreview.setVisible(false);
             txaPreviewChunk2.setVisible(true);
+            btnPreviewChunkCombine.setDisable(false);
             btnPreviewCreation.setText("Preview Creation");
         }
     }
@@ -1535,6 +1540,7 @@ public class VARpediaController implements Initializable {
             // Hide media player when on hard
             vQuizCorrect.setVisible(true);
             lblQuizCorrect.setText("Turn your audio on.");
+            lblQuestionNumber.setText("");
             btnQuizNext.setVisible(false);
             btnQuizRetry.setVisible(false);
             btnQuizFinish.setVisible(false);
@@ -1573,6 +1579,7 @@ public class VARpediaController implements Initializable {
             btnQuizRetry.setVisible(true);
             btnQuizFinish.setVisible(true);
             lblQuizCorrect.setText("Out of time!");
+            lblQuestionNumber.setText("Question " + currentQuestion + " of " + numQuestions);
         });
     }
 
@@ -1710,6 +1717,7 @@ public class VARpediaController implements Initializable {
                 hQuizAnswer.setVisible(false);
                 vQuizCorrect.setVisible(true);
                 lblQuizCorrect.setText("Correct!");
+                lblQuestionNumber.setText("Question " + currentQuestion + " of " + numQuestions);
                 btnQuizNext.setVisible(true);
                 btnQuizRetry.setVisible(false);
                 btnQuizFinish.setVisible(true);
