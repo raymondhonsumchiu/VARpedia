@@ -1,11 +1,13 @@
 package main.java.controllers;
 
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 import main.java.VARpedia;
@@ -14,12 +16,18 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import static main.java.VARpedia.*;
+
 public class WelcomeController implements Initializable {
     private double xOffset = 0;
     private double yOffset = 0;
 
     @FXML
     private HBox hRoot;
+
+    @FXML private Button btnMinimise;
+    @FXML private Button btnHelp;
+    @FXML private Button btnClose;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -31,6 +39,10 @@ public class WelcomeController implements Initializable {
                 e.printStackTrace();
             }
         });
+
+        btnMinimise.addEventFilter(KeyEvent.ANY, Event::consume);
+        btnHelp.addEventFilter(KeyEvent.ANY, Event::consume);
+        btnClose.addEventFilter(KeyEvent.ANY, Event::consume);
     }
 
     @FXML
@@ -56,4 +68,24 @@ public class WelcomeController implements Initializable {
         VARpedia.primaryStage.setScene(scene);
         VARpedia.primaryStage.show();
     }
+
+    @FXML
+    void btnMinimiseClicked(ActionEvent event) {
+        VARpedia.primaryStage.setIconified(true);
+    }
+
+    @FXML
+    void btnHelpClicked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void btnCloseClicked(ActionEvent event) {
+        // Clean up on exit
+        bg.shutdownNow();
+        deleteDirectory(TEMP);
+        deleteDirectory(CHUNKS);
+        VARpedia.primaryStage.close();
+    }
+
 }

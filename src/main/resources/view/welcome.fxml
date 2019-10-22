@@ -1,26 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.VBox?>
-<HBox fx:id="hRoot" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="810.0" prefWidth="1440.0" spacing="100.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.controllers.WelcomeController">
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<AnchorPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.controllers.WelcomeController">
    <children>
-      <ImageView fitHeight="403.0" fitWidth="500.0" pickOnBounds="true" preserveRatio="true">
-         <image>
-            <Image url="@../images/varpedialogo.png" />
-         </image>
-      </ImageView>
-      <VBox alignment="CENTER_LEFT">
+      <HBox fx:id="hRoot" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="810.0" prefWidth="1440.0" spacing="100.0">
          <children>
-            <Label styleClass="label-title" text="Welcome to" />
-            <Label layoutX="10.0" layoutY="389.0" styleClass="label-title" text="VARpedia" />
-            <Region prefHeight="100.0" prefWidth="260.0" />
-            <Button id="button-begin" defaultButton="true" mnemonicParsing="false" onAction="#btnBeginClick" prefWidth="249.0" text="Begin" />
+            <ImageView fitHeight="403.0" fitWidth="500.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../images/varpedialogo.png" />
+               </image>
+            </ImageView>
+            <VBox alignment="CENTER_LEFT">
+               <children>
+                  <Label styleClass="label-title" text="Welcome to" />
+                  <Label layoutX="10.0" layoutY="389.0" styleClass="label-title" text="VARpedia" />
+                  <Region prefHeight="100.0" prefWidth="260.0" />
+                  <Button id="button-begin" defaultButton="true" mnemonicParsing="false" onAction="#btnBeginClick" prefWidth="249.0" text="Begin" />
+               </children>
+            </VBox>
          </children>
-      </VBox>
+      </HBox>
+      <HBox spacing="10.0" AnchorPane.rightAnchor="12.0" AnchorPane.topAnchor="12.0">
+         <children>
+            <Button fx:id="btnMinimise" alignment="CENTER" contentDisplay="CENTER" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnMinimiseClicked" prefHeight="30.0" prefWidth="30.0" styleClass="button-window" text="-">
+               <font>
+                  <Font size="6.0" />
+               </font>
+               <HBox.margin>
+                  <Insets />
+               </HBox.margin>
+            </Button>
+            <Button id="button-help" fx:id="btnHelp" alignment="CENTER" contentDisplay="CENTER" layoutX="40.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnHelpClicked" prefHeight="30.0" prefWidth="30.0" styleClass="button-window" text="?">
+               <font>
+                  <Font size="6.0" />
+               </font>
+            </Button>
+            <Button id="button-close" fx:id="btnClose" alignment="CENTER" contentDisplay="CENTER" layoutX="70.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnCloseClicked" prefHeight="30.0" prefWidth="30.0" styleClass="button-window" text="X">
+               <font>
+                  <Font size="6.0" />
+               </font>
+            </Button>
+         </children>
+      </HBox>
    </children>
-</HBox>
+</AnchorPane>
