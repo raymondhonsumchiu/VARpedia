@@ -64,6 +64,7 @@ public class VARpediaController implements Initializable {
     @FXML private ListView<String> listCreations;
 
     // Media player
+    @FXML private VBox vCreationsLabel;
     @FXML private MediaView mvPlayCreation;
     @FXML private Pane mvPane;
     @FXML private VBox vMediaControls;
@@ -84,7 +85,7 @@ public class VARpediaController implements Initializable {
     public static double voicePitch;
     public static double voiceSpeed;
     private String query;
-    private int numChunks = 0;
+    private int numChunks;
 
     @FXML private Button btnSearch;
     @FXML private Label lblNumWords;
@@ -286,9 +287,11 @@ public class VARpediaController implements Initializable {
         listChunksSearch.setItems(allChunkList);
         // Add listener to listview to allow for previewing of chunk text
         listChunksSearch.getSelectionModel().selectedItemProperty().addListener(e -> {
-            String chunktxt = getChunkText(listChunksSearch.getSelectionModel().getSelectedItem());
-            txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
-            txaPreviewChunk1.setText(chunktxt);
+            if (!listChunksSearch.getItems().isEmpty()) {
+                String chunktxt = getChunkText(listChunksSearch.getSelectionModel().getSelectedItem());
+                txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
+                txaPreviewChunk1.setText(chunktxt);
+            }
         });
 
         // Add listener to results text area to display number of words selected
@@ -316,9 +319,11 @@ public class VARpediaController implements Initializable {
 
         // Add listener to list view to allow previewing chunk text
         listAllChunks.getSelectionModel().selectedItemProperty().addListener(e -> {
-            String chunktxt = getChunkText(listAllChunks.getSelectionModel().getSelectedItem());
-            txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
-            txaPreviewChunk2.setText(chunktxt);
+            if (!listAllChunks.getItems().isEmpty()) {
+                String chunktxt = getChunkText(listAllChunks.getSelectionModel().getSelectedItem());
+                txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
+                txaPreviewChunk2.setText(chunktxt);
+            }
         });
 
         // ------------------------------------ Initialise "Quiz" tab ------------------------------------
@@ -411,6 +416,7 @@ public class VARpediaController implements Initializable {
     private void initialiseCreationsTab() {
         // Hide and display the appropriate panels
         vMediaControls.setVisible(false);
+        vCreationsLabel.setVisible(true);
         listCreations.getSelectionModel().clearSelection();
         if (isNonEmptyDirectory(CREATIONS)) {
             vCreationsEmpty.setVisible(false);
@@ -527,6 +533,7 @@ public class VARpediaController implements Initializable {
             mvPlayCreation.setPreserveRatio(false);
 
             vMediaControls.setVisible(true);
+            vCreationsLabel.setVisible(false);
             progressSlider.progressProperty().bind(sliderProgress.valueProperty().divide(100.0));
             progressVol.progressProperty().bind(sliderVol.valueProperty().divide(100.0));
 
@@ -678,23 +685,34 @@ public class VARpediaController implements Initializable {
     private boolean error;
     Process p1;
 
-    private void initialiseSearchTab() {
+    private void newSearch() {
+        // Clean up for new search
+        deleteDirectory(TEMP);
+        deleteDirectory(CHUNKS);
+
         txaResults.setEditable(false);
         txaResults.clear();
         txaPreviewChunk1.clear();
         txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
-        txtSearch.clear();
         txtChunkName.clear();
         listChunksSearch.getItems().clear();
+
+        numChunks = 0;
+        error = false;
+    }
+
+    private void initialiseSearchTab() {
+        txtSearch.clear();
         ringSearch.setVisible(false);
 
         cboVoice.getItems().addAll("US Male", "New Zealand Male");
         cboVoice.getSelectionModel().selectFirst();
 
-        error = false;
         voicePitch = 1;
         voiceSpeed = 1;
         query = "";
+
+        newSearch();
     }
 
     // This method returns the text content of a chunk as a string
@@ -721,10 +739,10 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnSearchClicked(ActionEvent event) {
-        // Clean up for new search
-        deleteDirectory(TEMP);
-        deleteDirectory(CHUNKS);
-        error = false;
+        if (!txtSearch.getText().trim().isEmpty()) {
+            newSearch();
+            initialiseCombineTab();
+        }
 
         query = txtSearch.getText().trim().toLowerCase();
         if (!query.isEmpty()) {

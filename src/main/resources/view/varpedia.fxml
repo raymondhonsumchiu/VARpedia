@@ -64,74 +64,83 @@
                               <ListView fx:id="listCreations" onMouseClicked="#listCreationsClicked" prefHeight="685.0" prefWidth="690.0" BorderPane.alignment="CENTER" />
                            </left>
                            <center>
-                              <VBox fx:id="vMediaControls">
-                                 <children>
-                                    <Pane fx:id="mvPane" prefHeight="630.0" prefWidth="735.0">
-                                       <children>
-                                          <MediaView fx:id="mvPlayCreation" fitHeight="630.0" fitWidth="735.0" />
-                                       </children>
-                                       <VBox.margin>
-                                          <Insets />
-                                       </VBox.margin>
-                                    </Pane>
-                                    <HBox alignment="CENTER_LEFT" prefHeight="55.0" prefWidth="200.0" spacing="5.0">
-                                       <children>
-                                          <Button fx:id="btnReverse" mnemonicParsing="false" onAction="#btnReverseClicked" styleClass="button-media">
-                                             <graphic>
-                                                <ImageView id="image-view-back" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" rotate="180.0" styleClass="image-view-media" />
-                                             </graphic>
-                                          </Button>
-                                          <Button fx:id="btnPlayPause" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnPlayPauseClicked" styleClass="button-media">
-                                             <graphic>
-                                                <ImageView id="image-view-play-pause" fx:id="imgPlayPause" fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media">
-                                                   <image>
-                                                      <Image url="@../images" />
-                                                   </image>
-                                                </ImageView>
-                                             </graphic>
-                                          </Button>
-                                          <Button fx:id="btnForward" layoutX="70.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnForwardClicked" styleClass="button-media">
-                                             <graphic>
-                                                <ImageView id="image-view-forward" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media" />
-                                             </graphic>
-                                          </Button>
-                                          <Label fx:id="lblCurrentTime" alignment="CENTER_RIGHT" prefWidth="85.0">
-                                             <HBox.margin>
-                                                <Insets right="5.0" />
-                                             </HBox.margin>
-                                          </Label>
-                                          <StackPane>
-                                             <children>
-                                                <ProgressBar fx:id="progressSlider" prefWidth="200.0" progress="0.0" styleClass="progress-slider" />
-                                                <Slider fx:id="sliderProgress" styleClass="slider-progress" />
-                                             </children>
-                                          </StackPane>
-                                          <Label fx:id="lblTotalTime" prefWidth="85.0">
-                                             <HBox.margin>
-                                                <Insets left="5.0" />
-                                             </HBox.margin>
-                                          </Label>
-                                          <Button mnemonicParsing="false" onAction="#btnMuteClicked" styleClass="button-media">
-                                             <graphic>
-                                                <ImageView id="image-view-volume" fx:id="imgVolume" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media" />
-                                             </graphic>
-                                          </Button>
-                                          <StackPane prefWidth="100.0">
-                                             <children>
-                                                <ProgressBar fx:id="progressVol" prefWidth="100.0" progress="0.0" styleClass="progress-slider" />
-                                                <Slider fx:id="sliderVol" prefWidth="100.0" styleClass="slider-progress" />
-                                             </children>
-                                          </StackPane>
-                                       </children>
-                                       <padding>
-                                          <Insets top="5.0" />
-                                       </padding>
-                                    </HBox>
-                                 </children>
+                              <StackPane>
                                  <BorderPane.margin>
                                     <Insets left="5.0" />
                                  </BorderPane.margin>
-                              </VBox>
+                                 <children>
+                                    <VBox fx:id="vCreationsLabel" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" StackPane.alignment="CENTER">
+                                       <children>
+                                          <Label styleClass="#label-title" text="Play and delete creations here" />
+                                       </children>
+                                    </VBox>
+                                    <VBox fx:id="vMediaControls">
+                                       <children>
+                                          <Pane fx:id="mvPane" prefHeight="630.0" prefWidth="735.0">
+                                             <children>
+                                                <MediaView fx:id="mvPlayCreation" fitHeight="630.0" fitWidth="735.0" />
+                                             </children>
+                                             <VBox.margin>
+                                                <Insets />
+                                             </VBox.margin>
+                                          </Pane>
+                                          <HBox alignment="CENTER_LEFT" prefHeight="55.0" prefWidth="200.0" spacing="5.0">
+                                             <children>
+                                                <Button fx:id="btnReverse" mnemonicParsing="false" onAction="#btnReverseClicked" styleClass="button-media">
+                                                   <graphic>
+                                                      <ImageView id="image-view-back" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" rotate="180.0" styleClass="image-view-media" />
+                                                   </graphic>
+                                                </Button>
+                                                <Button fx:id="btnPlayPause" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnPlayPauseClicked" styleClass="button-media">
+                                                   <graphic>
+                                                      <ImageView id="image-view-play-pause" fx:id="imgPlayPause" fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media">
+                                                         <image>
+                                                            <Image url="@../images" />
+                                                         </image>
+                                                      </ImageView>
+                                                   </graphic>
+                                                </Button>
+                                                <Button fx:id="btnForward" layoutX="70.0" layoutY="10.0" mnemonicParsing="false" onAction="#btnForwardClicked" styleClass="button-media">
+                                                   <graphic>
+                                                      <ImageView id="image-view-forward" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media" />
+                                                   </graphic>
+                                                </Button>
+                                                <Label fx:id="lblCurrentTime" alignment="CENTER_RIGHT" prefWidth="85.0">
+                                                   <HBox.margin>
+                                                      <Insets right="5.0" />
+                                                   </HBox.margin>
+                                                </Label>
+                                                <StackPane>
+                                                   <children>
+                                                      <ProgressBar fx:id="progressSlider" prefWidth="200.0" progress="0.0" styleClass="progress-slider" />
+                                                      <Slider fx:id="sliderProgress" styleClass="slider-progress" />
+                                                   </children>
+                                                </StackPane>
+                                                <Label fx:id="lblTotalTime" prefWidth="85.0">
+                                                   <HBox.margin>
+                                                      <Insets left="5.0" />
+                                                   </HBox.margin>
+                                                </Label>
+                                                <Button mnemonicParsing="false" onAction="#btnMuteClicked" styleClass="button-media">
+                                                   <graphic>
+                                                      <ImageView id="image-view-volume" fx:id="imgVolume" fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-media" />
+                                                   </graphic>
+                                                </Button>
+                                                <StackPane prefWidth="100.0">
+                                                   <children>
+                                                      <ProgressBar fx:id="progressVol" prefWidth="100.0" progress="0.0" styleClass="progress-slider" />
+                                                      <Slider fx:id="sliderVol" prefWidth="100.0" styleClass="slider-progress" />
+                                                   </children>
+                                                </StackPane>
+                                             </children>
+                                             <padding>
+                                                <Insets top="5.0" />
+                                             </padding>
+                                          </HBox>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </StackPane>
                            </center>
                         </BorderPane>
                         <VBox fx:id="vCreationsEmpty" alignment="CENTER" spacing="5.0" visible="false">
