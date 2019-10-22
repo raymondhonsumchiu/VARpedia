@@ -2,6 +2,7 @@ package main.java.controllers;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -87,12 +88,16 @@ public class VARpediaController implements Initializable {
     private String query;
     private int numChunks;
 
+    @FXML private VBox vSearchResults;
+    @FXML private VBox vSearchChunks;
+    @FXML private HBox hSearchToolbar;
     @FXML private Button btnSearch;
-    @FXML private Label lblNumWords;
+    @FXML private Label lblWordCounter;
     @FXML private Button btnSearchFlickr;
     @FXML private ListView<String> listChunksSearch;
     @FXML private Button btnSearchPreviewChunk;
     @FXML private Button btnCreateChunk;
+    @FXML private Button btnCombine;
     @FXML private ComboBox cboVoice;
     @FXML private TextField txtSearch;
     @FXML private TextArea txaPreviewChunk1;
@@ -295,23 +300,36 @@ public class VARpediaController implements Initializable {
             }
         });
 
+        // Add listener to detect when chunks are created/removed
+        allChunkList.addListener((ListChangeListener<String>) change -> {
+            if (allChunkList.size() == 0) {
+                btnCombine.setDisable(true);
+                btnCombine.setDefaultButton(false);
+                btnCreateChunk.setDefaultButton(true);
+            } else {
+                btnCombine.setDisable(false);
+                btnCombine.setDefaultButton(true);
+                btnCreateChunk.setDefaultButton(false);
+            }
+        });
+
         // Add listener to results text area to display number of words selected
         txaResults.selectedTextProperty().addListener((t, ov, nv) -> {
             String text = txaResults.getSelectedText().trim();
             int numWords = text.length() - text.replaceAll("\\s", "").length();
             numWords = text.length() == 0 ? 0 : numWords + 1;
             if (numWords == 0) {
-                lblNumWords.setText("Select some words from above.");
-                lblNumWords.setStyle("-fx-text-fill: font-color");
+                lblWordCounter.setText("Select some words from above.");
+                lblWordCounter.setStyle("-fx-text-fill: font-color");
             } else if (numWords > 40) {
-                lblNumWords.setText("You have selected " + numWords + " words. Please select no more than 40.");
-                lblNumWords.setStyle("-fx-text-fill: close-color");
+                lblWordCounter.setText("You have selected " + numWords + " words. Please select no more than 40.");
+                lblWordCounter.setStyle("-fx-text-fill: close-color");
             } else if (numWords == 1) {
-                lblNumWords.setText("You have selected 1 word.");
-                lblNumWords.setStyle("-fx-text-fill: font-color");
+                lblWordCounter.setText("You have selected 1 word.");
+                lblWordCounter.setStyle("-fx-text-fill: font-color");
             } else {
-                lblNumWords.setText("You have selected " + numWords + " words.");
-                lblNumWords.setStyle("-fx-text-fill: font-color");
+                lblWordCounter.setText("You have selected " + numWords + " words.");
+                lblWordCounter.setStyle("-fx-text-fill: font-color");
             }
         });
 
@@ -697,6 +715,9 @@ public class VARpediaController implements Initializable {
         txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
         txtChunkName.clear();
         listChunksSearch.getItems().clear();
+        btnCombine.setDisable(true);
+        btnCombine.setDefaultButton(false);
+        btnCreateChunk.setDefaultButton(true);
 
         numChunks = 0;
         error = false;
@@ -705,6 +726,10 @@ public class VARpediaController implements Initializable {
     private void initialiseSearchTab() {
         txtSearch.clear();
         ringSearch.setVisible(false);
+
+        vSearchResults.setVisible(false);
+        vSearchChunks.setVisible(false);
+        hSearchToolbar.setVisible(false);
 
         cboVoice.getItems().addAll("US Male", "New Zealand Male");
         cboVoice.getSelectionModel().selectFirst();
@@ -762,6 +787,13 @@ public class VARpediaController implements Initializable {
             btnSearchFlickr.setDisable(true);
             ringSearch.setVisible(true);
 
+            vSearchResults.setVisible(true);
+            lblWordCounter.setVisible(false);
+            vSearchChunks.setVisible(true);
+            vSearchChunks.setDisable(true);
+            hSearchToolbar.setVisible(true);
+            hSearchToolbar.setDisable(true);
+
             fillGridImages(query);
 
             bgWikit.setOnSucceeded(e -> {
@@ -793,6 +825,9 @@ public class VARpediaController implements Initializable {
                     txaResults.requestFocus();
                     txaResults.positionCaret(0);
                     error = false;
+                    lblWordCounter.setVisible(true);
+                    vSearchChunks.setDisable(false);
+                    hSearchToolbar.setDisable(false);
                 }
             });
         }
@@ -1184,6 +1219,8 @@ public class VARpediaController implements Initializable {
         if (listAllChunks.getSelectionModel().getSelectedItem() != null) {
             selectedChunkList.removeAll(Collections.singleton(listAllChunks.getSelectionModel().getSelectedItem()));
             listAllChunks.getItems().remove(listAllChunks.getSelectionModel().getSelectedIndex());
+            txaPreviewChunk1.clear();
+            txaPreviewChunk2.clear();
         }
     }
 
@@ -1385,11 +1422,6 @@ public class VARpediaController implements Initializable {
                 selectedImgs.add(img);
             }
             index++;
-        }
-
-        // Check if all imgs correct
-        for (String path : selectedImgs) {
-            System.out.println(path);
         }
 
         // Extensive error checking

@@ -22,13 +22,13 @@ public class PrevCombineTask extends Task<Void> {
         this.listImages = listImages;
         this.numImages = listImages.size();
 
-        if (music.equals("Funny Piano")){
+        if (music.equals("Funny Piano")) {
             this.music = "funny_piano.mp3";
-        }else if(music.equals("Happy Piano")){
+        } else if (music.equals("Happy Piano")) {
             this.music = "happy_piano.mp3";
-        }else if(music.equals("Groovy Music")){
+        } else if (music.equals("Groovy Music")) {
             this.music = "groovy_music.mp3";
-        }else{
+        } else {
             this.music = null;
         }
     }
@@ -44,12 +44,11 @@ public class PrevCombineTask extends Task<Void> {
         SELIMGS.mkdir();
 
         //move a copy of all selected images to a new directory
-        for (String img: listImages) {
+        for (String img : listImages) {
             ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "cp " + TEMPIMGS.toString() + img + " " + SELIMGS.toString() + img);
             Process p1 = b1.start();
             p1.waitFor();
         }
-        System.out.println("all imgs moved");
 
         ProcessBuilder b2 = new ProcessBuilder("/bin/bash", "-c", "rm -f prevCreation.mp4 temp.mp4 temp.wav temp1.mp4 temp1.mp3");
         b2.directory(TEMP);
@@ -65,7 +64,6 @@ public class PrevCombineTask extends Task<Void> {
         b5.directory(CHUNKS);
         Process p5 = b5.start();
         p5.waitFor();
-        System.out.println("chunks combined");
 
         // Get length of audio file
         ProcessBuilder b6 = new ProcessBuilder("/bin/bash", "-c", "soxi -D temp.wav");
@@ -78,13 +76,11 @@ public class PrevCombineTask extends Task<Void> {
 
         //add bg music into chunk file
         String audFile = "temp.wav";
-        if(music != null) {
-            System.out.println("start music add");
+        if (music != null) {
             ProcessBuilder bm = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i temp.wav -i ../src/main/resources/music/" + music + " -filter_complex amerge -ac 2 -c:a libmp3lame -q:a 4 temp1.mp3");
             bm.directory(TEMP);
             Process pm = bm.start();
             pm.waitFor();
-            System.out.println("music added");
             audFile = "temp1.mp3";
         }
 
@@ -96,14 +92,12 @@ public class PrevCombineTask extends Task<Void> {
         b7.directory(SELIMGS);
         Process p7 = b7.start();
         p7.waitFor();
-        System.out.println("slideshow made");
 
         // Merge video with audio for the final Creation
         ProcessBuilder b8 = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i temp.mp4 -i " + audFile + " -c:v copy -c:a aac -strict experimental temp1.mp4");
         b8.directory(TEMP);
         Process p8 = b8.start();
         p8.waitFor();
-        System.out.println("merged");
 
         // Add text overlay to vid
         ProcessBuilder b9 = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i ../temp/temp1.mp4 -vf drawtext=\"fontfile=../../resources/fonts/Questrial-Regular.ttf: text='" + query + "': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2\" -codec:a copy " + name + ".mp4");

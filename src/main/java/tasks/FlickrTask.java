@@ -58,10 +58,9 @@ public class FlickrTask extends Task<Integer> {
                     // Downloads images into temp directory
                     File outputfile = new File(TEMPIMGS.toString(),filename);
                     ImageIO.write(image, "jpg", outputfile);
-                    System.out.println(filename + " downloaded");
                     i++;
                 } catch (FlickrException fe) {
-                    System.err.println("Ignoring image " + photo.getId() + ": " + fe.getMessage());
+/*                    System.err.println("Ignoring image " + photo.getId() + ": " + fe.getMessage());*/
                 }
             }
         } catch (Exception e) {

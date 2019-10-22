@@ -50,7 +50,6 @@ public class CombineTask extends Task<Void> {
             Process p1 = b1.start();
             p1.waitFor();
         }
-        System.out.println("all imgs moved");
 
         //Clean up any leftover files
         ProcessBuilder b2 = new ProcessBuilder("/bin/bash", "-c", "rm -f prevCreation.mp4 temp.mp4 temp.wav temp1.mp4 temp1.mp3");
@@ -67,7 +66,6 @@ public class CombineTask extends Task<Void> {
         b5.directory(CHUNKS);
         Process p5 = b5.start();
         p5.waitFor();
-        System.out.println("chunks combined");
 
         // Get length of audio file
         ProcessBuilder b6 = new ProcessBuilder("/bin/bash", "-c", "soxi -D temp.wav");
@@ -81,12 +79,10 @@ public class CombineTask extends Task<Void> {
         //add bg music into chunk file
         String audFile = "temp.wav";
         if(music != null) {
-            System.out.println("start music add");
             ProcessBuilder bm = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i temp.wav -i ../src/main/resources/music/" + music + " -filter_complex amerge -ac 2 -c:a libmp3lame -q:a 4 temp1.mp3");
             bm.directory(TEMP);
             Process pm = bm.start();
             pm.waitFor();
-            System.out.println("music added");
             audFile = "temp1.mp3";
         }
 
@@ -98,14 +94,12 @@ public class CombineTask extends Task<Void> {
         b7.directory(SELIMGS);
         Process p7 = b7.start();
         p7.waitFor();
-        System.out.println("slideshow made");
 
         // Merge video with audio for the final Creation
         ProcessBuilder b8 = new ProcessBuilder("/bin/bash", "-c", "ffmpeg -i temp.mp4 -i " + audFile + " -c:v copy -c:a aac -strict experimental temp1.mp4");
         b8.directory(TEMP);
         Process p8 = b8.start();
         p8.waitFor();
-        System.out.println("merged");
 
         File NEWCREATION = new File(CREATIONS.toString() + "/" + name);
         NEWCREATION.mkdirs();
@@ -124,7 +118,6 @@ public class CombineTask extends Task<Void> {
 
         //create 20sec video
         frameRate = (double) numImages / 20;
-        System.out.println(frameRate);
         String quizVidCmd = "cat *.jpg | ffmpeg -f image2pipe -framerate " + frameRate + " -i - -t 20 -c:v libx264 -pix_fmt yuv420p -vf \"scale=w=800:h=800:force_original_aspect_ratio=1,pad=800:800:(ow-iw)/2:(oh-ih)/2\" -r 25 -max_muxing_queue_size 1024 -y " + "../../Creations/" + name + "/" + "video.mp4";
         ProcessBuilder b11 = new ProcessBuilder("/bin/bash", "-c", quizVidCmd);
         b11.directory(SELIMGS);
