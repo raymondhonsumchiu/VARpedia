@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox prefHeight="600.0" prefWidth="500.0" spacing="5.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.java.controllers.HelpController">
+   <children>
+      <StackPane VBox.vgrow="ALWAYS">
+         <VBox.margin>
+            <Insets left="5.0" right="5.0" />
+         </VBox.margin>
+         <children>
+            <VBox alignment="CENTER_LEFT" spacing="5.0">
+               <children>
+                  <Label styleClass="label-title" text="Creating a chunk">
+                     <VBox.margin>
+                        <Insets left="10.0" />
+                     </VBox.margin>
+                  </Label>
+                  <TextArea fx:id="txaHelpChunk" editable="false" text="1. Search for a term in the search bar.&#10;2. Highlight between 0 - 40 words&#10;3. (Optional) edit the text&#10;4. (Optional) name the chunk in the text field at the bottom left&#10;5. Select a voice for the chunk from the dropdown&#10;6. (Optional) adjust voice pitch and speed using the button with the gear icon&#10;7. (Optional) preview the current state of the chunk by clicking “preview”&#10;8. If you are satisfied with the chunk, click create to make it!&#10;" wrapText="true" VBox.vgrow="ALWAYS" />
+               </children>
+               <StackPane.margin>
+                  <Insets top="5.0" />
+               </StackPane.margin>
+            </VBox>
+            <VBox alignment="CENTER_LEFT" spacing="5.0" visible="false">
+               <children>
+                  <Label styleClass="label-title" text="Creating a creation">
+                     <VBox.margin>
+                        <Insets left="10.0" />
+                     </VBox.margin>
+                  </Label>
+                  <TextArea fx:id="txaHelpChunk1" editable="false" text="1. Select chunks by clicking --&gt; to add the chunk to the audio list. If you want to remove a chunk, just select it and click &lt;--&#10;2. Select some images from the grid by clicking the ones you want in the creation. Click them again to remove them.&#10;3. Select your background music preference from the music dropdown.&#10;4. Name your creation with the text field at the bottom left.&#10;5. (Optional) you can preview the current state of the creation by clicking “preview creation”.&#10;6. Once you are happy with the creation, click “create” at the bottom left.&#10;7. After the creation is made, a pop-up will appear. Click “No” to keep the current chunks or “Yes” to clear them and start anew." wrapText="true" VBox.vgrow="ALWAYS" />
+               </children>
+               <StackPane.margin>
+                  <Insets top="5.0" />
+               </StackPane.margin>
+            </VBox>
+            <VBox alignment="CENTER_LEFT" spacing="5.0" visible="false">
+               <children>
+                  <Label styleClass="label-title" text="Playing and deleting creations">
+                     <VBox.margin>
+                        <Insets left="10.0" />
+                     </VBox.margin>
+                  </Label>
+                  <TextArea fx:id="txaHelpChunk2" editable="false" text="Playing:&#10;&#10;1. On the Creations tab, select the creation you wish to play and the video should appear on the right.&#10;2. Now you can click play to start the video&#10;3. (Optional) Play around with the media controls (fast forward, reverse, volume)&#10;&#10;Deleting:&#10;&#10;1. Select the creation to delete&#10;2. Click the delete button at the bottom right.&#10;3. A pop-up will appear asking for confirmation of the deletion, click “Yes” to fully delete the creation or “No” to cancel the deletion." wrapText="true" VBox.vgrow="ALWAYS" />
+               </children>
+               <StackPane.margin>
+                  <Insets top="5.0" />
+               </StackPane.margin>
+            </VBox>
+            <VBox alignment="CENTER_LEFT" spacing="5.0" visible="false">
+               <children>
+                  <Label styleClass="label-title" text="Quiz">
+                     <VBox.margin>
+                        <Insets left="10.0" />
+                     </VBox.margin>
+                  </Label>
+                  <TextArea fx:id="txaHelpChunk3" editable="false" text="0. Make sure you have made some creations.&#10;1. Select a difficulty from Easy, Medium and Hard&#10;2. Click begin to start the quiz&#10;3. Enter your guesses of the search term into the text field at the bottom of the page and click “Submit” to enter your answer.&#10;4. Click “Next” to go to the next question, or “Finish” to end the quiz.&#10;5. Reset the quiz by clicking “Reset” at the top left at any time." wrapText="true" VBox.vgrow="ALWAYS" />
+               </children>
+               <StackPane.margin>
+                  <Insets top="5.0" />
+               </StackPane.margin>
+            </VBox>
+         </children>
+      </StackPane>
+      <HBox alignment="CENTER_RIGHT" prefHeight="55.0">
+         <VBox.margin>
+            <Insets bottom="5.0" right="5.0" />
+         </VBox.margin>
+         <children>
+            <Button defaultButton="true" mnemonicParsing="false" onAction="#btnHelpOkClicked" text="Ok" />
+         </children>
+      </HBox>
+   </children>
+</VBox>

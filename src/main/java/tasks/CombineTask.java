@@ -131,7 +131,7 @@ public class CombineTask extends Task<Void> {
         p12.waitFor();
 
         //Add text file for term.txt so that quiz can compare answers to real term
-        ProcessBuilder b13 = new ProcessBuilder("/bin/bash", "-c", "touch " + query + ".txt");
+        ProcessBuilder b13 = new ProcessBuilder("/bin/bash", "-c", "touch " + query.replaceAll("\\s+", "_") + ".txt");
         b13.directory(NEWCREATION);
         Process p13 = b13.start();
         p13.waitFor();

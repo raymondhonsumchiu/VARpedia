@@ -115,6 +115,7 @@ public class VARpediaController implements Initializable {
     private MediaPlayer playerPreview;
     private Duration durationPreview;
 
+    @FXML private BorderPane bpCombine;
     @FXML private Button btnClearSelected;
     @FXML private ListView<String> listAllChunks;
     @FXML private Button btnPreviewChunkCombine;
@@ -307,13 +308,21 @@ public class VARpediaController implements Initializable {
         // Add listener to detect when chunks are created/removed
         allChunkList.addListener((ListChangeListener<String>) change -> {
             if (allChunkList.size() == 0) {
+                // Disable controls on the Search tab
                 btnCombine.setDisable(true);
                 btnCombine.setDefaultButton(false);
                 btnCreateChunk.setDefaultButton(true);
+
+                // Disable controls on the Combine tab
+                bpCombine.setDisable(true);
             } else {
+                // Enable controls on the Search tab
                 btnCombine.setDisable(false);
                 btnCombine.setDefaultButton(true);
                 btnCreateChunk.setDefaultButton(false);
+
+                // Enable controls on the Combine tab
+                bpCombine.setDisable(false);
             }
         });
 
@@ -394,8 +403,8 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnHelpClicked(ActionEvent event) {
-
+    void btnHelpClicked(ActionEvent event) throws IOException {
+        loadFXMLPopUp("../../resources/view/help.fxml", 500, 600);
     }
 
     @FXML
@@ -843,28 +852,7 @@ public class VARpediaController implements Initializable {
     void btnVoiceOptionClicked(ActionEvent event) throws IOException {
         // Load a separate pop-up stage for the pitch/speed options
         if (btnSearchPreviewChunk.getText().equals("Stop")) { btnSearchPreviewChunk.fire(); }
-        Parent root = FXMLLoader.load(getClass().getResource("../../resources/view/voiceoptions.fxml"));
-
-        if (stage != null) {stage.close();}
-        stage = new Stage();
-        stage.initStyle(StageStyle.UNDECORATED);
-        stage.setResizable(false);
-
-        root.setOnMousePressed(e -> {
-            xOffset = e.getSceneX();
-            yOffset = e.getSceneY();
-        });
-
-        root.setOnMouseDragged(e -> {
-            stage.setX(e.getScreenX() - xOffset);
-            stage.setY(e.getScreenY() - yOffset);
-        });
-
-        Scene scene = new Scene(root, 500, 240);
-        scene.getStylesheets().add(css);
-        stage.setScene(scene);
-        stage.show();
-
+        loadFXMLPopUp("../../resources/view/voiceoptions.fxml", 500, 240);
     }
 
     @FXML
@@ -1103,6 +1091,7 @@ public class VARpediaController implements Initializable {
         listSelectedChunks.setItems(selectedChunkList);
 
         // Hide components and reset text
+        bpCombine.setDisable(true);
         ringCombine.setVisible(false);
         ringImages.setVisible(false);
         vPreview.setVisible(false);
@@ -1745,7 +1734,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnQuizSubmitClicked(ActionEvent event) {
-        if (txtQuizAnswer.getText().trim().equalsIgnoreCase(currentAnswer)) {
+        if (txtQuizAnswer.getText().trim().replaceAll("\\s+","_").equalsIgnoreCase(currentAnswer)) {
             // If the answer is correct, show the "correct" pane
             lblQuizAnswer.setText("Answer:");
             lblQuizAnswer.setStyle("-fx-text-fill: font-color");
@@ -1846,6 +1835,31 @@ public class VARpediaController implements Initializable {
     }
 
     // -----------------------------------------------------------------------------------------------------
+
+    // Loads an FXML file as a pop-up
+    private void loadFXMLPopUp(String fxmlPath, int width, int height) throws IOException {
+        Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+
+        if (stage != null) {stage.close();}
+        stage = new Stage();
+        stage.initStyle(StageStyle.UNDECORATED);
+        stage.setResizable(false);
+
+        root.setOnMousePressed(e -> {
+            xOffset = e.getSceneX();
+            yOffset = e.getSceneY();
+        });
+
+        root.setOnMouseDragged(e -> {
+            stage.setX(e.getScreenX() - xOffset);
+            stage.setY(e.getScreenY() - yOffset);
+        });
+
+        Scene scene = new Scene(root, width, height);
+        scene.getStylesheets().add(css);
+        stage.setScene(scene);
+        stage.show();
+    }
 }
 
 /**
