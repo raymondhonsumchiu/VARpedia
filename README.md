@@ -1,7 +1,7 @@
 # se206VARpedia
 SE206 2019 Design Project
 
-Beta version of VARPedia - a multimedia interface to Wikipedia.
+VARPedia - a multimedia interface to Wikipedia.
 
 Easy-to-run method (WORKS ON VIRTUAL BOX WITH JAVA 13 / JAVAFX 13)
 

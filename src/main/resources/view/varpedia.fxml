@@ -164,6 +164,11 @@
                <content>
                   <StackPane>
                      <children>
+                        <VBox fx:id="vSearchText" alignment="CENTER" spacing="5.0" visible="false">
+                           <children>
+                              <Label styleClass="label-title" text="Search for a term above." />
+                           </children>
+                        </VBox>
                         <BorderPane>
                            <top>
                               <HBox prefHeight="55.0" prefWidth="600.0" spacing="5.0" BorderPane.alignment="CENTER">
@@ -295,11 +300,6 @@
                               </HBox>
                            </bottom>
                         </BorderPane>
-                        <VBox fx:id="vSearchText" alignment="CENTER" spacing="5.0" visible="false">
-                           <children>
-                              <Label styleClass="label-title" text="Search for a term above." />
-                           </children>
-                        </VBox>
                      </children>
                   </StackPane>
                </content>
