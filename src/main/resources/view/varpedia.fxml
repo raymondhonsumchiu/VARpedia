@@ -162,135 +162,146 @@
           </Tab>
           <Tab closable="false" text="Search">
                <content>
-                  <BorderPane>
-                     <top>
-                        <HBox prefHeight="55.0" prefWidth="600.0" spacing="5.0" BorderPane.alignment="CENTER">
-                           <children>
-                              <ImageView fitHeight="30.0" fitWidth="30.0" opacity="0.7" pickOnBounds="true" preserveRatio="true">
-                                 <HBox.margin>
-                                    <Insets left="7.0" right="5.0" top="10.0" />
-                                 </HBox.margin>
-                                 <image>
-                                    <Image url="@../images/search.png" />
-                                 </image>
-                              </ImageView>
-                              <TextField fx:id="txtSearch" onAction="#txtSearchEnter" prefHeight="50.0" promptText="Search Wikipedia!" HBox.hgrow="ALWAYS">
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                                 <padding>
-                                    <Insets left="30.0" />
-                                 </padding>
-                              </TextField>
-                              <Button fx:id="btnSearch" defaultButton="true" mnemonicParsing="false" onAction="#btnSearchClicked" prefHeight="50.0" prefWidth="160.0" text="Search">
-                                 <HBox.margin>
-                                    <Insets left="5.0" right="5.0" />
-                                 </HBox.margin>
-                              </Button>
-                           </children>
-                           <BorderPane.margin>
-                              <Insets top="5.0" />
-                           </BorderPane.margin>
-                           <padding>
-                              <Insets bottom="5.0" />
-                           </padding>
-                        </HBox>
-                     </top>
-                     <padding>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </padding>
-                     <center>
-                        <VBox fx:id="vSearchResults" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
-                           <children>
-                              <Label text="Results">
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" />
-                                 </VBox.margin>
-                              </Label>
-                              <TextArea fx:id="txaResults" onDragDetected="#txaResultsDragged" onMouseClicked="#txaResultsDragged" wrapText="true" VBox.vgrow="ALWAYS" />
-                              <HBox alignment="CENTER_LEFT" prefHeight="35.0" prefWidth="200.0">
+                  <StackPane>
+                     <children>
+                        <BorderPane>
+                           <top>
+                              <HBox prefHeight="55.0" prefWidth="600.0" spacing="5.0" BorderPane.alignment="CENTER">
                                  <children>
-                                    <Label fx:id="lblWordCounter" text="Select some text from above." />
-                                 </children>
-                                 <padding>
-                                    <Insets bottom="5.0" left="5.0" top="5.0" />
-                                 </padding>
-                              </HBox>
-                           </children>
-                           <BorderPane.margin>
-                              <Insets right="2.0" />
-                           </BorderPane.margin>
-                        </VBox>
-                     </center>
-                     <right>
-                        <VBox fx:id="vSearchChunks" prefHeight="968.0" prefWidth="490.0" BorderPane.alignment="CENTER">
-                           <children>
-                              <Label text="Chunks">
-                                 <VBox.margin>
-                                    <Insets bottom="5.0" left="5.0" />
-                                 </VBox.margin>
-                              </Label>
-                              <ListView fx:id="listChunksSearch" onMouseClicked="#listChunksSearchClicked" prefHeight="226.0" prefWidth="500.0" VBox.vgrow="ALWAYS" />
-                              <TextArea fx:id="txaPreviewChunk1" editable="false" prefHeight="200.0" prefWidth="200.0" promptText="Preview chunk text" wrapText="true">
-                                 <VBox.margin>
-                                    <Insets top="2.0" />
-                                 </VBox.margin></TextArea>
-                           </children>
-                           <BorderPane.margin>
-                              <Insets />
-                           </BorderPane.margin>
-                        </VBox>
-                     </right>
-                     <bottom>
-                        <HBox fx:id="hSearchToolbar" alignment="CENTER" spacing="5.0" BorderPane.alignment="CENTER">
-                           <children>
-                              <RingProgressIndicator fx:id="ringSearch" maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" prefHeight="50.0" prefWidth="50.0" progress="-1">
-                                 <HBox.margin>
-                                    <Insets left="5.0" right="5.0" />
-                                 </HBox.margin></RingProgressIndicator>
-                              <Label text="Chunk name:">
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                              </Label>
-                              <TextField fx:id="txtChunkName" onAction="#txtChunkEnter" prefHeight="50.0" prefWidth="320.0" promptText="Name" HBox.hgrow="ALWAYS">
-                                 <padding>
-                                    <Insets left="30.0" />
-                                 </padding>
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                              </TextField>
-                              <Button mnemonicParsing="false" onAction="#btnVoiceOptionClicked" prefHeight="50.0" prefWidth="50.0" styleClass="button-square">
-                                 <graphic>
-                                    <ImageView fitHeight="30.0" fitWidth="30.0" opacity="0.6" pickOnBounds="true" preserveRatio="true">
+                                    <ImageView fitHeight="30.0" fitWidth="30.0" opacity="0.7" pickOnBounds="true" preserveRatio="true">
+                                       <HBox.margin>
+                                          <Insets left="7.0" right="5.0" top="10.0" />
+                                       </HBox.margin>
                                        <image>
-                                          <Image url="@../images/options.png" />
+                                          <Image url="@../images/search.png" />
                                        </image>
                                     </ImageView>
-                                 </graphic>
-                              </Button>
-                              <ComboBox fx:id="cboVoice" prefHeight="50.0" prefWidth="320.0" promptText="Select a voice" styleClass="combo-long" visibleRowCount="5">
+                                    <TextField fx:id="txtSearch" onAction="#txtSearchEnter" prefHeight="50.0" promptText="Search Wikipedia!" HBox.hgrow="ALWAYS">
+                                       <HBox.margin>
+                                          <Insets />
+                                       </HBox.margin>
+                                       <padding>
+                                          <Insets left="30.0" />
+                                       </padding>
+                                    </TextField>
+                                    <Button fx:id="btnSearch" defaultButton="true" mnemonicParsing="false" onAction="#btnSearchClicked" prefHeight="50.0" prefWidth="160.0" text="Search">
+                                       <HBox.margin>
+                                          <Insets left="5.0" right="5.0" />
+                                       </HBox.margin>
+                                    </Button>
+                                 </children>
+                                 <BorderPane.margin>
+                                    <Insets top="5.0" />
+                                 </BorderPane.margin>
                                  <padding>
-                                    <Insets left="5.0" />
+                                    <Insets bottom="5.0" />
                                  </padding>
-                                 <HBox.margin>
-                                    <Insets />
-                                 </HBox.margin>
-                              </ComboBox>
-                              <Button fx:id="btnSearchPreviewChunk" mnemonicParsing="false" onAction="#btnPreviewChunkClicked" prefHeight="50.0" prefWidth="160.0" text="Preview" />
-                              <Button fx:id="btnCreateChunk" mnemonicParsing="false" onAction="#btnCreateChunkClicked" prefHeight="50.0" prefWidth="160.0" text="Create" />
-                              <Button fx:id="btnCombine" mnemonicParsing="false" onAction="#btnCombineClicked" prefHeight="50.0" prefWidth="160.0" text="Next" />
-                           </children>
-                           <BorderPane.margin>
-                              <Insets />
-                           </BorderPane.margin>
+                              </HBox>
+                           </top>
                            <padding>
-                              <Insets top="5.0" />
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                            </padding>
-                        </HBox>
-                     </bottom>
-                  </BorderPane>
+                           <center>
+                              <VBox fx:id="vSearchResults" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+                                 <children>
+                                    <Label text="Results">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="5.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <TextArea fx:id="txaResults" onDragDetected="#txaResultsDragged" onMouseClicked="#txaResultsDragged" wrapText="true" VBox.vgrow="ALWAYS" />
+                                    <HBox alignment="CENTER_LEFT" prefHeight="35.0" prefWidth="200.0">
+                                       <children>
+                                          <Label fx:id="lblWordCounter" text="Select some text from above." />
+                                       </children>
+                                       <padding>
+                                          <Insets bottom="5.0" left="5.0" top="5.0" />
+                                       </padding>
+                                    </HBox>
+                                 </children>
+                                 <BorderPane.margin>
+                                    <Insets right="2.0" />
+                                 </BorderPane.margin>
+                              </VBox>
+                           </center>
+                           <right>
+                              <VBox fx:id="vSearchChunks" prefHeight="968.0" prefWidth="490.0" BorderPane.alignment="CENTER">
+                                 <children>
+                                    <Label text="Chunks">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" left="5.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <ListView fx:id="listChunksSearch" onMouseClicked="#listChunksSearchClicked" prefHeight="226.0" prefWidth="500.0" VBox.vgrow="ALWAYS" />
+                                    <TextArea fx:id="txaPreviewChunk1" editable="false" prefHeight="200.0" prefWidth="200.0" promptText="Preview chunk text" wrapText="true">
+                                       <VBox.margin>
+                                          <Insets top="2.0" />
+                                       </VBox.margin>
+                                    </TextArea>
+                                 </children>
+                                 <BorderPane.margin>
+                                    <Insets />
+                                 </BorderPane.margin>
+                              </VBox>
+                           </right>
+                           <bottom>
+                              <HBox fx:id="hSearchToolbar" alignment="CENTER" spacing="5.0" BorderPane.alignment="CENTER">
+                                 <children>
+                                    <RingProgressIndicator fx:id="ringSearch" maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" prefHeight="50.0" prefWidth="50.0" progress="-1">
+                                       <HBox.margin>
+                                          <Insets left="5.0" right="5.0" />
+                                       </HBox.margin>
+                                    </RingProgressIndicator>
+                                    <Label text="Chunk name:">
+                                       <HBox.margin>
+                                          <Insets />
+                                       </HBox.margin>
+                                    </Label>
+                                    <TextField fx:id="txtChunkName" onAction="#txtChunkEnter" prefHeight="50.0" prefWidth="320.0" promptText="Name" HBox.hgrow="ALWAYS">
+                                       <padding>
+                                          <Insets left="30.0" />
+                                       </padding>
+                                       <HBox.margin>
+                                          <Insets />
+                                       </HBox.margin>
+                                    </TextField>
+                                    <Button mnemonicParsing="false" onAction="#btnVoiceOptionClicked" prefHeight="50.0" prefWidth="50.0" styleClass="button-square">
+                                       <graphic>
+                                          <ImageView fitHeight="30.0" fitWidth="30.0" opacity="0.6" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../images/options.png" />
+                                             </image>
+                                          </ImageView>
+                                       </graphic>
+                                    </Button>
+                                    <ComboBox fx:id="cboVoice" prefHeight="50.0" prefWidth="320.0" promptText="Select a voice" styleClass="combo-long" visibleRowCount="5">
+                                       <padding>
+                                          <Insets left="5.0" />
+                                       </padding>
+                                       <HBox.margin>
+                                          <Insets />
+                                       </HBox.margin>
+                                    </ComboBox>
+                                    <Button fx:id="btnSearchPreviewChunk" mnemonicParsing="false" onAction="#btnPreviewChunkClicked" prefHeight="50.0" prefWidth="160.0" text="Preview" />
+                                    <Button fx:id="btnCreateChunk" mnemonicParsing="false" onAction="#btnCreateChunkClicked" prefHeight="50.0" prefWidth="160.0" text="Create" />
+                                    <Button fx:id="btnCombine" mnemonicParsing="false" onAction="#btnCombineClicked" prefHeight="50.0" prefWidth="160.0" text="Next" />
+                                 </children>
+                                 <BorderPane.margin>
+                                    <Insets />
+                                 </BorderPane.margin>
+                                 <padding>
+                                    <Insets top="5.0" />
+                                 </padding>
+                              </HBox>
+                           </bottom>
+                        </BorderPane>
+                        <VBox fx:id="vSearchText" alignment="CENTER" spacing="5.0" visible="false">
+                           <children>
+                              <Label styleClass="label-title" text="Search for a term above." />
+                           </children>
+                        </VBox>
+                     </children>
+                  </StackPane>
                </content>
           </Tab>
             <Tab text="Combine">

@@ -88,6 +88,7 @@ public class VARpediaController implements Initializable {
     private String query;
     private int numChunks;
 
+    @FXML private VBox vSearchText;
     @FXML private VBox vSearchResults;
     @FXML private VBox vSearchChunks;
     @FXML private HBox hSearchToolbar;
@@ -730,6 +731,7 @@ public class VARpediaController implements Initializable {
         txtSearch.clear();
         ringSearch.setVisible(false);
 
+        vSearchText.setVisible(true);
         vSearchResults.setVisible(false);
         vSearchChunks.setVisible(false);
         hSearchToolbar.setVisible(false);
@@ -790,6 +792,7 @@ public class VARpediaController implements Initializable {
             btnSearchFlickr.setDisable(true);
             ringSearch.setVisible(true);
 
+            vSearchText.setVisible(false);
             vSearchResults.setVisible(true);
             lblWordCounter.setVisible(false);
             vSearchChunks.setVisible(true);
