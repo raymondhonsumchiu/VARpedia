@@ -110,7 +110,7 @@ public class VARpediaController implements Initializable {
     private List<ToggleButton> gridToggles;
     private ObservableList<String> allChunkList = FXCollections.observableArrayList();
     private ObservableList<String> selectedChunkList = FXCollections.observableArrayList();
-    private ArrayList<String> selectedImgs;
+    private ArrayList<String> imagePaths;
     private MediaPlayer playerPreview;
     private Duration durationPreview;
 
@@ -1087,7 +1087,7 @@ public class VARpediaController implements Initializable {
     Future flickrFuture;
 
     private void initialiseCombineTab() {
-        selectedImgs = new ArrayList<String>();
+        imagePaths = new ArrayList<String>();
         gridImageViews = new ArrayList<>();
         gridToggles = new ArrayList<>();
         Collections.addAll(gridImageViews, imgGrid1, imgGrid2, imgGrid3, imgGrid4, imgGrid5, imgGrid6, imgGrid7, imgGrid8, imgGrid9, imgGrid10, imgGrid11, imgGrid12);
@@ -1172,7 +1172,7 @@ public class VARpediaController implements Initializable {
                             imgView.setImage(image);
 
                             // Add image path to arraylist so it can be extracted later for creation
-                            selectedImgs.add("/" + imgCount + ".jpg");
+                            imagePaths.add("/" + imgCount + ".jpg");
                             imgCount++;
                         }
                     }
@@ -1275,7 +1275,7 @@ public class VARpediaController implements Initializable {
             int index = 0;
             for (ToggleButton imgButton : gridToggles) {
                 if (imgButton.isSelected()) {
-                    String img = this.selectedImgs.get(index);
+                    String img = this.imagePaths.get(index);
                     selectedImgs.add(img);
                 }
                 index++;
@@ -1374,13 +1374,13 @@ public class VARpediaController implements Initializable {
     }
 
     // Helper method for actually making the creation
-    private void makeCreation(String creationName) {
+    private void makeCreation(String creationName, ArrayList<String> images) {
         txaPreviewChunk2.clear();
         txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
 
         // Create creation in a background thread
         String musicChoice = cboMusic.getValue().toString();
-        CombineTask bgCreate = new CombineTask(creationName, query, selectedChunkList, selectedImgs, musicChoice);
+        CombineTask bgCreate = new CombineTask(creationName, query, selectedChunkList, images, musicChoice);
         bg.submit(bgCreate);
 
         // Disable components for safety
@@ -1422,7 +1422,7 @@ public class VARpediaController implements Initializable {
         int index = 0;
         for (ToggleButton imgButton : gridToggles) {
             if (imgButton.isSelected()) {
-                String img = this.selectedImgs.get(index);
+                String img = this.imagePaths.get(index);
                 selectedImgs.add(img);
             }
             index++;
@@ -1454,13 +1454,13 @@ public class VARpediaController implements Initializable {
             alert.setResizable(false);
             if (alert.showAndWait().get() == btnYes) {
                 deleteDirectory(new File(CREATIONS.toString() + "/" + creationName));
-                makeCreation(creationName);
+                makeCreation(creationName, selectedImgs);
             } else {
                 txtCreationName.selectAll();
                 txtCreationName.requestFocus();
             }
         } else {
-            makeCreation(creationName);
+            makeCreation(creationName, selectedImgs);
         }
 
     }
