@@ -225,13 +225,16 @@ public class VARpediaController implements Initializable {
                 playerPreview.stop();
                 vPreview.setVisible(false);
                 txaPreviewChunk2.setVisible(true);
-            }
+            } // Stop chunk preview on tab change
             if (btnSearchPreviewChunk.getText().equals("Stop")) {
                 btnSearchPreviewChunk.fire();
             } // Stop chunk preview on tab change
             if (btnPreviewChunkCombine.getText().equals("Stop")) {
                 btnPreviewChunkCombine.fire();
-            } // Stop chunk preview on tab change
+            } // Stop creation preview on tab change
+            if (btnPreviewCreation.getText().equals("Stop")) {
+                btnPreviewCreation.fire();
+            }
             int tab = tabMain.getSelectionModel().getSelectedIndex();
             if (tab == 0) {
                 // Refresh list of creations, but also resets media player.
@@ -998,7 +1001,7 @@ public class VARpediaController implements Initializable {
                 // Handle default chunk name
                 numChunks++;
                 if (chunkName.isEmpty()) {
-                    chunkName = query + numChunks;
+                    chunkName = query.replaceAll("\\s+", "") + numChunks;
                 }
 
                 // Create new chunk's directory
@@ -1178,6 +1181,7 @@ public class VARpediaController implements Initializable {
                     // If an exception is thrown or no images are found
                     vImages.setVisible(false);
                     hFlickrSearch.setDisable(false);
+                    btnSearchFlickr.setDisable(false);
                     ringImages.setVisible(false);
                     vNoImages.setVisible(true);
                     deleteDirectory(TEMPIMGS);

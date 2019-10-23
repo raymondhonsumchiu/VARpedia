@@ -50,6 +50,7 @@ public class PrevCombineTask extends Task<Void> {
             p1.waitFor();
         }
 
+        //Clean up any leftover files
         ProcessBuilder b2 = new ProcessBuilder("/bin/bash", "-c", "rm -f prevCreation.mp4 temp.mp4 temp.wav temp1.mp4 temp1.mp3");
         b2.directory(TEMP);
         Process p2 = b2.start();
@@ -85,7 +86,7 @@ public class PrevCombineTask extends Task<Void> {
         }
 
         // Create video slideshow and send output to TEMP
-        double frameRate = (double) numImages / 20;
+        double frameRate = (double) numImages / length;
 
         String vidCmd = "cat *.jpg | ffmpeg -f image2pipe -framerate " + frameRate + " -i - -t " + length + " -c:v libx264 -pix_fmt yuv420p -vf \"scale=w=800:h=800:force_original_aspect_ratio=1,pad=800:800:(ow-iw)/2:(oh-ih)/2\" -r 25 -max_muxing_queue_size 1024 -y " + TEMP.toString() + "/" + "temp.mp4";
         ProcessBuilder b7 = new ProcessBuilder("/bin/bash", "-c", vidCmd);
