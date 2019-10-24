@@ -1288,7 +1288,7 @@ public class VARpediaController implements Initializable {
                 txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
 
                 String musicChoice = cboMusic.getValue().toString();
-                PrevCombineTask bgCreate = new PrevCombineTask(query, selectedChunkList, selectedImgs, musicChoice);
+                CombineTask bgCreate = new CombineTask("prevCreation", query, selectedChunkList, selectedImgs, musicChoice, true);
                 bg.submit(bgCreate);
 
                 bgCreate.setOnSucceeded(e -> {
@@ -1372,7 +1372,7 @@ public class VARpediaController implements Initializable {
 
         // Create creation in a background thread
         String musicChoice = cboMusic.getValue().toString();
-        CombineTask bgCreate = new CombineTask(creationName, query, selectedChunkList, images, musicChoice);
+        CombineTask bgCreate = new CombineTask(creationName, query, selectedChunkList, images, musicChoice, false);
         bg.submit(bgCreate);
 
         // Disable components for safety
