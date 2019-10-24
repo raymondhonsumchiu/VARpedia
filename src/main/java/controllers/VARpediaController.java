@@ -27,7 +27,10 @@ import javafx.stage.StageStyle;
 import javafx.util.Duration;
 import main.java.VARpedia;
 import main.java.skins.progressindicator.RingProgressIndicator;
-import main.java.tasks.*;
+import main.java.tasks.CombineTask;
+import main.java.tasks.FlickrTask;
+import main.java.tasks.PreviewChunkTask;
+import main.java.tasks.WikitTask;
 
 import java.io.*;
 import java.net.URL;
@@ -404,7 +407,7 @@ public class VARpediaController implements Initializable {
 
     @FXML
     void btnHelpClicked(ActionEvent event) throws IOException {
-        loadFXMLPopUp("../../resources/view/help.fxml", 500, 600);
+        loadFXMLPopUp("../../resources/view/help.fxml", 550, 600);
     }
 
     @FXML
