@@ -27,6 +27,7 @@ Bugs we are aware of:
 __ATTRIBUTIONS:__
 
 https://creativecommons.org/licenses/by/3.0/nz/
+http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL
 
 _WITH MODIFICATIONS:_
 
@@ -46,6 +47,9 @@ Silence Violin by KhalafNasirs (c) copyright 2019 Licensed under a Creative Comm
 Happy Face by KhalafNasirs (c) copyright 2019 Licensed under a Creative Commons Attribution Noncommercial  (3.0) license. http://dig.ccmixter.org/files/khalafnasirs/59479 
 
 Cold Pimp Man by Martijn de Boer (NiGiD) (c) copyright 2017 Licensed under a Creative Commons Attribution Noncommercial  (3.0) license. http://dig.ccmixter.org/files/NiGiD/56200 
+
+_FONT_
+Questrial-Regular.ttf: Copyright (c) 2011, Admix Designs (http://www.admixdesigns.com/) with Reserved Font Name Questrial.
 
 _CODE_
 
