@@ -942,9 +942,16 @@ public class VARpediaController implements Initializable {
                 // bg thread keeps an eye on the process while it is alive
                 PreviewChunkTask previewTask = new PreviewChunkTask(process);
                 bgExecutor.submit(previewTask);
-                // Once finished, the text is set back
+                // Once finished, the text is set back and preview deleted
                 previewTask.setOnSucceeded(e -> {
                     btnSearchPreviewChunk.setText("Preview");
+                    try {
+                        deletePrevChunk();
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
                 });
 
                 // Set text to allowing stopping of audio
@@ -954,9 +961,20 @@ public class VARpediaController implements Initializable {
         } else {
             // Handle stopping of preview
             process.destroy();
+            deletePrevChunk();
             btnSearchPreviewChunk.setText("Preview");
         }
 
+    }
+
+    /**
+     * Helper method for deleting preview chunks after they have stopped playing
+     */
+    private void deletePrevChunk() throws InterruptedException, IOException {
+        ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "rm -f festivalChunk previewChunk");
+        pb.directory(CHUNKS);
+        Process process = pb.start();
+        process.waitFor();
     }
 
     @FXML
