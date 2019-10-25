@@ -18,6 +18,9 @@ import java.util.ResourceBundle;
 
 import static main.java.VARpedia.*;
 
+/**
+ * Controller class to manage the events/components of the opening screen
+ */
 public class WelcomeController implements Initializable {
     private double xOffset = 0;
     private double yOffset = 0;
@@ -29,6 +32,11 @@ public class WelcomeController implements Initializable {
     @FXML private Button btnHelp;
     @FXML private Button btnClose;
 
+    /**
+     * Initialises and prepares the opening screen when the fxml is loaded
+     * @param url
+     * @param resourceBundle
+     */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Allow pressing space to begin
@@ -47,6 +55,7 @@ public class WelcomeController implements Initializable {
 
     @FXML
     void btnBeginClick(ActionEvent event) throws IOException {
+        //prepares and sets the next "main body" scene of the application
         Parent root = FXMLLoader.load(getClass().getResource("../../resources/view/varpedia.fxml"));
 
         root.setOnMousePressed(event1 -> {

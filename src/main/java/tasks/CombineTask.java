@@ -7,6 +7,9 @@ import java.util.List;
 
 import static main.java.VARpedia.*;
 
+/**
+ * Task to be run in background thread to create preview and proper creations
+ */
 public class CombineTask extends Task<Void> {
     private String name, query, music;
     private List<String> chunkList;
@@ -15,6 +18,7 @@ public class CombineTask extends Task<Void> {
     private boolean isPreview;
 
     public CombineTask(String name, String query, List<String> chunkList, List<String> listImages, String music, boolean isPreview) {
+        //set all fields
         this.name = name;
         this.query = query;
         this.chunkList = chunkList;
@@ -22,6 +26,7 @@ public class CombineTask extends Task<Void> {
         this.numImages = listImages.size();
         this.isPreview = isPreview;
 
+        //decide on music choice
         if (music.equals("Funny Piano")) {
             this.music = "funny_piano.mp3";
         } else if (music.equals("Happy Piano")) {
@@ -36,8 +41,10 @@ public class CombineTask extends Task<Void> {
     @Override
     protected Void call() throws Exception {
 
+        //delete any prior selected images
         deleteDirectory(SELIMGS);
 
+        //create if necessary, the folders for the creation process
         CHUNKS.mkdirs();
         CREATIONS.mkdirs();
         TEMPIMGS.mkdirs();
@@ -128,7 +135,7 @@ public class CombineTask extends Task<Void> {
             bashCommand(quizTermCmd, NEWCREATION);
 
         }else {
-            // create preview video
+            // if the creation is a preview, create preview video without the quiz media
             String prevVidCmd = "ffmpeg -i ../temp/temp1.mp4 -vf drawtext=\"fontfile=../../resources/fonts/Questrial-Regular.ttf: text='" + query + "': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2\" -codec:a copy " + name + ".mp4";
             bashCommand(prevVidCmd, TEMP);
         }

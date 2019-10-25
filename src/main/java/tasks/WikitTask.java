@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Task to be run in a background thread that uses the bash command wikit to extract the search result of the search query
+ */
 public class WikitTask extends Task<List<String>> {
     private String query;
 

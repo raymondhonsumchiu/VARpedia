@@ -55,3 +55,5 @@ skins.progressindicator - "fx-progress-circle" made by torakiki from https://git
 Licensed under an Apache 2.0 license, and adapted for this project.
 
 This product uses the Flickr API but is not endorsed or certified by SmugMug, Inc.
+
+We would also like to thank Nasser Giacaman for providing the functionality needed for utilising the Flickr APIs
