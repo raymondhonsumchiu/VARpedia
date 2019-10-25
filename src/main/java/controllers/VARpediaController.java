@@ -413,8 +413,9 @@ public class VARpediaController implements Initializable {
     @FXML
     void btnCloseClicked(ActionEvent event) {
         // Clean up on exit
-        bg.shutdownNow();
-        if (p1 != null) {p1.destroy();}
+        bgExecutor.shutdownNow();
+        if (process != null) {
+            process.destroy();}
         deleteDirectory(TEMP);
         deleteDirectory(CHUNKS);
         VARpedia.primaryStage.close();
@@ -458,18 +459,17 @@ public class VARpediaController implements Initializable {
             paneCreations.setVisible(true);
 
             // Find and list all creations using bash
-            ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "ls");
-            b.directory(CREATIONS);
+            ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "ls");
+            pb.directory(CREATIONS);
             Process p;
             try {
-                p = b.start();
+                p = pb.start();
                 InputStream out = p.getInputStream();
                 BufferedReader stdout = new BufferedReader(new InputStreamReader(out));
 
                 List<String> list = new ArrayList<>();
                 String line;
                 while ((line = stdout.readLine()) != null) {
-                    //list.add(line.substring(0, line.length() - 4));
                     list.add(line);
                 }
 
@@ -718,7 +718,7 @@ public class VARpediaController implements Initializable {
     // ------------------------------------- SEARCH TAB METHODS ------------------------------------------
 
     private boolean error;
-    Process p1;
+    Process process;
 
     private void newSearch() {
         // Clean up for new search
@@ -760,11 +760,11 @@ public class VARpediaController implements Initializable {
 
     // This method returns the text content of a chunk as a string
     private String getChunkText(String chunkName) {
-        ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "cat " + chunkName + "/" + chunkName + ".txt");
-        b.directory(CHUNKS);
+        ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "cat " + chunkName + "/" + chunkName + ".txt");
+        pb.directory(CHUNKS);
         String chunktxt = "";
         try {
-            Process p = b.start();
+            Process p = pb.start();
             InputStream stdout = p.getInputStream();
             BufferedReader stdoutBuffered = new BufferedReader(new InputStreamReader(stdout));
 
@@ -795,7 +795,7 @@ public class VARpediaController implements Initializable {
 
             // Multithreading - search Wikit for query
             WikitTask bgWikit = new WikitTask(query);
-            bg.submit(bgWikit);
+            bgExecutor.submit(bgWikit);
 
             // Lock controls, reveal loading ring
             txaResults.clear();
@@ -874,12 +874,13 @@ public class VARpediaController implements Initializable {
 
             if (listChunksSearch.getSelectionModel().getSelectedItem() != null) {
                 // If a chunk from the list is selected, preview its audio
-                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listChunksSearch.getSelectionModel().getSelectedItem());
-                b1.directory(new File(CHUNKS.toString() + "/" + listChunksSearch.getSelectionModel().getSelectedItem()));
-                p1 = b1.start();
+                ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listChunksSearch.getSelectionModel().getSelectedItem());
+                pb.directory(new File(CHUNKS.toString() + "/" + listChunksSearch.getSelectionModel().getSelectedItem()));
+                process = pb.start();
+
                 // bg thread keeps an eye on the process while it is alive
-                PreviewChunkTask previewTask = new PreviewChunkTask(p1);
-                bg.submit(previewTask);
+                PreviewChunkTask previewTask = new PreviewChunkTask(process);
+                bgExecutor.submit(previewTask);
                 // Once finished, the text is set back
                 previewTask.setOnSucceeded(e -> {
                     btnSearchPreviewChunk.setText("Preview");
@@ -928,19 +929,19 @@ public class VARpediaController implements Initializable {
                 w.write("(utt.synth utt1)\n");
                 w.write("(utt.save.wave utt1 \"previewChunk\" 'riff)");
                 w.close();
-                ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
-                b.directory(CHUNKS);
-                Process p = b.start();
+                ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
+                pb.directory(CHUNKS);
+                Process p = pb.start();
                 p.waitFor();
 
                 // Second process for actually playing the audio
-                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit previewChunk");
-                b1.directory(CHUNKS);
-                p1 = b1.start();
+                ProcessBuilder pb1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit previewChunk");
+                pb1.directory(CHUNKS);
+                process = pb1.start();
 
                 // bg thread keeps an eye on the process while it is alive
-                PreviewChunkTask previewTask = new PreviewChunkTask(p1);
-                bg.submit(previewTask);
+                PreviewChunkTask previewTask = new PreviewChunkTask(process);
+                bgExecutor.submit(previewTask);
                 // Once finished, the text is set back
                 previewTask.setOnSucceeded(e -> {
                     btnSearchPreviewChunk.setText("Preview");
@@ -952,7 +953,7 @@ public class VARpediaController implements Initializable {
             }
         } else {
             // Handle stopping of preview
-            p1.destroy();
+            process.destroy();
             btnSearchPreviewChunk.setText("Preview");
         }
 
@@ -1030,15 +1031,15 @@ public class VARpediaController implements Initializable {
                 w.write("(utt.synth utt1)\n");
                 w.write("(utt.save.wave utt1 \"" + chunkName + "\" 'riff)");
                 w.close();
-                ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
-                b.directory(NEWCHUNK);
-                Process p = b.start();
+                ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
+                pb.directory(NEWCHUNK);
+                Process p = pb.start();
                 p.waitFor();
 
-                ProcessBuilder b2 = new ProcessBuilder("/bin/bash", "-c", "echo \"" + txaResults.getSelectedText().trim() + "\" > " + chunkName + ".txt");
-                b2.directory(NEWCHUNK);
-                Process p2 = b2.start();
-                p2.waitFor();
+                ProcessBuilder pb1 = new ProcessBuilder("/bin/bash", "-c", "echo \"" + txaResults.getSelectedText().trim() + "\" > " + chunkName + ".txt");
+                pb1.directory(NEWCHUNK);
+                Process p1 = pb1.start();
+                p1.waitFor();
 
 
                 allChunkList.add(chunkName);
@@ -1117,7 +1118,7 @@ public class VARpediaController implements Initializable {
 
             // Multithreading - search Flickr API for images
             FlickrTask bgFlickr = new FlickrTask(query);
-            flickrFuture = bg.submit(bgFlickr);
+            flickrFuture = bgExecutor.submit(bgFlickr);
 
             // Lock controls, reveal loading ring
             btnCreateCreation.setDisable(true);
@@ -1230,13 +1231,13 @@ public class VARpediaController implements Initializable {
         if (btnPreviewChunkCombine.getText().equals("Preview")) {
             if (listAllChunks.getSelectionModel().getSelectedItem() != null) {
                 // If a chunk from the list is selected, preview its audio
-                ProcessBuilder b1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listAllChunks.getSelectionModel().getSelectedItem());
-                b1.directory(new File(CHUNKS.toString() + "/" + listAllChunks.getSelectionModel().getSelectedItem()));
-                p1 = b1.start();
+                ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listAllChunks.getSelectionModel().getSelectedItem());
+                pb.directory(new File(CHUNKS.toString() + "/" + listAllChunks.getSelectionModel().getSelectedItem()));
+                process = pb.start();
 
                 // bg thread keeps an eye on the process while it is alive
-                PreviewChunkTask previewTask = new PreviewChunkTask(p1);
-                bg.submit(previewTask);
+                PreviewChunkTask previewTask = new PreviewChunkTask(process);
+                bgExecutor.submit(previewTask);
                 // Once finished, the text is set back
                 previewTask.setOnSucceeded(e -> {
                     btnPreviewChunkCombine.setText("Preview");
@@ -1247,7 +1248,7 @@ public class VARpediaController implements Initializable {
             }
         } else {
             // Handle stopping of preview
-            p1.destroy();
+            process.destroy();
             btnPreviewChunkCombine.setText("Preview");
         }
 
@@ -1292,7 +1293,7 @@ public class VARpediaController implements Initializable {
 
                 String musicChoice = cboMusic.getValue().toString();
                 CombineTask bgCreate = new CombineTask("prevCreation", query, selectedChunkList, selectedImgs, musicChoice, true);
-                bg.submit(bgCreate);
+                bgExecutor.submit(bgCreate);
 
                 bgCreate.setOnSucceeded(e -> {
                     btnPreviewCreation.setText("Stop");
@@ -1376,7 +1377,7 @@ public class VARpediaController implements Initializable {
         // Create creation in a background thread
         String musicChoice = cboMusic.getValue().toString();
         CombineTask bgCreate = new CombineTask(creationName, query, selectedChunkList, images, musicChoice, false);
-        bg.submit(bgCreate);
+        bgExecutor.submit(bgCreate);
 
         // Disable components for safety
         ringCombine.setVisible(true);
@@ -1813,6 +1814,7 @@ public class VARpediaController implements Initializable {
             btnLightTheme.setSelected(true);
             btnDarkTheme.setSelected(false);
         } else {
+            //set light theme css to scene
             VARpedia.isDark = false;
             btnDarkTheme.setSelected(false);
             VARpedia.primaryStage.getScene().getStylesheets().clear();
@@ -1828,6 +1830,7 @@ public class VARpediaController implements Initializable {
             btnDarkTheme.setSelected(true);
             btnLightTheme.setSelected(false);
         } else {
+            //set dark theme css to scene
             VARpedia.isDark = true;
             btnLightTheme.setSelected(false);
             VARpedia.primaryStage.getScene().getStylesheets().clear();
@@ -1839,7 +1842,13 @@ public class VARpediaController implements Initializable {
 
     // -----------------------------------------------------------------------------------------------------
 
-    // Loads an FXML file as a pop-up
+    /**
+     * Helper method that loads an FXML file as a pop-up
+     * @param fxmlPath path of fxml
+     * @param width width of pop-up
+     * @param height height of pop-up
+     * @throws IOException
+     */
     private void loadFXMLPopUp(String fxmlPath, int width, int height) throws IOException {
         Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
 

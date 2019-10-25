@@ -82,7 +82,7 @@ public class WelcomeController implements Initializable {
     @FXML
     void btnCloseClicked(ActionEvent event) {
         // Clean up on exit
-        bg.shutdownNow();
+        bgExecutor.shutdownNow();
         deleteDirectory(TEMP);
         deleteDirectory(CHUNKS);
         VARpedia.primaryStage.close();
