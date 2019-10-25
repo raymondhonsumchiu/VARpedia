@@ -6,7 +6,7 @@ VARPedia - a multimedia interface to Wikipedia.
 Easy-to-run method (WORKS ON VIRTUAL BOX WITH JAVA 13 / JAVAFX 13)
 
 1. Ensure VARpedia.sh, bin, src, flickr-api-keys.txt are on the same "level" in the directory hierarchy
-2. Enter your own Flickr API keys into flick-api-keys.txt
+2. We have provided you with an API key, however if errors occur related to our key, please enter your own into the flickr-api-key.txt file
 3. In the terminal, cd to the directory of files
 4. Execute the script: ./VARpedia.sh
 
@@ -16,7 +16,7 @@ Run in IDE method (WORKS ON JAVA 11+)
 2. Ensure use of Java 11 or above
 3. Ensure JavaFX is added as a library
 4. Add the libs folder as a library, for the Flickr API
-5. Enter your own Flickr API keys into the txt file flick-api-keys.txt
+5. We have provided you with an API key, however if errors occur related to our key, please enter your own into the flickr-api-key.txt file
 6. Run the program
 
 Target Audience: 18 - 25yrs (non-native english speakers)
