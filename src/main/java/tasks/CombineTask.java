@@ -43,15 +43,18 @@ public class CombineTask extends Task<Void> {
         TEMPIMGS.mkdirs();
         SELIMGS.mkdir();
 
+
         //move a copy of all selected images to a new directory
         for (String img : listImages) {
             String copyCmd = "cp " + TEMPIMGS.toString() + img + " " + SELIMGS.toString() + img;
             bashCommand(copyCmd, null);
         }
 
+
         //Clean up any leftover files
         String removeCmd = "rm -f prevCreation.mp4 temp.mp4 temp.wav temp1.mp4 temp1.mp3";
         bashCommand(removeCmd, TEMP);
+
 
         // Combine audio chunks
         String chunkString = "";
@@ -60,6 +63,7 @@ public class CombineTask extends Task<Void> {
         }
         String audioCmd = "sox " + chunkString + "../temp/temp.wav";
         bashCommand(audioCmd, CHUNKS);
+
 
         // Get length of audio file, can't use bashCommand() due to the need to utilise the process outside of the basic running of the bash command
         ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "soxi -D temp.wav");
@@ -70,6 +74,7 @@ public class CombineTask extends Task<Void> {
         BufferedReader stdout = new BufferedReader(new InputStreamReader(out));
         double length = Double.parseDouble(stdout.readLine());
 
+
         //add bg music into chunk file
         String audFile = "temp.wav";
         if (music != null) {
@@ -78,15 +83,17 @@ public class CombineTask extends Task<Void> {
             audFile = "temp1.mp3";
         }
 
+
         // Create video slideshow and send output to TEMP
         double frameRate = (double) numImages / length;
-
         String vidCmd = "cat *.jpg | ffmpeg -f image2pipe -framerate " + frameRate + " -i - -t " + length + " -c:v libx264 -pix_fmt yuv420p -vf \"scale=w=800:h=800:force_original_aspect_ratio=1,pad=800:800:(ow-iw)/2:(oh-ih)/2\" -r 25 -max_muxing_queue_size 1024 -y " + TEMP.toString() + "/" + "temp.mp4";
         bashCommand(vidCmd, SELIMGS);
+
 
         // Merge video with audio for the final Creation
         String mergeCmd = "ffmpeg -i temp.mp4 -i " + audFile + " -c:v copy -c:a aac -strict experimental temp1.mp4";
         bashCommand(mergeCmd, TEMP);
+
 
         // If the creation is not a preview, create the creation file which should include the creation and additional quiz media
         if(!isPreview) {
@@ -94,22 +101,27 @@ public class CombineTask extends Task<Void> {
             File NEWCREATION = new File(CREATIONS.toString() + "/" + name);
             NEWCREATION.mkdirs();
 
+
             // Add text overlay to vid
             String addTextCmd = "ffmpeg -i ../../temp/temp1.mp4 -vf drawtext=\"fontfile=../../resources/fonts/Questrial-Regular.ttf: text='" + query + "': fontcolor=white: fontsize=24: box=1: boxcolor=black@0.5: boxborderw=5: x=(w-text_w)/2: y=(h-text_h)/2\" -codec:a copy " + name + ".mp4";
             bashCommand(addTextCmd, NEWCREATION);
 
+
             // create 20sec audio for quiz
             String quizAudioCmd = "ffmpeg -stream_loop -1 -i " + TEMP.toString() + "/temp.wav -vcodec copy -ss 00:00:00.000 -t 00:00:20.000 audio.wav";
             bashCommand(quizAudioCmd, NEWCREATION);
+
 
             // create 20sec video
             frameRate = (double) numImages / 20;
             String quizVidCmd = "cat *.jpg | ffmpeg -f image2pipe -framerate " + frameRate + " -i - -t 20 -c:v libx264 -pix_fmt yuv420p -vf \"scale=w=800:h=800:force_original_aspect_ratio=1,pad=800:800:(ow-iw)/2:(oh-ih)/2\" -r 25 -max_muxing_queue_size 1024 -y " + "../../Creations/" + name + "/" + "video.mp4";
             bashCommand(quizVidCmd, SELIMGS);
 
+
             // Merge to get 20sec both vid
             String mergeQuizCmd = "ffmpeg -i video.mp4 -i audio.wav -c:v copy -c:a aac -strict experimental both.mp4";
             bashCommand(mergeQuizCmd, NEWCREATION);
+
 
             // Add text file for term.txt so that quiz can compare answers to real term
             String quizTermCmd = "touch " + query.replaceAll("\\s+", "_") + ".txt";
