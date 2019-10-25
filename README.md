@@ -19,10 +19,7 @@ Run in IDE method (WORKS ON JAVA 11+)
 5. Enter your own Flickr API keys into the txt file flick-api-keys.txt
 6. Run the program
 
-Bugs we are aware of:
-
-* The NZ Male voice does not work with all sentences
-* Very short creations (e.g. 1 second) may not contain over 8-9 images
+Target Audience: 18 - 25yrs (non-native english speakers)
 
 __ATTRIBUTIONS:__
 
