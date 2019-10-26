@@ -23,9 +23,9 @@ public class WikitTask extends Task<List<String>> {
     @Override
     protected List<String> call() throws Exception {
         // Run wikit command through BASH
-        ProcessBuilder b = new ProcessBuilder("/bin/bash", "-c", "wikit " + query);
-        Process p = b.start();
-        InputStream out = p.getInputStream();
+        ProcessBuilder pbuilder = new ProcessBuilder("/bin/bash", "-c", "wikit " + query);
+        Process process = pbuilder.start();
+        InputStream out = process.getInputStream();
         BufferedReader stdout = new BufferedReader(new InputStreamReader(out));
 
         // Read wikit output
