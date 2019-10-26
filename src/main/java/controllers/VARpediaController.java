@@ -408,11 +408,10 @@ public class VARpediaController implements Initializable {
 
     /**
      * When the logo is clicked, return back to the opening/welcome screen
-     * @param event
      * @throws IOException
      */
     @FXML
-    void btnBackClicked(ActionEvent event) throws IOException {
+    void btnBackClicked() throws IOException {
         if (playerCreation != null) { playerCreation.stop();}
 
         //prepare opening screen
@@ -436,17 +435,17 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnMinimiseClicked(ActionEvent event) {
+    void btnMinimiseClicked() {
         VARpedia.primaryStage.setIconified(true);
     }
 
     @FXML
-    void btnHelpClicked(ActionEvent event) throws IOException {
+    void btnHelpClicked() throws IOException {
         loadFXMLPopUp("../../resources/view/help.fxml", 550, 600);
     }
 
     @FXML
-    void btnCloseClicked(ActionEvent event) {
+    void btnCloseClicked() {
         // Clean up on exit
         bgExecutor.shutdownNow();
         if (process != null) {
@@ -596,7 +595,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnPlayCreationClicked(ActionEvent event) {
+    void btnPlayCreationClicked() {
         //only perform action when there is a selected creation
         if (listCreations.getSelectionModel().getSelectedItem() != null) {
             currentlyPlaying = listCreations.getSelectionModel().getSelectedItem();
@@ -663,7 +662,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnPlayPauseClicked(ActionEvent event) {
+    void btnPlayPauseClicked() {
         //only pause if there is a player to pause
         if (playerCreation != null) {
             MediaPlayer.Status status = playerCreation.getStatus();
@@ -686,7 +685,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnReverseClicked(ActionEvent event) {
+    void btnReverseClicked() {
         //only reverse when there is a player to reverse
         if (playerCreation != null) {
             double time = playerCreation.getCurrentTime().toMillis() - duration.toMillis() / 10.0;
@@ -699,7 +698,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnForwardClicked(ActionEvent event) {
+    void btnForwardClicked() {
         //only fast forward when there is a player to forward
         if (playerCreation != null) {
             double time = playerCreation.getCurrentTime().toMillis() + duration.toMillis() / 10.0;
@@ -712,7 +711,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnMuteClicked(ActionEvent event) {
+    void btnMuteClicked() {
         //mute the volume button if not already muted
         if (!mute) {
             volume = sliderVol.getValue();
@@ -730,7 +729,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnDeleteCreationClicked(ActionEvent event) {
+    void btnDeleteCreationClicked() {
         if (listCreations.getSelectionModel().getSelectedItem() != null) {
             if (playerCreation != null) { playerCreation.pause(); }
 
@@ -852,7 +851,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnSearchClicked(ActionEvent event) {
+    void btnSearchClicked() {
         if (!txtSearch.getText().trim().isEmpty()) {
             newSearch();
             initialiseCombineTab();
@@ -923,19 +922,19 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnVoiceOptionClicked(ActionEvent event) throws IOException {
+    void btnVoiceOptionClicked() throws IOException {
         // Load a separate pop-up stage for the pitch/speed options
         if (btnSearchPreviewChunk.getText().equals("Stop")) { btnSearchPreviewChunk.fire(); }
         loadFXMLPopUp("../../resources/view/voiceoptions.fxml", 500, 240);
     }
 
     @FXML
-    void btnCombineClicked(ActionEvent event) {
+    void btnCombineClicked() {
         tabMain.getSelectionModel().select(2);
     }
 
     @FXML
-    void btnPreviewChunkClicked(ActionEvent event) throws IOException, InterruptedException {
+    void btnPreviewChunkClicked() throws IOException, InterruptedException {
         CHUNKS.mkdirs();
 
         if (btnSearchPreviewChunk.getText().equals("Preview")) {
@@ -1050,7 +1049,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnCreateChunkClicked(ActionEvent event) throws IOException, InterruptedException {
+    void btnCreateChunkClicked() throws IOException, InterruptedException {
         CHUNKS.mkdirs();
 
         // Obtain and prepare selected chunk text
@@ -1149,12 +1148,12 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void txtSearchEnter(ActionEvent event) {
+    void txtSearchEnter() {
         btnSearch.fire();
     }
 
     @FXML
-    void txtChunkEnter(ActionEvent event) {
+    void txtChunkEnter() {
         btnCreateChunk.fire();
     }
 
@@ -1279,7 +1278,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnAddChunkClicked(ActionEvent event) {
+    void btnAddChunkClicked() {
         // Add a chunk if it is selected
         String chunkToAdd = listAllChunks.getSelectionModel().getSelectedItem();
         if (chunkToAdd != null) {
@@ -1288,7 +1287,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnRemoveChunkClicked(ActionEvent event) {
+    void btnRemoveChunkClicked() {
         // If a chunk is selected, it will be removed
         if (listSelectedChunks.getSelectionModel().getSelectedItem() != null) {
             int index = listSelectedChunks.getSelectionModel().getSelectedIndex();
@@ -1297,7 +1296,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnClearSelectedClicked(ActionEvent event) {
+    void btnClearSelectedClicked() {
         // Clear all selected chunks and images
         listSelectedChunks.getItems().clear();
         for (ToggleButton t : gridToggles) {
@@ -1306,7 +1305,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnDeleteChunkClicked(ActionEvent event) {
+    void btnDeleteChunkClicked() {
         // Delete all instances of a chunk when deleted
         if (listAllChunks.getSelectionModel().getSelectedItem() != null) {
             selectedChunkList.removeAll(Collections.singleton(listAllChunks.getSelectionModel().getSelectedItem()));
@@ -1317,7 +1316,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnPreviewChunkCombineClicked(ActionEvent event) throws IOException, InterruptedException {
+    void btnPreviewChunkCombineClicked() throws IOException {
         CHUNKS.mkdirs();
 
         if (btnPreviewChunkCombine.getText().equals("Preview")) {
@@ -1347,14 +1346,14 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnSearchFlickrClicked(ActionEvent event) {
+    void btnSearchFlickrClicked() {
         // Stop current Flickr download if still in progress
         if (flickrFuture != null) {flickrFuture.cancel(true);}
         fillGridImages(txtSearchFlickr.getText().trim().toLowerCase());
     }
 
     @FXML
-    void btnPreviewCreationClicked(ActionEvent event) {
+    void btnPreviewCreationClicked() {
         if (btnPreviewCreation.getText().equals("Preview Creation")) {
             btnPreviewChunkCombine.setDisable(true);
 
@@ -1516,7 +1515,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnCreateCreationClicked(ActionEvent event) {
+    void btnCreateCreationClicked() {
         if (btnPreviewCreation.getText().equals("Stop")) {btnPreviewCreation.fire();}
         // Obtain all selected images
         ArrayList<String> selectedImgs = new ArrayList<String>();
@@ -1593,12 +1592,12 @@ public class VARpediaController implements Initializable {
 
     // Allow pressing Enter for actions
     @FXML
-    void txtCreationEnter(ActionEvent event) {
+    void txtCreationEnter() {
         btnCreateCreation.fire();
     }
 
     @FXML
-    void txtSearchFlickrEnter(ActionEvent event) {
+    void txtSearchFlickrEnter() {
         btnSearchFlickr.fire();
     }
 
@@ -1686,7 +1685,7 @@ public class VARpediaController implements Initializable {
         // Different panes shown depending on difficulty
         if (difficulty == 1) {
             // Disable volume slider when on medium
-            btnMuteQuizClicked(null);
+            btnMuteQuizClicked();
             btnMuteQuiz.setDisable(true);
             sliderVolQuiz.setDisable(true);
         } else if (difficulty == 2) {
@@ -1737,7 +1736,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void toggleQuizEasyClicked(ActionEvent event) {
+    void toggleQuizEasyClicked() {
         if (toggleQuizEasy.isSelected()) {
             toggleQuizMedium.setSelected(false);
             toggleQuizHard.setSelected(false);
@@ -1747,7 +1746,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void toggleQuizMediumClicked(ActionEvent event) {
+    void toggleQuizMediumClicked() {
         if (toggleQuizMedium.isSelected()) {
             toggleQuizEasy.setSelected(false);
             toggleQuizHard.setSelected(false);
@@ -1757,7 +1756,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void toggleQuizHardClicked(ActionEvent event) {
+    void toggleQuizHardClicked() {
         if (toggleQuizHard.isSelected()) {
             toggleQuizMedium.setSelected(false);
             toggleQuizEasy.setSelected(false);
@@ -1767,7 +1766,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnQuizBeginClicked(ActionEvent event) {
+    void btnQuizBeginClicked() {
         // Hide/reveal appropriate components
         hQuizDifficulty.setDisable(true);
         vQuizTitle.setVisible(false);
@@ -1819,7 +1818,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnMuteQuizClicked(ActionEvent event) {
+    void btnMuteQuizClicked() {
         // If not muted, mute the quiz
         if (!quizMute) {
             quizVolume = sliderVolQuiz.getValue();
@@ -1856,13 +1855,13 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnQuizResetClicked(ActionEvent event) {
+    void btnQuizResetClicked() {
         if (playerQuiz != null) {playerQuiz.stop();}
         initialiseQuizTab();
     }
 
     @FXML
-    void btnQuizSubmitClicked(ActionEvent event) {
+    void btnQuizSubmitClicked() {
         if (txtQuizAnswer.getText().trim().replaceAll("\\s+","_").equalsIgnoreCase(currentAnswer)) {
             // If the answer is correct, show the "correct" pane
             lblQuizAnswer.setText("Answer:");
@@ -1892,7 +1891,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnQuizFinishClicked(ActionEvent event) {
+    void btnQuizFinishClicked() {
         vQuizPlayer.setVisible(false);
         hQuizAnswer.setVisible(false);
         vQuizCorrect.setVisible(false);
@@ -1911,7 +1910,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnQuizNextClicked(ActionEvent event) {
+    void btnQuizNextClicked() {
         vQuizPlayer.setVisible(true);
         hQuizAnswer.setVisible(true);
         vQuizCorrect.setVisible(false);
@@ -1920,14 +1919,14 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnQuizRetryClicked(ActionEvent event) {
+    void btnQuizRetryClicked() {
         currentQuestion--;
         btnQuizNext.fire();
     }
 
     // Allow pressing Enter for actions
     @FXML
-    void txtQuizAnswerEnter(ActionEvent event) {
+    void txtQuizAnswerEnter() {
         btnQuizSubmit.fire();
     }
 
@@ -1936,7 +1935,7 @@ public class VARpediaController implements Initializable {
     // --------------------------------------- OPTIONS TAB METHODS -----------------------------------------
 
     @FXML
-    void btnLightThemeClicked(ActionEvent event) {
+    void btnLightThemeClicked() {
         if (!btnLightTheme.isSelected()) {
             btnLightTheme.setSelected(true);
             btnDarkTheme.setSelected(false);
@@ -1952,7 +1951,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnDarkThemeClicked(ActionEvent event) {
+    void btnDarkThemeClicked() {
         if (!btnDarkTheme.isSelected()) {
             btnDarkTheme.setSelected(true);
             btnLightTheme.setSelected(false);

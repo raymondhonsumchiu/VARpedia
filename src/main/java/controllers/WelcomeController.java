@@ -42,7 +42,7 @@ public class WelcomeController implements Initializable {
         // Allow pressing space to begin
         hRoot.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             try {
-                btnBeginClick(null);
+                btnBeginClick();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -54,13 +54,13 @@ public class WelcomeController implements Initializable {
     }
 
     @FXML
-    void btnBeginClick(ActionEvent event) throws IOException {
+    void btnBeginClick() throws IOException {
         //prepares and sets the next "main body" scene of the application
         Parent root = FXMLLoader.load(getClass().getResource("../../resources/view/varpedia.fxml"));
 
-        root.setOnMousePressed(event1 -> {
-            xOffset = event1.getSceneX();
-            yOffset = event1.getSceneY();
+        root.setOnMousePressed(event -> {
+            xOffset = event.getSceneX();
+            yOffset = event.getSceneY();
         });
 
         root.setOnMouseDragged(event12 -> {
@@ -79,17 +79,17 @@ public class WelcomeController implements Initializable {
     }
 
     @FXML
-    void btnMinimiseClicked(ActionEvent event) {
+    void btnMinimiseClicked() {
         VARpedia.primaryStage.setIconified(true);
     }
 
     @FXML
-    void btnHelpClicked(ActionEvent event) {
-
+    void btnHelpClicked() {
+        //No action to perform when help button is clicked until you enter the actual application
     }
 
     @FXML
-    void btnCloseClicked(ActionEvent event) {
+    void btnCloseClicked() {
         // Clean up on exit
         bgExecutor.shutdownNow();
         deleteDirectory(TEMP);

@@ -43,7 +43,7 @@ public class VoiceOptionsController implements Initializable {
     }
 
     @FXML
-    void btnResetClicked(ActionEvent event) {
+    void btnResetClicked() {
         //set slider values back to default middle
         sliderPitch.setValue(50);
         sliderSpeed.setValue(50);

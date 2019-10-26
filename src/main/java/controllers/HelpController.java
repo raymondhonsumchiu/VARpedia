@@ -9,11 +9,12 @@ import javafx.stage.Stage;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class HelpController implements Initializable {
-
-    @Override public void initialize(URL url, ResourceBundle resourceBundle) {
-
-    }
+/**
+ * Controller for the help menu pop-up
+ * the only action to handle is the closing of the window since it is just
+ * a smaller instruction manual for reading
+ */
+public class HelpController {
 
     @FXML
     void btnHelpOkClicked(ActionEvent event) {
