@@ -27,24 +27,33 @@ import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * The Main class of the entire application
+ */
 public class VARpedia extends Application {
     private double xOffset = 0;
     private double yOffset = 0;
     public static Stage primaryStage;
     public static boolean isDark = false;
+
+    //Directories used within file system
     public static final File CREATIONS = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "Creations");
     public static final File TEMP = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "temp");
     public static final File TEMPIMGS = new File(TEMP.toString() + System.getProperty("file.separator") + "img");
     public static final File SELIMGS = new File(TEMP.toString() + System.getProperty("file.separator") + "selImgs");
     public static final File CHUNKS = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "chunks");
-    public static final File PREVCHUNK = new File(System.getProperty("user.dir") + System.getProperty("file.separator") + "prevChunks");
     public static final File ICONS = new File(System.getProperty("user.dir") + "/src/main/resources/images");
+
+    //executor for backgound threads
     public static final ExecutorService bgExecutor = Executors.newFixedThreadPool(3);
+
+    //pop-up buttons
     public static ButtonType btnYes = new ButtonType("Yes", ButtonBar.ButtonData.OK_DONE);
     public static ButtonType btnNo = new ButtonType("No", ButtonBar.ButtonData.CANCEL_CLOSE);
 
     @Override
     public void start(Stage primaryStage) throws Exception{
+        //prepare the root of the scene with the welcome screen as the opener
         VARpedia.primaryStage = primaryStage;
         Parent root = FXMLLoader.load(getClass().getResource("../resources/view/welcome.fxml"));
         primaryStage.initStyle(StageStyle.UNDECORATED);
@@ -60,6 +69,7 @@ public class VARpedia extends Application {
             primaryStage.setY(event.getScreenY() - yOffset);
         });
 
+        //set the beginning scene with light theme as default
         Scene scene = new Scene(root, 1440, 810);
         scene.getStylesheets().add(getClass().getResource("../resources/css/light.css").toExternalForm());
         primaryStage.setScene(scene);
@@ -73,7 +83,11 @@ public class VARpedia extends Application {
         });
     }
 
-    // Deletes a file or directory and all its contents recursively
+    /**
+     * Deletes a file or directory and all its contents recursively
+     * @param dir directory to delete
+     * @return
+     */
     public static boolean deleteDirectory(File dir) {
         File[] contents = dir.listFiles();
         if (contents != null) {
@@ -84,7 +98,11 @@ public class VARpedia extends Application {
         return dir.delete();
     }
 
-    // Checks if a directory exists and is non-empty
+    /**
+     * Checks if a directory exists and is non-empty
+     * @param dir directory to check
+     * @return
+     */
     public static boolean isNonEmptyDirectory(File dir) {
         if (dir.exists() && dir.isDirectory()) {
             if (dir.listFiles().length > 0) { return true; }

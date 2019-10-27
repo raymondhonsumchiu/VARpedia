@@ -21,6 +21,8 @@ Run in IDE method (WORKS ON JAVA 11+)
 
 Target Audience: 18 - 25yrs (non-native english speakers)
 
+Additionally, please keep in mind that the NZ Male voice is less versatile than the US Male, hence may not function for all selected texts.
+
 __ATTRIBUTIONS:__
 
 https://creativecommons.org/licenses/by/3.0/nz/
@@ -55,3 +57,5 @@ skins.progressindicator - "fx-progress-circle" made by torakiki from https://git
 Licensed under an Apache 2.0 license, and adapted for this project.
 
 This product uses the Flickr API but is not endorsed or certified by SmugMug, Inc.
+
+We would also like to thank Nasser Giacaman for providing the functionality needed for utilising the Flickr APIs

@@ -2,20 +2,22 @@ package main.java.tasks;
 
 import javafx.concurrent.Task;
 
+/**
+ * This Background task is used to keep track of the preview chunk process
+ * Once the process ends, the VARpediaController can set the preview's button back from stop to preview
+ */
 public class PreviewChunkTask extends Task<Void> {
-    //This Background task is used to keep track of the preview chunk process
-    //Once the process ends, the VARpediaController can set the preview's button back from stop to preview
-
-    private Process p1;
+    private Process process;
 
     public PreviewChunkTask(Process process){
-        this.p1 = process;
+        this.process = process;
     }
 
     @Override
     protected Void call() throws Exception {
-            while (p1.isAlive()) {
-            }
+        //loop stays active, keeping task alive as long as process is alive
+        while (process.isAlive()) {
+        }
         return null;
     }
 }

@@ -43,6 +43,16 @@ import java.util.regex.Pattern;
 
 import static main.java.VARpedia.*;
 
+/**
+ * Controller for the varpedia FXML/Scene
+ * Unfortunately due to the use of the Tab Pane, each transition/tab is not its own scene and
+ * instead is a part of the varpedia scene as a whole. This causes a slower load when going to the scene
+ * and since this controller needs to handle all the components of each tab, it creates a large class
+ * which we apologise for.
+ *
+ * Additionally javaDoc comments will be supplied to more ambiguous event-handlers/methods, but for the majority
+ * we believe our naming conventions are self-explanatory
+ */
 public class VARpediaController implements Initializable {
     // ---------------------------------- General window fields ----------------------------------------------
     private double xOffset = 0;
@@ -216,6 +226,12 @@ public class VARpediaController implements Initializable {
     @FXML private ToggleButton btnDarkTheme;
     @FXML private ToggleButton btnLightTheme;
 
+    /**
+     * When varpedia FXML is loaded, initialise is called to clean up the file system from residual uses
+     * and load/initialise all the tabs for the scene
+     * @param location
+     * @param resources
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // --------------------------------------------- Clean up -----------------------------------------------
@@ -224,22 +240,34 @@ public class VARpediaController implements Initializable {
 
         // --------------------------------------- Listener for tab changes -------------------------------------
         tabMain.getSelectionModel().selectedItemProperty().addListener((ov, oldTab, newTab) -> {
-            if (playerCreation != null) { playerCreation.stop();} // Stop media player on tab change
-            if (playerQuiz != null) {playerQuiz.stop();} // Stop quiz player on tab change
-            if (playerPreview != null) { // Stop previewing creation on tab change
+            // Stop media player on tab change
+            if (playerCreation != null) { playerCreation.stop();}
+
+            // Stop quiz player on tab change
+            if (playerQuiz != null) {playerQuiz.stop();}
+
+            // Stop previewing creation on tab change
+            if (playerPreview != null) {
                 playerPreview.stop();
                 vPreview.setVisible(false);
                 txaPreviewChunk2.setVisible(true);
-            } // Stop chunk preview on tab change
+            }
+
+            // Stop chunk preview on tab change
             if (btnSearchPreviewChunk.getText().equals("Stop")) {
                 btnSearchPreviewChunk.fire();
-            } // Stop chunk preview on tab change
+            }
+
+            // Stop chunk preview on tab change
             if (btnPreviewChunkCombine.getText().equals("Stop")) {
                 btnPreviewChunkCombine.fire();
-            } // Stop creation preview on tab change
+            }
+
+            // Stop creation preview on tab change
             if (btnPreviewCreation.getText().equals("Stop")) {
                 btnPreviewCreation.fire();
             }
+
             int tab = tabMain.getSelectionModel().getSelectedIndex();
             if (tab == 0) {
                 // Refresh list of creations, but also resets media player.
@@ -378,10 +406,15 @@ public class VARpediaController implements Initializable {
 
     // ------------------------------------------- GENERAL ------------------------------------------------
 
+    /**
+     * When the logo is clicked, return back to the opening/welcome screen
+     * @throws IOException
+     */
     @FXML
-    void btnBackClicked(ActionEvent event) throws IOException {
+    void btnBackClicked() throws IOException {
         if (playerCreation != null) { playerCreation.stop();}
 
+        //prepare opening screen
         Parent root = FXMLLoader.load(getClass().getResource("../../resources/view/welcome.fxml"));
 
         root.setOnMousePressed(event1 -> {
@@ -394,6 +427,7 @@ public class VARpediaController implements Initializable {
             VARpedia.primaryStage.setY(event12.getScreenY() - yOffset);
         });
 
+        //set the scene
         Scene scene = new Scene(root, 1440, 810);
         scene.getStylesheets().add(css);
         VARpedia.primaryStage.setScene(scene);
@@ -401,17 +435,17 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnMinimiseClicked(ActionEvent event) {
+    void btnMinimiseClicked() {
         VARpedia.primaryStage.setIconified(true);
     }
 
     @FXML
-    void btnHelpClicked(ActionEvent event) throws IOException {
+    void btnHelpClicked() throws IOException {
         loadFXMLPopUp("../../resources/view/help.fxml", 550, 600);
     }
 
     @FXML
-    void btnCloseClicked(ActionEvent event) {
+    void btnCloseClicked() {
         // Clean up on exit
         bgExecutor.shutdownNow();
         if (process != null) {
@@ -459,14 +493,15 @@ public class VARpediaController implements Initializable {
             paneCreations.setVisible(true);
 
             // Find and list all creations using bash
-            ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "ls");
-            pb.directory(CREATIONS);
+            ProcessBuilder pBuilder = new ProcessBuilder("/bin/bash", "-c", "ls");
+            pBuilder.directory(CREATIONS);
             Process p;
             try {
-                p = pb.start();
+                p = pBuilder.start();
                 InputStream out = p.getInputStream();
                 BufferedReader stdout = new BufferedReader(new InputStreamReader(out));
 
+                //obtain bash output for listing
                 List<String> list = new ArrayList<>();
                 String line;
                 while ((line = stdout.readLine()) != null) {
@@ -485,6 +520,9 @@ public class VARpediaController implements Initializable {
         }
     }
 
+    /**
+     * Helper method used to update the media player's value/slider when video is playing
+     */
     private void updateValues() {
         // Update the media player controls
         Platform.runLater(() -> {
@@ -502,7 +540,13 @@ public class VARpediaController implements Initializable {
         });
     }
 
-    // Helper method to correctly format the time for the media player progress slider
+    /**
+     * Helper method to correctly format the time for the media player progress slider
+     * @param elapsed
+     * @param duration
+     * @param totalTime
+     * @return
+     */
     private static String formatTime(Duration elapsed, Duration duration, boolean totalTime) {
         int intElapsed = (int) Math.floor(elapsed.toSeconds());
         int elapsedHours = intElapsed / (60 * 60);
@@ -551,7 +595,8 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnPlayCreationClicked(ActionEvent event) {
+    void btnPlayCreationClicked() {
+        //only perform action when there is a selected creation
         if (listCreations.getSelectionModel().getSelectedItem() != null) {
             currentlyPlaying = listCreations.getSelectionModel().getSelectedItem();
             imgVolume.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
@@ -595,6 +640,7 @@ public class VARpediaController implements Initializable {
                 }
             });
 
+            //handle PlayerCreations different states
             playerCreation.setOnReady(() -> {
                 duration = playerCreation.getMedia().getDuration();
                 updateValues();
@@ -616,7 +662,8 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnPlayPauseClicked(ActionEvent event) {
+    void btnPlayPauseClicked() {
+        //only pause if there is a player to pause
         if (playerCreation != null) {
             MediaPlayer.Status status = playerCreation.getStatus();
 
@@ -638,7 +685,8 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnReverseClicked(ActionEvent event) {
+    void btnReverseClicked() {
+        //only reverse when there is a player to reverse
         if (playerCreation != null) {
             double time = playerCreation.getCurrentTime().toMillis() - duration.toMillis() / 10.0;
             if (time > 0) {
@@ -650,7 +698,8 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnForwardClicked(ActionEvent event) {
+    void btnForwardClicked() {
+        //only fast forward when there is a player to forward
         if (playerCreation != null) {
             double time = playerCreation.getCurrentTime().toMillis() + duration.toMillis() / 10.0;
             if (time < duration.toMillis()) {
@@ -662,7 +711,8 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnMuteClicked(ActionEvent event) {
+    void btnMuteClicked() {
+        //mute the volume button if not already muted
         if (!mute) {
             volume = sliderVol.getValue();
             sliderVol.setValue(0);
@@ -670,6 +720,7 @@ public class VARpediaController implements Initializable {
             playerCreation.setVolume(0);
             mute = true;
         } else {
+            //otherwise turn the volume back on to is prior volume level
             sliderVol.setValue(volume);
             imgVolume.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
             playerCreation.setVolume(volume / 100.0);
@@ -678,11 +729,11 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnDeleteCreationClicked(ActionEvent event) {
+    void btnDeleteCreationClicked() {
         if (listCreations.getSelectionModel().getSelectedItem() != null) {
             if (playerCreation != null) { playerCreation.pause(); }
 
-            // Confirm if user wants to delete Creation
+            // Confirm if user wants to delete Creation with a pop-up
             String vid = listCreations.getSelectionModel().getSelectedItem();
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete \"" + vid + "\"?", btnYes, btnNo);
             alert.setTitle("Delete Creation");
@@ -691,6 +742,8 @@ public class VARpediaController implements Initializable {
             alert.setGraphic(null);
             alert.initStyle(StageStyle.UNDECORATED);
             alert.setResizable(false);
+
+            //if they select "Yes", delete the creation
             if (alert.showAndWait().get() == btnYes) {
                 if (playerCreation != null) { playerCreation.stop(); }
                 deleteDirectory(new File(CREATIONS.toString() + "/" + vid));
@@ -699,10 +752,16 @@ public class VARpediaController implements Initializable {
         }
     }
 
+    /**
+     * Handle when a creation is clicked from the creation's list
+     * @param event
+     */
     @FXML
     void listCreationsClicked(MouseEvent event) {
+        //allow double-clicking to play creation
         if (event.getClickCount() == 2) {
             btnPlayCreation.fire();
+
         } else if (playerCreation == null || (playerCreation != null && playerCreation.getStatus() != MediaPlayer.Status.PLAYING)) {
             // Load the media when clicking through creations, but don't auto-play
             if (listCreations.getSelectionModel().getSelectedItem() != null) {
@@ -720,11 +779,15 @@ public class VARpediaController implements Initializable {
     private boolean error;
     Process process;
 
+    /**
+     * Method used to clean up the chunks and prior searches in preparation for a new search
+     */
     private void newSearch() {
-        // Clean up for new search
+        // Clean up old files
         deleteDirectory(TEMP);
         deleteDirectory(CHUNKS);
 
+        //revert application state back to default
         txaResults.setEditable(false);
         txaResults.clear();
         txaPreviewChunk1.clear();
@@ -740,6 +803,7 @@ public class VARpediaController implements Initializable {
     }
 
     private void initialiseSearchTab() {
+        //hide chunk creation components of search tab in the beginning
         txtSearch.clear();
         ringSearch.setVisible(false);
 
@@ -758,13 +822,19 @@ public class VARpediaController implements Initializable {
         newSearch();
     }
 
-    // This method returns the text content of a chunk as a string
+    /**
+     * This method returns the text content of a chunk as a string
+     * used when user clicks an existing creation to relook at the chunk's text
+     * @param chunkName
+     * @return
+     */
     private String getChunkText(String chunkName) {
-        ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "cat " + chunkName + "/" + chunkName + ".txt");
-        pb.directory(CHUNKS);
+        //run a bash command to extract text from the chunk's txt file
+        ProcessBuilder pBuilder = new ProcessBuilder("/bin/bash", "-c", "cat " + chunkName + "/" + chunkName + ".txt");
+        pBuilder.directory(CHUNKS);
         String chunktxt = "";
         try {
-            Process p = pb.start();
+            Process p = pBuilder.start();
             InputStream stdout = p.getInputStream();
             BufferedReader stdoutBuffered = new BufferedReader(new InputStreamReader(stdout));
 
@@ -781,7 +851,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnSearchClicked(ActionEvent event) {
+    void btnSearchClicked() {
         if (!txtSearch.getText().trim().isEmpty()) {
             newSearch();
             initialiseCombineTab();
@@ -852,19 +922,19 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnVoiceOptionClicked(ActionEvent event) throws IOException {
+    void btnVoiceOptionClicked() throws IOException {
         // Load a separate pop-up stage for the pitch/speed options
         if (btnSearchPreviewChunk.getText().equals("Stop")) { btnSearchPreviewChunk.fire(); }
         loadFXMLPopUp("../../resources/view/voiceoptions.fxml", 500, 240);
     }
 
     @FXML
-    void btnCombineClicked(ActionEvent event) {
+    void btnCombineClicked() {
         tabMain.getSelectionModel().select(2);
     }
 
     @FXML
-    void btnPreviewChunkClicked(ActionEvent event) throws IOException, InterruptedException {
+    void btnPreviewChunkClicked() throws IOException, InterruptedException {
         CHUNKS.mkdirs();
 
         if (btnSearchPreviewChunk.getText().equals("Preview")) {
@@ -874,9 +944,9 @@ public class VARpediaController implements Initializable {
 
             if (listChunksSearch.getSelectionModel().getSelectedItem() != null) {
                 // If a chunk from the list is selected, preview its audio
-                ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listChunksSearch.getSelectionModel().getSelectedItem());
-                pb.directory(new File(CHUNKS.toString() + "/" + listChunksSearch.getSelectionModel().getSelectedItem()));
-                process = pb.start();
+                ProcessBuilder pBuilder = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listChunksSearch.getSelectionModel().getSelectedItem());
+                pBuilder.directory(new File(CHUNKS.toString() + "/" + listChunksSearch.getSelectionModel().getSelectedItem()));
+                process = pBuilder.start();
 
                 // bg thread keeps an eye on the process while it is alive
                 PreviewChunkTask previewTask = new PreviewChunkTask(process);
@@ -899,7 +969,7 @@ public class VARpediaController implements Initializable {
                 txaPreviewChunk1.setStyle("-fx-text-fill: font-color");
                 txaPreviewChunk1.setText(previewText);
 
-                // Create preview audio file, this will allow stopping
+                // Create preview audio file, this will allow stopping mid-play later
                 File festChunk = new File(CHUNKS.toString() + System.getProperty("file.separator") + "festivalChunk");
                 CHUNKS.mkdirs();
                 festChunk.createNewFile();
@@ -929,22 +999,30 @@ public class VARpediaController implements Initializable {
                 w.write("(utt.synth utt1)\n");
                 w.write("(utt.save.wave utt1 \"previewChunk\" 'riff)");
                 w.close();
-                ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
-                pb.directory(CHUNKS);
-                Process p = pb.start();
+                ProcessBuilder pBuilder = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
+                pBuilder.directory(CHUNKS);
+                Process p = pBuilder.start();
                 p.waitFor();
 
                 // Second process for actually playing the audio
-                ProcessBuilder pb1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit previewChunk");
-                pb1.directory(CHUNKS);
-                process = pb1.start();
+                ProcessBuilder pBuilder1 = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit previewChunk");
+                pBuilder1.directory(CHUNKS);
+                process = pBuilder1.start();
 
                 // bg thread keeps an eye on the process while it is alive
                 PreviewChunkTask previewTask = new PreviewChunkTask(process);
                 bgExecutor.submit(previewTask);
-                // Once finished, the text is set back
+
+                // Once finished, the text is set back and preview deleted
                 previewTask.setOnSucceeded(e -> {
                     btnSearchPreviewChunk.setText("Preview");
+                    try {
+                        deletePrevChunk();
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
                 });
 
                 // Set text to allowing stopping of audio
@@ -952,17 +1030,29 @@ public class VARpediaController implements Initializable {
 
             }
         } else {
-            // Handle stopping of preview
+            // if the button says "Stop", then Handle stopping of preview
             process.destroy();
+            deletePrevChunk();
             btnSearchPreviewChunk.setText("Preview");
         }
 
     }
 
+    /**
+     * Helper method for deleting preview chunks after they have stopped playing
+     */
+    private void deletePrevChunk() throws InterruptedException, IOException {
+        ProcessBuilder pBuilder = new ProcessBuilder("/bin/bash", "-c", "rm -f festivalChunk previewChunk");
+        pBuilder.directory(CHUNKS);
+        Process process = pBuilder.start();
+        process.waitFor();
+    }
+
     @FXML
-    void btnCreateChunkClicked(ActionEvent event) throws IOException, InterruptedException {
+    void btnCreateChunkClicked() throws IOException, InterruptedException {
         CHUNKS.mkdirs();
 
+        // Obtain and prepare selected chunk text
         String selectedText = txaResults.getSelectedText().trim();
         int numWords = selectedText.length() - selectedText.replaceAll("\\s", "").length();
         numWords = selectedText.length() == 0 ? 0 : numWords + 1;
@@ -977,7 +1067,7 @@ public class VARpediaController implements Initializable {
             // Obtain chunk name
             String chunkName = txtChunkName.getText().trim();
 
-            // Comprehensive error checks
+            // Comprehensive chunk name error checks
             if (chunkName.startsWith("-") || !Pattern.matches("^[-_a-zA-Z0-9]*$", chunkName)) {
                 txaPreviewChunk1.setStyle("-fx-text-fill: close-color");
                 txaPreviewChunk1.setText("Invalid chunk name, please choose another.");
@@ -1031,17 +1121,17 @@ public class VARpediaController implements Initializable {
                 w.write("(utt.synth utt1)\n");
                 w.write("(utt.save.wave utt1 \"" + chunkName + "\" 'riff)");
                 w.close();
-                ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
-                pb.directory(NEWCHUNK);
-                Process p = pb.start();
+                ProcessBuilder pBuilder = new ProcessBuilder("/bin/bash", "-c", "festival -b festivalChunk");
+                pBuilder.directory(NEWCHUNK);
+                Process p = pBuilder.start();
                 p.waitFor();
 
-                ProcessBuilder pb1 = new ProcessBuilder("/bin/bash", "-c", "echo \"" + txaResults.getSelectedText().trim() + "\" > " + chunkName + ".txt");
-                pb1.directory(NEWCHUNK);
-                Process p1 = pb1.start();
+                ProcessBuilder pBuilder1 = new ProcessBuilder("/bin/bash", "-c", "echo \"" + txaResults.getSelectedText().trim() + "\" > " + chunkName + ".txt");
+                pBuilder1.directory(NEWCHUNK);
+                Process p1 = pBuilder1.start();
                 p1.waitFor();
 
-
+                // add new chunk to listview
                 allChunkList.add(chunkName);
                 Collections.sort(allChunkList);
 
@@ -1058,12 +1148,12 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void txtSearchEnter(ActionEvent event) {
+    void txtSearchEnter() {
         btnSearch.fire();
     }
 
     @FXML
-    void txtChunkEnter(ActionEvent event) {
+    void txtChunkEnter() {
         btnCreateChunk.fire();
     }
 
@@ -1082,6 +1172,7 @@ public class VARpediaController implements Initializable {
     Future flickrFuture;
 
     private void initialiseCombineTab() {
+        // Prepare images' components
         imagePaths = new ArrayList<String>();
         gridImageViews = new ArrayList<>();
         gridToggles = new ArrayList<>();
@@ -1187,7 +1278,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnAddChunkClicked(ActionEvent event) {
+    void btnAddChunkClicked() {
         // Add a chunk if it is selected
         String chunkToAdd = listAllChunks.getSelectionModel().getSelectedItem();
         if (chunkToAdd != null) {
@@ -1196,7 +1287,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnRemoveChunkClicked(ActionEvent event) {
+    void btnRemoveChunkClicked() {
         // If a chunk is selected, it will be removed
         if (listSelectedChunks.getSelectionModel().getSelectedItem() != null) {
             int index = listSelectedChunks.getSelectionModel().getSelectedIndex();
@@ -1205,7 +1296,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnClearSelectedClicked(ActionEvent event) {
+    void btnClearSelectedClicked() {
         // Clear all selected chunks and images
         listSelectedChunks.getItems().clear();
         for (ToggleButton t : gridToggles) {
@@ -1214,7 +1305,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnDeleteChunkClicked(ActionEvent event) {
+    void btnDeleteChunkClicked() {
         // Delete all instances of a chunk when deleted
         if (listAllChunks.getSelectionModel().getSelectedItem() != null) {
             selectedChunkList.removeAll(Collections.singleton(listAllChunks.getSelectionModel().getSelectedItem()));
@@ -1225,15 +1316,15 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnPreviewChunkCombineClicked(ActionEvent event) throws IOException, InterruptedException {
+    void btnPreviewChunkCombineClicked() throws IOException {
         CHUNKS.mkdirs();
 
         if (btnPreviewChunkCombine.getText().equals("Preview")) {
             if (listAllChunks.getSelectionModel().getSelectedItem() != null) {
                 // If a chunk from the list is selected, preview its audio
-                ProcessBuilder pb = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listAllChunks.getSelectionModel().getSelectedItem());
-                pb.directory(new File(CHUNKS.toString() + "/" + listAllChunks.getSelectionModel().getSelectedItem()));
-                process = pb.start();
+                ProcessBuilder pBuilder = new ProcessBuilder("/bin/bash", "-c", "ffplay -nodisp -autoexit " + listAllChunks.getSelectionModel().getSelectedItem());
+                pBuilder.directory(new File(CHUNKS.toString() + "/" + listAllChunks.getSelectionModel().getSelectedItem()));
+                process = pBuilder.start();
 
                 // bg thread keeps an eye on the process while it is alive
                 PreviewChunkTask previewTask = new PreviewChunkTask(process);
@@ -1247,7 +1338,7 @@ public class VARpediaController implements Initializable {
                 btnPreviewChunkCombine.setText("Stop");
             }
         } else {
-            // Handle stopping of preview
+            // Handle stopping of preview if button has "Stop" when pressed
             process.destroy();
             btnPreviewChunkCombine.setText("Preview");
         }
@@ -1255,14 +1346,14 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnSearchFlickrClicked(ActionEvent event) {
+    void btnSearchFlickrClicked() {
         // Stop current Flickr download if still in progress
         if (flickrFuture != null) {flickrFuture.cancel(true);}
         fillGridImages(txtSearchFlickr.getText().trim().toLowerCase());
     }
 
     @FXML
-    void btnPreviewCreationClicked(ActionEvent event) {
+    void btnPreviewCreationClicked() {
         if (btnPreviewCreation.getText().equals("Preview Creation")) {
             btnPreviewChunkCombine.setDisable(true);
 
@@ -1285,6 +1376,7 @@ public class VARpediaController implements Initializable {
                 txaPreviewChunk2.setText("Please select some images.");
                 txaPreviewChunk2.setStyle("-fx-text-fill: close-color");
             } else {
+                //when error-checks are passed, start loading/creating preview in bg thread
                 ringCombine.setVisible(true);
                 btnPreviewCreation.setDisable(true);
                 btnCreateCreation.setDisable(true);
@@ -1296,6 +1388,7 @@ public class VARpediaController implements Initializable {
                 bgExecutor.submit(bgCreate);
 
                 bgCreate.setOnSucceeded(e -> {
+                    // Once loading is finished, turn of loading ring and re-enable components
                     btnPreviewCreation.setText("Stop");
                     ringCombine.setVisible(false);
                     vPreview.setVisible(true);
@@ -1335,6 +1428,7 @@ public class VARpediaController implements Initializable {
                 });
             }
         } else {
+            // Handle the stopping of the preview when "Stop" is clicked
             if (playerPreview != null) { playerPreview.stop();}
             vPreview.setVisible(false);
             txaPreviewChunk2.setVisible(true);
@@ -1343,7 +1437,9 @@ public class VARpediaController implements Initializable {
         }
     }
 
-    // Update progress slider for preview media player
+    /**
+     * Method used to update progress slider for the preview media player
+     */
     private void updateValuesPreview() {
         Platform.runLater(() -> {
             Duration currentTime = playerPreview.getCurrentTime();
@@ -1357,7 +1453,11 @@ public class VARpediaController implements Initializable {
         });
     }
 
-    // Helper method to check if a creation name exists (ignore case)
+    /**
+     * Helper method to check if a creation name exists (ignore case)
+     * @param c
+     * @return
+     */
     private boolean creationExists(String c) {
         CREATIONS.mkdirs();
         File[] creations = CREATIONS.listFiles();
@@ -1369,7 +1469,11 @@ public class VARpediaController implements Initializable {
         return false;
     }
 
-    // Helper method for actually making the creation
+    /**
+     * Helper method for actually making the creation
+     * @param creationName
+     * @param images
+     */
     private void makeCreation(String creationName, ArrayList<String> images) {
         txaPreviewChunk2.clear();
         txaPreviewChunk2.setStyle("-fx-text-fill: font-color");
@@ -1411,7 +1515,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnCreateCreationClicked(ActionEvent event) {
+    void btnCreateCreationClicked() {
         if (btnPreviewCreation.getText().equals("Stop")) {btnPreviewCreation.fire();}
         // Obtain all selected images
         ArrayList<String> selectedImgs = new ArrayList<String>();
@@ -1429,17 +1533,22 @@ public class VARpediaController implements Initializable {
         if (selectedChunkList.isEmpty()) {
             txaPreviewChunk2.setText("Please add some chunks.");
             txaPreviewChunk2.setStyle("-fx-text-fill: close-color");
+
         } else if (selectedImgs.isEmpty()) {
             txaPreviewChunk2.setText("Please select some images.");
             txaPreviewChunk2.setStyle("-fx-text-fill: close-color");
+
         } else if (creationName.isEmpty()) {
             txaPreviewChunk2.setText("Please name your creation.");
             txaPreviewChunk2.setStyle("-fx-text-fill: close-color");
             txtCreationName.requestFocus();
+
         } else if (creationName.startsWith("-") || !Pattern.matches("^[-_a-zA-Z0-9]+$", creationName)) {
             txaPreviewChunk2.setText("Invalid creation name.\nPlease use only numbers, letters,\nunderscores and hypens.");
             txaPreviewChunk2.setStyle("-fx-text-fill: close-color");
+
         } else if (creationExists(creationName)) {
+            //if creation name already exists, make overwrite pop-up asking for overwriting persmissions
             txaPreviewChunk2.clear();
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "A creation with the name \"" + creationName + "\" already exists. Overwrite?", btnYes, btnNo);
             alert.setTitle("Overwrite Creation");
@@ -1448,6 +1557,8 @@ public class VARpediaController implements Initializable {
             alert.setGraphic(null);
             alert.initStyle(StageStyle.UNDECORATED);
             alert.setResizable(false);
+
+            //if Yes is clicked, the old file will be deleted and new one created
             if (alert.showAndWait().get() == btnYes) {
                 deleteDirectory(new File(CREATIONS.toString() + "/" + creationName));
                 makeCreation(creationName, selectedImgs);
@@ -1461,10 +1572,10 @@ public class VARpediaController implements Initializable {
 
     }
 
-    // Allow double clicking for actions
     @FXML
     void listAllChunksClicked(MouseEvent event) {
         listSelectedChunks.getSelectionModel().clearSelection();
+        // allow double clicking created chunks list to add to selected chunks list
         if (event.getClickCount() == 2) {
             btnAddChunk.fire();
         }
@@ -1473,6 +1584,7 @@ public class VARpediaController implements Initializable {
     @FXML
     void listSelectedChunksClicked(MouseEvent event) {
         listAllChunks.getSelectionModel().clearSelection();
+        // allow double clicking selected chunks list to remove chunk from the list
         if (event.getClickCount() == 2) {
             btnRemoveChunk.fire();
         }
@@ -1480,12 +1592,12 @@ public class VARpediaController implements Initializable {
 
     // Allow pressing Enter for actions
     @FXML
-    void txtCreationEnter(ActionEvent event) {
+    void txtCreationEnter() {
         btnCreateCreation.fire();
     }
 
     @FXML
-    void txtSearchFlickrEnter(ActionEvent event) {
+    void txtSearchFlickrEnter() {
         btnSearchFlickr.fire();
     }
 
@@ -1503,6 +1615,7 @@ public class VARpediaController implements Initializable {
     private int difficulty;
 
     private void initialiseQuizTab() {
+        // Prepare question scoring variables
         if (isNonEmptyDirectory(CREATIONS)) {
             numQuestions = CREATIONS.listFiles().length;
         }
@@ -1512,6 +1625,8 @@ public class VARpediaController implements Initializable {
         currentAnswer = "";
         numCorrect = 0;
         difficulty = 0;
+
+        //Hide "playing quiz" components until user actually begins the quiz
         hQuizToolbar.setVisible(true);
         hQuizDifficulty.setDisable(false);
         vQuizTitle.setVisible(true);
@@ -1531,6 +1646,8 @@ public class VARpediaController implements Initializable {
         lblQuizTitle1.setText("Select a difficulty from above");
         lblQuizTitle2.setText("then try to guess the correct word.");
         lblQuizTitle3.setText("Switching tabs will reset the game, so no cheating :)");
+
+        // If no creations exist, hide all quiz components, showing only "No creations" message
         if (!isNonEmptyDirectory(CREATIONS)) {
             hQuizToolbar.setVisible(false);
             vQuizTitle.setVisible(false);
@@ -1538,6 +1655,9 @@ public class VARpediaController implements Initializable {
         }
     }
 
+    /**
+     * Method used to load up the next quiz question from the randomised creation list
+     */
     private void loadNextQuestion() {
         txtQuizAnswer.clear();
         txtQuizAnswer.requestFocus();
@@ -1565,7 +1685,7 @@ public class VARpediaController implements Initializable {
         // Different panes shown depending on difficulty
         if (difficulty == 1) {
             // Disable volume slider when on medium
-            btnMuteQuizClicked(null);
+            btnMuteQuizClicked();
             btnMuteQuiz.setDisable(true);
             sliderVolQuiz.setDisable(true);
         } else if (difficulty == 2) {
@@ -1616,7 +1736,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void toggleQuizEasyClicked(ActionEvent event) {
+    void toggleQuizEasyClicked() {
         if (toggleQuizEasy.isSelected()) {
             toggleQuizMedium.setSelected(false);
             toggleQuizHard.setSelected(false);
@@ -1626,7 +1746,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void toggleQuizMediumClicked(ActionEvent event) {
+    void toggleQuizMediumClicked() {
         if (toggleQuizMedium.isSelected()) {
             toggleQuizEasy.setSelected(false);
             toggleQuizHard.setSelected(false);
@@ -1636,7 +1756,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void toggleQuizHardClicked(ActionEvent event) {
+    void toggleQuizHardClicked() {
         if (toggleQuizHard.isSelected()) {
             toggleQuizMedium.setSelected(false);
             toggleQuizEasy.setSelected(false);
@@ -1646,7 +1766,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnQuizBeginClicked(ActionEvent event) {
+    void btnQuizBeginClicked() {
         // Hide/reveal appropriate components
         hQuizDifficulty.setDisable(true);
         vQuizTitle.setVisible(false);
@@ -1698,7 +1818,8 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnMuteQuizClicked(ActionEvent event) {
+    void btnMuteQuizClicked() {
+        // If not muted, mute the quiz
         if (!quizMute) {
             quizVolume = sliderVolQuiz.getValue();
             sliderVolQuiz.setValue(0);
@@ -1706,6 +1827,7 @@ public class VARpediaController implements Initializable {
             playerQuiz.setVolume(0);
             quizMute = true;
         } else {
+            // Otherwise set back to pre-muted volume
             sliderVolQuiz.setValue(quizVolume);
             imgVolumeQuiz.setImage(new Image(new File(ICONS.toString() + "/volume-" + (isDark ? "dark" : "light") + ".png").toURI().toString()));
             playerQuiz.setVolume(quizVolume / 100.0);
@@ -1713,7 +1835,9 @@ public class VARpediaController implements Initializable {
         }
     }
 
-    // Update progress slider for quiz media player
+    /**
+     * Method used to updtae progress slider for the quiz media player
+     */
     private void updateValuesQuiz() {
         Platform.runLater(() -> {
             Duration currentTime = playerQuiz.getCurrentTime();
@@ -1731,13 +1855,13 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnQuizResetClicked(ActionEvent event) {
+    void btnQuizResetClicked() {
         if (playerQuiz != null) {playerQuiz.stop();}
         initialiseQuizTab();
     }
 
     @FXML
-    void btnQuizSubmitClicked(ActionEvent event) {
+    void btnQuizSubmitClicked() {
         if (txtQuizAnswer.getText().trim().replaceAll("\\s+","_").equalsIgnoreCase(currentAnswer)) {
             // If the answer is correct, show the "correct" pane
             lblQuizAnswer.setText("Answer:");
@@ -1767,11 +1891,13 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnQuizFinishClicked(ActionEvent event) {
+    void btnQuizFinishClicked() {
         vQuizPlayer.setVisible(false);
         hQuizAnswer.setVisible(false);
         vQuizCorrect.setVisible(false);
         vQuizTitle.setVisible(true);
+
+        // Depending on the ratio of correct answers, show different end message and their score
         if ((double) correctAnswers / currentQuestion < 0.5) {
             lblQuizTitle.setText("Good try!");
             lblQuizTitle1.setText("You answered " + correctAnswers + " out of " + currentQuestion + " questions correctly.");
@@ -1784,7 +1910,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnQuizNextClicked(ActionEvent event) {
+    void btnQuizNextClicked() {
         vQuizPlayer.setVisible(true);
         hQuizAnswer.setVisible(true);
         vQuizCorrect.setVisible(false);
@@ -1793,14 +1919,14 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnQuizRetryClicked(ActionEvent event) {
+    void btnQuizRetryClicked() {
         currentQuestion--;
         btnQuizNext.fire();
     }
 
     // Allow pressing Enter for actions
     @FXML
-    void txtQuizAnswerEnter(ActionEvent event) {
+    void txtQuizAnswerEnter() {
         btnQuizSubmit.fire();
     }
 
@@ -1809,7 +1935,7 @@ public class VARpediaController implements Initializable {
     // --------------------------------------- OPTIONS TAB METHODS -----------------------------------------
 
     @FXML
-    void btnLightThemeClicked(ActionEvent event) {
+    void btnLightThemeClicked() {
         if (!btnLightTheme.isSelected()) {
             btnLightTheme.setSelected(true);
             btnDarkTheme.setSelected(false);
@@ -1825,7 +1951,7 @@ public class VARpediaController implements Initializable {
     }
 
     @FXML
-    void btnDarkThemeClicked(ActionEvent event) {
+    void btnDarkThemeClicked() {
         if (!btnDarkTheme.isSelected()) {
             btnDarkTheme.setSelected(true);
             btnLightTheme.setSelected(false);
@@ -1850,6 +1976,7 @@ public class VARpediaController implements Initializable {
      * @throws IOException
      */
     private void loadFXMLPopUp(String fxmlPath, int width, int height) throws IOException {
+        // Prepare the pop-up scene/FXML
         Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
 
         if (stage != null) {stage.close();}
@@ -1867,6 +1994,7 @@ public class VARpediaController implements Initializable {
             stage.setY(e.getScreenY() - yOffset);
         });
 
+        // Actually load the scene/pop-up
         Scene scene = new Scene(root, width, height);
         scene.getStylesheets().add(css);
         stage.setScene(scene);
@@ -1891,10 +2019,12 @@ class QuizFile {
         this.answer = answer;
     }
 
+    //getter for the file
     public File getFile() {
         return file;
     }
 
+    //getter for the answer
     public String getAnswer() {
         return answer;
     }
