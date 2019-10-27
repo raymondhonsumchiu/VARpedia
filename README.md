@@ -21,6 +21,8 @@ Run in IDE method (WORKS ON JAVA 11+)
 
 Target Audience: 18 - 25yrs (non-native english speakers)
 
+Additionally, please keep in mind that the NZ Male voice is less versatile than the US Male, hence may not function for all selected texts.
+
 __ATTRIBUTIONS:__
 
 https://creativecommons.org/licenses/by/3.0/nz/
