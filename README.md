@@ -10,6 +10,8 @@ This project was my first experience at developing software with a partner. VARp
 ### Screenshots
 ![Screenshots](varpedia_screenshots.JPG)
 
+More info at in the [Varpedia User Manual](Varpedia_User_Manual.pdf)
+
 Easy-to-run method (WORKS ON VIRTUAL BOX WITH JAVA 13 / JAVAFX 13)
 
 1. Ensure VARpedia.sh, bin, src, flickr-api-keys.txt are on the same "level" in the directory hierarchy
