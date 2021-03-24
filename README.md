@@ -1,6 +1,7 @@
 # se206VARpedia
 
 ![Front_Page](varpedia_frontpage.JPG)
+
 SE206 2019 Design Project
 
 VARPedia - a multimedia interface to Wikipedia.
