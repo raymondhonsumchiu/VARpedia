@@ -1,8 +1,8 @@
-# se206VARpedia
-
-![Front_Page](varpedia_frontpage.JPG)
+# VARpedia
 
 SE206 2019 Design Project
+
+![Front_Page](varpedia_frontpage.JPG)
 
 VARPedia - a multimedia interface to Wikipedia.
 This project was my first experience at developing software with a partner. VARpedia is a tool used to support the education of ESOL students by combining Wikipedia searches with video creation and voice synthesizers.
